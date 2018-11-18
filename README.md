@@ -1,11 +1,11 @@
 
-## TimeKeeper-4.0
+## KRONOS
 ```
-TimeKeeper-4.0 is a work in progress. There are several changes which are planned from the previous version. Most notably, it will use a new technique
-to control advancement of virtual time. Virtual time will be controlled based on the number of instructions executed by a dilated process. 
+Kronos is a linux virtual time system for scalable and repeatable Network emulation. Most notably, it uses a new technique
+to control advancement of virtual time called INS-SCHED or Instruction driven scheduling. With INS-SCHED, virtual time will
+advancement in an emulation will be controlled based on the number of instructions executed by a process. 
 
-TimeKeeper-4.0 is currently under development phase and is expected to be completed by Aug 2018.
-Refer to TODO file for currently tracked bugs.
+Please refer the TODO file for currently tracked bugs.
 ```
 
 ```
@@ -28,10 +28,10 @@ fi
 ```
 Installation Instructions
 
-* Clone Repository into /home/${username} directory. Checkout TimeKeeper-4.0 branch
+* Clone Repository into /home/${username} directory. Checkout the master branch
 
 * Setup Kernel
-	@cd ~/TimeKeeper/dilation_code
+	@cd ~/Kronos
 	@sudo make setup_kernel
 	
 	During the setup process do not allow kexec tools to handle kernel reboots.
@@ -48,8 +48,8 @@ Installation Instructions
 
 * Reboot machine and boot into new kernel
 
-* Build and Install TimeKeeper-4.0
-	@cd ~/TimeKeeper/dilation_code
+* Build and Install Kronos
+	@cd ~/Kronos
 	@sudo make clean
 	@sudo make build install
 ```
@@ -60,7 +60,7 @@ Verifying installation
 * Running tests:
 	Repeatability Test
 	
-	@cd ~/TimeKeeper/dilation-code/src/tracer/tests && sudo make run_repeatability_test
+	@cd ~/Kronos/src/tracer/tests && sudo make run_repeatability_test
 
 	Run All Other Tests
 		-Alarm Test
@@ -69,7 +69,7 @@ Verifying installation
 		-Socket Test
 		-Producer Consumer Test
 
-	@cd ~/TimeKeeper/dilation-code/tests && sudo make run
+	@cd ~/Kronos/tests && sudo make run
 
-* All tests should produce a TEST_SUCCEEDED/ TEST_COMPLETED message
+* All tests should produce a TEST_SUCCEEDED orTEST_COMPLETED message
 ```
