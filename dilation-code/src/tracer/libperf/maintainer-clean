@@ -1,5 +1,0 @@
-#!/bin/bash
-
-make -k maintainer-clean && \
-git clean -dxf
-

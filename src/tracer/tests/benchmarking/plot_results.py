@@ -21,12 +21,14 @@ std_time_nowindow = [112.410086, 129.036786, 43.383870, 28.050735, 140.157055]
 avg_time_multistepping = [675.299988,  4592.450195, 38614.550781, 371302.562500, 3505605.500000]
 std_time_multistepping = [403.022254, 2690.142004, 1578.860348, 10592.338363, 59612.281151]
 
+
+
 fig = plt.figure(dpi=100)
 ax = fig.add_subplot(111)
 
 
-fsize=20
-markersize = 15.0
+fsize=30
+markersize = 25.0
 
 ax.errorbar(x =n_insns, y = avg_insn_overshoot, yerr=std_insn_overshoot, marker = 'o', fmt='o',markersize=markersize)
 ax.set_xlabel("Number of progress instructions", fontsize=fsize)
@@ -35,7 +37,7 @@ ax.set_xlabel("Number of progress instructions", fontsize=fsize)
 ax.set_ylabel("Overshoot Error", fontsize=fsize)
 ax.set_title("Instruction overshoot error", fontsize=fsize)
 ax.set_xscale('log')
-ax.set_ylim([0,50])
+ax.set_ylim([15,40])
 ax.set_xlim([100,100000000])
 plt.xticks(fontsize=fsize)
 plt.yticks(fontsize=fsize)
@@ -45,8 +47,6 @@ plt.show()
 fig = plt.figure(dpi=100)
 ax = fig.add_subplot(111)
 
-fsize=20
-markersize = 15.0
 
 print np.mean(np.array(avg_time_window) - np.array(avg_time_nowindow)), np.std(np.array(avg_time_window) - np.array(avg_time_nowindow))
 
