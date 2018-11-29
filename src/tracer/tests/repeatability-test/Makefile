@@ -22,7 +22,7 @@ build:
 run:
 	@echo Starting Repeatability Test ...
 	@echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
-	.${test_dir}/insn_tester ${test_dir}/cmds.txt
+	${test_dir}/insn_tester ${test_dir}/cmds.txt
 	@echo 2 | sudo tee /proc/sys/kernel/randomize_va_space
 	@echo Repeatability Test Finished ...
 

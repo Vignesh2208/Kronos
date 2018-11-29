@@ -20,5 +20,5 @@ build:
 	@chmod 777 ${benchmarking_dir}/benchmark
 
 run:
-	.${benchmarking_dir}/benchmark ${benchmarking_dir}/cmds.txt
+	${benchmarking_dir}/benchmark ${benchmarking_dir}/cmds.txt
 
