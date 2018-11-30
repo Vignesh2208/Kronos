@@ -74,6 +74,7 @@ extern int initialize_experiment_components(char * write_buffer);
 extern unsigned long **aquire_sys_call_table(void);
 extern int round_sync_task(void *data);
 extern void run_dilated_hrtimers();
+extern s64 expected_time;
 
 
 s64 round_error = 0;
@@ -171,6 +172,7 @@ long tk_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
 	uint8_t mask = 0;
 	unsigned long flags;
 	ioctl_args * args;
+	struct timeval * tv;
 	ioctl_args tmp;
 	char write_buffer[STATUS_MAXSIZE];
 	char * ptr;
@@ -225,6 +227,23 @@ long tk_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
 		resume_all_syscall_blocked_processes_from_tracer(arg);
 		return 0;
 
+	case TK_IO_GET_CURRENT_VIRTUAL_TIME 	:
+		tv = (struct timeval *)arg;
+		if (!tv)
+			return -EFAULT;
+
+		struct timeval ktv;
+		if (expected_time == 0)
+			do_gettimeofday(&ktv);
+		else {
+			ktv = ns_to_timeval(expected_time);
+		}
+
+		if (copy_to_user(tv, &ktv, sizeof(ktv)))
+			return -EFAULT;
+
+		return 0;
+	
 
 	case TK_IO_WRITE_RESULTS	:	ptr = (char *) arg;
 		if (copy_from_user(write_buffer, ptr, STATUS_MAXSIZE)) {
@@ -536,6 +555,8 @@ int __init my_module_init(void) {
 		EXP_CPUS = TOTAL_CPUS - 2;
 	else
 		EXP_CPUS = 1;
+
+	expected_time = 0;
 
 	PDEBUG_A(" Number of EXP_CPUS: %d\n", EXP_CPUS);
 	PDEBUG_A(" Kronos MODULE LOADED SUCCESSFULLY \n");

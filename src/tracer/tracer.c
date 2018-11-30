@@ -646,7 +646,8 @@ void run_processes_in_multi_core_mode(hashmap * tracees,
                                       int cpu_assigned, float rel_cpu_speed, int fp) {
 
 	int status;
-	int per_process_advance = 25000, process_advance_in_round = 0;
+	int per_process_advance = SMALLEST_PROCESS_QUANTA_INSNS;
+	int process_advance_in_round = 0;
 	int atleast_one_ran = 0;
 	int atleast_one_runnable = 0;
 #ifdef RETRY_BLOCKED_PROCESSES_MODE
@@ -786,7 +787,7 @@ void run_processes_in_round(hashmap * tracees,
                             int cpu_assigned, float rel_cpu_speed, int fp
                            ) {
 
-	int base_insn_share = 25000;
+	int base_insn_share = SMALLEST_PROCESS_QUANTA_INSNS;
 	int status;
 	u32 n_insns_run = 0;
 	unsigned long arg;
@@ -902,11 +903,12 @@ void run_processes_in_round(hashmap * tracees,
 
 		assert(n_insns_to_run > 0);
 
-
+		LOG("Running %d for %d\n instructions\n", tracee->pid, n_insns_to_run);
 		status =
 		    run_commanded_process(tracees, tracee_list, run_queue,
 		                          tracee->pid, n_insns_to_run,
 		                          cpu_assigned, rel_cpu_speed);
+		LOG("Ran %d for %d\n instructions\n", tracee->pid, n_insns_to_run);
 
 
 		if (n_insns_run <= n_round_insns)
@@ -985,6 +987,7 @@ void write_results(int fp, char * command) {
 	ptr = command;
 	ret = ioctl(fp, TK_IO_WRITE_RESULTS, command);
 
+	LOG("Wrote results back. ioctl ret = %d \n", ret);
 #ifdef DEBUG_VERBOSE
 	LOG("Wrote results back. ioctl ret = %d \n", ret);
 #endif
@@ -1273,7 +1276,7 @@ int main(int argc, char * argv[]) {
 		while (head != NULL) {
 			tracee = (tracee_entry *) head->item;
 			processes_pids[i] = tracee->pid;
-			processes_quanta_n_insns[i] = 25000;
+			processes_quanta_n_insns[i] = SMALLEST_PROCESS_QUANTA_INSNS;
 			head = head->next;
 			i++;
 		}

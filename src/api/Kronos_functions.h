@@ -23,6 +23,8 @@
 #define IFNAMESIZ 16
 #define MAX_BUF_SIZ 1000
 
+#define SMALLEST_PROCESS_QUANTA_INSNS 25000
+
 
 
 // General Functions **********************

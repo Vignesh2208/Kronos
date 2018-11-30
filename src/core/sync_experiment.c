@@ -227,7 +227,9 @@ int initialize_experiment_components(char * write_buffer) {
 	round_error = 0;
 	round_error_sq = 0;
 	n_rounds = 0;
+	expected_time = 0;
 	app_driven_hrtimer_firing = 0;
+        init_task.freeze_time = 0;
 
 	mutex_init(&exp_lock);
 	spin_lock_init(&syscall_lookup_lock);
@@ -305,6 +307,8 @@ int cleanup_experiment_components() {
 
 	tracer_num = 0;
 	n_processed_tracers = 0;
+        expected_time = 0;
+        init_task.freeze_time = 0;
 
 	atomic_set(&progress_n_enabled, 0);
 	atomic_set(&progress_n_rounds, 0);
