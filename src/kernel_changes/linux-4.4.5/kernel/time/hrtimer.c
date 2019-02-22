@@ -198,7 +198,8 @@ int remove_dilated_hrtimer(struct hrtimer_dilated *timer,
 	if (timer->state & HRTIMER_STATE_ENQUEUED) {
 		u8 state = timer->state;
 
-
+		// if restart is true, timer state will remain unchanged
+		// else it will be set to inactive
 		if (!restart)
 			state = HRTIMER_STATE_INACTIVE;
 

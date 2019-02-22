@@ -912,6 +912,7 @@ int handle_set_netdevice_owner_cmd(char * write_buffer) {
 		write_unlock_bh(&dev_base_lock);
 
 	} else {
+		PDEBUG_E("Failed to set Net Device Owner for: %s\n", dev_name);
 		return FAIL;
 	}
 

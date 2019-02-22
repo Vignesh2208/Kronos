@@ -434,7 +434,9 @@ int sync_and_freeze(char * write_buffer) {
 			PDEBUG_A("Chain Task %d: Pid = %d\n", i, chaintask[i]->pid);
 		}
 	}
-	now = 1000000000;
+
+	do_gettimeofday(&now_timeval);
+	now = timeval_to_ns(&now_timeval);
 	expected_time = now;
 	init_task.freeze_time = now;
 

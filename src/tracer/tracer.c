@@ -10,6 +10,7 @@
 #include <getopt.h>
 #include <string.h>
 #include <sched.h>
+#include <signal.h>
 
 #define TK_IOC_MAGIC  'k'
 #define TK_IO_GET_STATS _IOW(TK_IOC_MAGIC,  1, int)
@@ -1292,8 +1293,9 @@ int main(int argc, char * argv[]) {
 
 
 			if (tail_ptr == -1 && new_cmd_pid == -1) {
-				LOG("TracerID: %d, STOP Command received. Stopping tracer ...\n",
+				printf("TracerID: %d, STOP Command received. Stopping tracer ...\n",
 				    tracer_id);
+				fflush(stdout);
 				goto end;
 			}
 
@@ -1338,6 +1340,9 @@ end:
 
 
 #endif
+	if (create_spinner)
+		kill(spinned_pid, SIGKILL);
+
 	llist_destroy(&tracee_list);
 	hmap_destroy(&tracees);
 	return 0;

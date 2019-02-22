@@ -370,7 +370,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig) {
 	tsk->past_physical_time = orig->past_physical_time;
 	tsk->past_virtual_time = orig->past_virtual_time;
 	tsk->dilation_factor = orig->dilation_factor;
-	spin_lock_init(&tsk->dialation_lock);
 
 	account_kernel_stack(ti, 1);
 

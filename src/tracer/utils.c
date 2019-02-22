@@ -85,7 +85,9 @@ int create_spinner_task(pid_t * child_pid) {
 	}
 
 	if (!child) {
-		execvp("/bin/x64_synchronizer", NULL);
+		while(1) {
+			usleep(1000000);
+		}
 		exit(2);
 	}
 
