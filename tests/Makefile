@@ -40,7 +40,6 @@ run_producer_consmer_test:
 	@cd producer_consumer_test && echo "Running Producer Consumer Test: " && chmod 777 run_test.sh && sudo ./run_test.sh	
 
 run:
-	@cd alarm_test && echo "Running Alarm Test: " && chmod 777 run_test.sh && sudo ./run_test.sh
 	@cd timerfd_test && echo "Running Timerfd Test: " && chmod 777 run_test.sh && sudo ./run_test.sh
 	@cd usleep_test && echo "Running usleep Test: " && chmod 777 run_test.sh && sudo ./run_test.sh
 	@cd socket_test && echo "Running Socket Test: " && chmod 777 run_test.sh && sudo ./run_test.sh
