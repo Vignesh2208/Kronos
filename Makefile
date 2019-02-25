@@ -37,10 +37,10 @@ build_api:
 build_tracer:
 	@cd src/tracer; $(MAKE) build;
 
-install:
+load:
 	sudo insmod build/Kronos.ko
 
-uninstall:
+unload:
 	sudo rmmod build/Kronos.ko
 
 clean_scripts:

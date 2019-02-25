@@ -51,7 +51,7 @@ Installation Instructions
 * Build and Install Kronos
 	@cd ~/Kronos
 	@sudo make clean
-	@sudo make build install
+	@sudo make build load
 ```
 
 ```
