@@ -1,1 +1,0 @@
-/home/moses/Kronos/src/tracer/tests/vfork-test/vfork_test

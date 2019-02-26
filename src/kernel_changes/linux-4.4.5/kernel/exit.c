@@ -640,6 +640,7 @@ void do_exit(long code) {
 
 	profile_task_exit(tsk);
 
+	
 	tsk->ptrace_msteps = 0;
 	tsk->ptrace_mflags = 0;
 	tsk->n_ints = 0;
@@ -899,11 +900,8 @@ static int eligible_pid(struct wait_opts *wo, struct task_struct *p) {
 }
 
 static int eligible_child(struct wait_opts *wo, struct task_struct *p) {
-	if (!eligible_pid(wo, p)) {
-		if (wo->wo_flags & WTRACE_DESCENDENTS)
-			trace_printk("Child %d is not eligible pid. Type = %d\n", p->pid, wo->wo_type);
+	if (!eligible_pid(wo, p))
 		return 0;
-	}
 	/* Wait for all children (clone and not) if __WALL is set;
 	 * otherwise, wait for clone children *only* if __WCLONE is
 	 * set; otherwise, wait for non-clone children *only*.  (Note:
@@ -1280,12 +1278,8 @@ static int wait_consider_task(struct wait_opts *wo, int ptrace,
 		return 0;
 
 	ret = eligible_child(wo, p);
-	if (!ret) {
-		if ((wo->wo_flags & WTRACE_DESCENDENTS) && ptrace) {
-			trace_printk("Child %d is not eligible\n", p->pid);
-		}
+	if (!ret)
 		return ret;
-	}
 
 	ret = security_task_wait(p);
 	if (unlikely(ret < 0)) {
@@ -1414,9 +1408,6 @@ static int ptrace_do_wait(struct wait_opts *wo, struct task_struct *tsk) {
 	list_for_each_entry(p, &tsk->ptraced, ptrace_entry) {
 		int ret = wait_consider_task(wo, 1, p);
 
-		if (wo->wo_flags & WTRACE_DESCENDENTS && p != NULL ) {
-			trace_printk("Current: %d, Ptraced entry: %d, Ret = %d, wo->notask_error = %d\n", current->pid, p->pid, ret, wo->notask_error);
-		}
 		if (ret)
 			return ret;
 	}
@@ -1462,45 +1453,25 @@ repeat:
 	 * might later match our criteria, even if we are not able to reap
 	 * it yet.
 	 */
-
-	
-
-
 	wo->notask_error = -ECHILD;
 	if ((wo->wo_type < PIDTYPE_MAX) &&
-	        (!wo->wo_pid || hlist_empty(&wo->wo_pid->tasks[wo->wo_type]))) {
-		if (wo->wo_flags & WTRACE_DESCENDENTS ) {
-			child = get_pid_task(wo->wo_pid, wo->wo_type);
-			if (child != NULL)
-				trace_printk("Returning -ECHILD at start. Current : %d, Child: %d, msteps : %lu, mflags : %lu\n", current->pid, child->pid, child->ptrace_msteps, child->ptrace_mflags);
-			else
-				trace_printk("Returning -ECHILD at start. Current: %d. Child is NULL\n", current->pid);
-		}
+	   (!wo->wo_pid || hlist_empty(&wo->wo_pid->tasks[wo->wo_type])))
 		goto notask;
-	}
 
 	set_current_state(TASK_INTERRUPTIBLE);
 
-	child = get_pid_task(wo->wo_pid, wo->wo_type);
-	/*
-	if (wo->wo_flags & WTRACE_DESCENDENTS ) {
-		if (child == NULL) {
-			trace_printk("Current: %d. Child is NULL Here ..\n", current->pid);
-		}
-	}
-	*/
 	
-
-	if (child != NULL) {
+	child = pid_task(wo->wo_pid, wo->wo_type);
+	if (child != NULL && wo->wo_flags & WTRACE_DESCENDENTS) {
 		if (current->pid != init_task.pid
 			&& current->virt_start_time == 0
 			&& child != NULL 
 			&& test_bit(PTRACE_BREAK_WAITPID_FLAG, &child->ptrace_mflags)) {
-			//trace_printk("Waitpid tracer: %d, breaking on tracee: %d inside syscall\n", current->pid, child->pid);
 			retval = -EBREAK;
 			goto end;
 		}
 	}
+	
 
 	
 	read_lock(&tasklist_lock);
@@ -1523,13 +1494,11 @@ notask:
 	retval = wo->notask_error;
 	if (!retval && !(wo->wo_flags & WNOHANG)) {
 		retval = -ERESTARTSYS;
-
 		if (!signal_pending(current)) {
 			schedule();
 			goto repeat;
 		}
 	}
-
 end:
 	__set_current_state(TASK_RUNNING);
 	remove_wait_queue(&current->signal->wait_chldexit, &wo->child_wait);
