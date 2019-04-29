@@ -1,6 +1,6 @@
 #! /bin/bash
 # Generated automatically by config.status (libperf) 0.1
-# Libtool was configured on host worker-1:
+# Libtool was configured on host ubuntu:
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 
 # Provide generalized library-building support services.

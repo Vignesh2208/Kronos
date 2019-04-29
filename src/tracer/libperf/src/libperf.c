@@ -93,7 +93,7 @@ static struct perf_event_attr default_attrs[] = {
   { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_TASK_CLOCK         },
   { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_CONTEXT_SWITCHES   },
   { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_CPU_MIGRATIONS     },
-  { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_PAGE_FAULTS        },
+  { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_PAGE_FAULTS },
   { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_PAGE_FAULTS_MIN    },
   { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_PAGE_FAULTS_MAJ    },
 
@@ -247,16 +247,19 @@ int libperf_ioctlrefresh(struct libperf_data * pd, int counter,
   ret = ioctl(pd->fds[counter], PERF_EVENT_IOC_RESET);
   assert(ret >= 0);
 
+  if (counter == LIBPERF_COUNT_HW_INSTRUCTIONS) {
   errno = 0;
   ret = ioctl(pd->fds[counter], PERF_EVENT_IOC_PERIOD, &overflow_val);
-  assert(ret >= 0);
   //printf("IOC PERIOD  return = %d, errno = %d\n", ret, errno);
+  assert(ret >= 0);
+  
 
 
   ret =  ioctl(pd->fds[counter], PERF_EVENT_IOC_REFRESH, 1);
-  assert(ret >= 0);
   //printf("IOC REFRESH PERIOD  return = %d, errno = %d\n", ret, errno);
-
+  assert(ret >= 0);
+  
+  }
   return 0;
 
 }

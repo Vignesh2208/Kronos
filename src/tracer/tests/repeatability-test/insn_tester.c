@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include "linkedlist.h"
+#include "hashmap.h"
 #include <sys/socket.h>
 #include <linux/netlink.h>
 #include <sys/types.h>
@@ -51,6 +52,7 @@ struct sched_param param;
 #define PTRACE_MULTISTEP 0x42f0
 #define PTRACE_GET_REM_MULTISTEP 0x42f1
 #define PTRACE_SET_REM_MULTISTEP 0x42f2
+#define WTRACE_DESCENDENTS	0x00100000
 
 struct sockaddr_nl src_addr, dest_addr;
 struct nlmsghdr *nlh = NULL;
@@ -153,6 +155,11 @@ int run_command(char * full_command_str, pid_t * child_pid) {
 		ptrace(PTRACE_TRACEME, 0, NULL, NULL);
 		fflush(stdout);
 		fflush(stderr);
+		cpu_set_t set;
+		CPU_ZERO(&set);
+		CPU_SET(0, &set);
+		sched_setaffinity(child, sizeof(set), &set);
+		sched_setaffinity((pid_t)getpid(), sizeof(set), &set);
 		execvp(args[0], &args[0]);
 		free(args);
 		exit(2);
@@ -280,8 +287,17 @@ unsigned long wait_for_ptrace_events(llist * active_tids, pid_t pid,
 
 	flush_buffer(buffer, 100);
 	errno = 0;
+	status = 0;
 	do {
-		ret = waitpid(pid, &status, 0);
+	#ifdef DEBUG_VERBOSE
+			print_curr_time("Entering waitpid");
+			ret = waitpid(pid, &status, WTRACE_DESCENDENTS | __WALL);
+			sprintf(buffer, "Ret waitpid = %d, errno = %d", ret, errno);
+			print_curr_time(buffer);
+	#else
+			ret = waitpid(pid, &status, WTRACE_DESCENDENTS | __WALL);
+	#endif
+
 	} while (ret == (pid_t) - 1 && errno == EINTR);
 
 	if ((pid_t)ret != pid) {
@@ -327,22 +343,28 @@ unsigned long wait_for_ptrace_events(llist * active_tids, pid_t pid,
 			return SUCCESS;
 		} else if (status >> 8 == (SIGTRAP | PTRACE_EVENT_EXIT << 8)) {
 			printf("Detected process exit for : %d\n", pid);
+			libperf_finalize(pd, 0);
 			llist_remove(active_tids, &pid);
 			print_active_tids(active_tids);
 			return SUCCESS;
 		} else {
 			/* obtain counter value */
-			uint64_t counter = libperf_readcounter(pd,
-			                                       LIBPERF_COUNT_HW_INSTRUCTIONS);
+			uint64_t counter_pf, counter_cpu_migrations, counter_context, counter_ninsns;
+			counter_pf = libperf_readcounter(pd, LIBPERF_COUNT_SW_PAGE_FAULTS);
+			counter_cpu_migrations = libperf_readcounter(pd, LIBPERF_COUNT_SW_CPU_MIGRATIONS);
+			counter_context = libperf_readcounter(pd, LIBPERF_COUNT_SW_CONTEXT_SWITCHES);
+			counter_ninsns = libperf_readcounter(pd, LIBPERF_COUNT_HW_INSTRUCTIONS);
 			/* disable HW counter */
-			libperf_disablecounter(pd, LIBPERF_COUNT_HW_INSTRUCTIONS);
+			//libperf_disablecounter(pd, LIBPERF_COUNT_HW_INSTRUCTIONS);
 			/* log all counter values */
-			libperf_finalize(pd, 0);
+			//libperf_finalize(pd, 0);
 			ret = ptrace(PTRACE_GETREGS, pid, NULL, &regs);
 			if (ret == -1) {
 				printf("ERROR in GETREGS.\n");
 				return FAIL;
 			}
+			printf ("Counter Stats: (Count) %d (Pf) %d (Mig) %d (Context) %d\n", counter_ninsns,
+				counter_pf, counter_cpu_migrations, counter_context);
 			return regs.rip;
 
 		}
@@ -365,7 +387,8 @@ unsigned long wait_for_ptrace_events(llist * active_tids, pid_t pid,
 
 }
 
-int run_commanded_process(llist * active_tids, pid_t pid, int n_instructions) {
+int run_commanded_process(llist * active_tids, pid_t pid, 
+	struct libperf_data * pd, int n_instructions) {
 
 
 	int i = 0;
@@ -373,7 +396,7 @@ int run_commanded_process(llist * active_tids, pid_t pid, int n_instructions) {
 	int ret;
 	int cont = 1, counter = 0;
 	unsigned long n_insns = (unsigned long) n_instructions;
-	struct libperf_data * pd;
+	
 	struct pollfd ufd;
 	memset(&ufd, 0, sizeof(ufd));
 	uint64_t counter_val; /* obtain counter value */
@@ -394,18 +417,17 @@ int run_commanded_process(llist * active_tids, pid_t pid, int n_instructions) {
 
 
 		if (singlestepmode) {
-			pd = libperf_initialize((int)pid, 0);
-			libperf_enablecounter(pd, LIBPERF_COUNT_HW_INSTRUCTIONS);
-			libperf_enablecounter(pd, LIBPERF_COUNT_SW_CONTEXT_SWITCHES);
+			libperf_disablecounter(pd, LIBPERF_COUNT_HW_INSTRUCTIONS);
 			ptrace(PTRACE_SET_REM_MULTISTEP, pid, 0, (unsigned long *)&n_insns);
 			ptrace(PTRACE_MULTISTEP, pid, 0, (unsigned long *)&n_insns);
 		} else {
 			n_insns = n_insns - 500;
-			pd = libperf_initialize((int)pid, 0);
 			libperf_ioctlrefresh(pd, LIBPERF_COUNT_HW_INSTRUCTIONS,
 			                     (uint64_t )n_insns);
 			libperf_enablecounter(pd, LIBPERF_COUNT_HW_INSTRUCTIONS);
+			libperf_enablecounter(pd, LIBPERF_COUNT_SW_PAGE_FAULTS);
 			libperf_enablecounter(pd, LIBPERF_COUNT_SW_CONTEXT_SWITCHES);
+			libperf_enablecounter(pd, LIBPERF_COUNT_SW_CPU_MIGRATIONS);
 			ptrace(PTRACE_SET_REM_MULTISTEP, pid, 0, (unsigned long *)&n_insns);
 			ptrace(PTRACE_CONT, pid, 0, 0);
 		}
@@ -448,6 +470,8 @@ int main(int argc, char * argv[]) {
 	int n_recv_commands = 0;
 	struct libperf_data * pd;
 	int n_cmds = 0, n_max_insns = 100000;
+	time_t start, end;
+    double cpu_time_used;
 
 
 	unsigned long ret_acc = 0;
@@ -457,7 +481,6 @@ int main(int argc, char * argv[]) {
 	llist_init(&active_tids);
 	llist_set_equality_checker(&active_tids, llist_elem_comparer);
 	printf("My Pid: %d\n", (pid_t)getpid());
-
 
 	if (argc < 2 || !strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
 		fprintf(stderr, "\n");
@@ -509,25 +532,57 @@ int main(int argc, char * argv[]) {
 
 	setup_all_traces(&active_tids);
 	ret_acc = 0;
-	while (n_cmds < 100) {
 
-		n_insns = rand() % n_max_insns;
+
+	printf("TEST STARTED \n");
+	start = time(NULL);
+	struct libperf_data * pd1 = libperf_initialize((int)cmd_pid[0], 0);
+	struct libperf_data * pd2 = libperf_initialize((int)cmd_pid[1], 0);
+
+	while (n_cmds < 10000) {
+
+		//n_insns = rand() % n_max_insns;
+		n_insns = 1000000;
 
 		if (n_insns <= 0 )
 			n_insns = 1;
 
-		ret1 = run_commanded_process(&active_tids, cmd_pid[0], n_insns);
-		ret2 = run_commanded_process(&active_tids, cmd_pid[1], n_insns);
+		
+
+		ret1 = run_commanded_process(&active_tids, cmd_pid[0], pd1, n_insns);
+		ret2 = run_commanded_process(&active_tids, cmd_pid[1], pd2, n_insns);
 
 		if (ret1 == 0 || ret2 == 0) {
 			printf("TEST FAILED. Couldn't run command\n");
 			return FAIL;
 		}
 
+		
 		if (ret1 != ret2) {
-			printf("TEST FAILED. Command = %d, ret1  = %lX, ret2 = %lX\n",
-			       n_insns, ret1, ret2);
-			return FAIL;
+			// This can sometimes happen if watchdog PMU interrupt (which is an NMI)
+			// fires when one of the processes is executing. Since NMI counts are not
+			// included in INS-SCHED counting, the affected process ends up executing one
+			// less instruction. So we make the first process run for 1 more instruction and
+			// check again. If they are still not equal we make the second process run for
+			// 2 instructions and check. We only print an error if both checks fail (which
+			// shouldn't happen)
+
+			ret1 = run_commanded_process(&active_tids, cmd_pid[0], pd1, 1);
+			if (ret1 != ret2) {
+				
+				ret2 = run_commanded_process(&active_tids, cmd_pid[1], pd1, 2);
+				if (ret1 != ret2) {
+					printf("TEST FAILED. Command = %d, ret1  = %lX, ret2 = %lX\n",
+					       n_insns, ret1, ret2);
+					end = time(NULL);
+					libperf_finalize(pd1, 0);
+					libperf_finalize(pd2, 0);
+					return FAIL;
+				}
+			}
+			printf("COMMAND SUCCEEDED. Cmd = %d, Result = %lX\n",
+			       n_insns, ret1);
+			
 		} else {
 			printf("COMMAND SUCCEEDED. Cmd = %d, Result = %lX\n",
 			       n_insns, ret1);
@@ -536,7 +591,11 @@ int main(int argc, char * argv[]) {
 		n_cmds ++;
 
 	}
-	printf("TEST SUCCESS.\n");
+	end = time(NULL);
+	libperf_finalize(pd1, 0);
+	libperf_finalize(pd2, 0);
+	printf("TEST SUCCESS. Elapsed time: %f seconds\n", 
+	((double)(end - start)));
 	return 0;
 
 }
