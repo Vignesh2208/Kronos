@@ -261,7 +261,7 @@ long tk_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
 			return -1;
 		}
 
-		PDEBUG_I("TK-IO: Tracer : %d, Waiting for next command.\n",
+		PDEBUG_V("TK-IO: Tracer : %d, Waiting for next command.\n",
 		         current->pid);
 
 		atomic_inc(&n_waiting_tracers);

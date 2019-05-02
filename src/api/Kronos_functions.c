@@ -3,7 +3,12 @@
 #include "Kronos_definitions.h"
 #include "utility_functions.h"
 
+#include <sys/ioctl.h>
 
+#define TK_IOC_MAGIC  'k'
+#define TK_IO_GET_STATS _IOW(TK_IOC_MAGIC,  1, int)
+#define TK_IO_WRITE_RESULTS _IOW(TK_IOC_MAGIC,  2, int)
+#define TK_IO_RESUME_BLOCKED_SYSCALLS _IOW(TK_IOC_MAGIC,  3, int)
 
 
 
@@ -38,6 +43,24 @@ int addToExp_sp(float relative_cpu_speed, u32 n_round_instructions,
 		char command[100];
 		flush_buffer(command, 100);
 		sprintf(command, "%c,%d,%d,1,%d", REGISTER_TRACER, rel_cpu_speed,
+		        (int)n_round_instructions, pid);
+		return send_to_kronos(command);
+	}
+	return -1;
+}
+
+int addToExp_child(float relative_cpu_speed, u32 n_round_instructions,
+                pid_t pid ) {
+
+	if (n_round_instructions <= 0 || relative_cpu_speed <= 0.0)
+		return -1;
+
+	int rel_cpu_speed = (int)(1000.0 * relative_cpu_speed);
+
+	if (is_root() && isModuleLoaded()) {
+		char command[100];
+		flush_buffer(command, 100);
+		sprintf(command, "%c,%d,%d,2,%d", REGISTER_TRACER, rel_cpu_speed,
 		        (int)n_round_instructions, pid);
 		return send_to_kronos(command);
 	}
@@ -215,10 +238,15 @@ int write_tracer_results(char * result) {
 
 
 	if (is_root() && isModuleLoaded()) {
-		char command[MAX_BUF_SIZ];
-		flush_buffer(command, MAX_BUF_SIZ);
-		sprintf(command, "%c,%s,", TRACER_RESULTS, result);
-		return send_to_kronos(command);
+	    int fp = open("/proc/status", O_RDWR);
+	    int ret = 0;
+	    if (fp < 0) {
+		printf("Error communicating with Kronos\n");
+		return -1;
+	    }
+	    ret = ioctl(fp, TK_IO_WRITE_RESULTS, result);
+	    close(fp);
+	    return ret;
 	}
 
 	return -1;

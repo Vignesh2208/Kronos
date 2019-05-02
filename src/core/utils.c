@@ -166,9 +166,9 @@ void set_children_time(tracer * tracer_entry,
 
 
 	// do not set for any threads of tracer itself
-	/* set it for all threads */
-	do {
-		if (t->pid != tracer_entry->tracer_task->pid) {
+	if (aTask->pid != tracer_entry->tracer_task->pid) {
+		do {
+			/* set it for all threads */
 			if (t->pid != aTask->pid) {
 				if (increment) {
 					t->virt_start_time += time;
@@ -182,9 +182,8 @@ void set_children_time(tracer * tracer_entry,
 				if (experiment_stopped != RUNNING)
 					t->wakeup_time = 0;
 			}
-
-		}
-	} while_each_thread(me, t);
+		} while_each_thread(me, t);
+	}
 
 	list_for_each(list, &aTask->children) {
 		taskRecurse = list_entry(list, struct task_struct, sibling);

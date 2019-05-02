@@ -8,7 +8,7 @@ build_api:
 	 @gcc -w -shared -o libkronosapi.so ${api_dir}/Kronos_functions.o \
 	 ${api_dir}/utility_functions.o
 	 @mv libkronosapi.so /usr/lib
-	 @chmod 0755 /usr/lib/libkronosapi.so
+	 @chmod 0777 /usr/lib/libkronosapi.so
 
 	 @cp ${api_dir}/Kronos_functions.h /usr/local/include
 	 @cp ${api_dir}/utility_functions.h /usr/local/include
@@ -19,5 +19,5 @@ clean:
 
 	@rm -rf build/
 	@rm -f *.o
-	@rm -f /usr/lib/libtkapi.so > /dev/null
+	@rm -f /usr/lib/libkronosapi.so > /dev/null
 	@rm -f /usr/local/include/Kronos_functions.h > /dev/null

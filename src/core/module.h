@@ -62,6 +62,8 @@ typedef struct sched_queue_element {
 typedef struct tracer_struct {
 	struct task_struct * tracer_task;
 	struct task_struct * spinner_task;
+	struct task_struct * proc_to_control_task;
+	int proc_to_control_pid;
 	int create_spinner;
 	int tracer_id;
 	rwlock_t tracer_lock;

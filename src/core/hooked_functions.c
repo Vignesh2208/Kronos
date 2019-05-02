@@ -351,9 +351,9 @@ asmlinkage long sys_sleep_new(struct timespec __user *rqtp,
 			put_tracer_struct_read(curr_tracer);
 		}
 
-		PDEBUG_V("Sys Sleep: PID: %d, Cpu: %d\n", current->pid, cpu);
+		PDEBUG_I("Sys Sleep: PID: %d, Cpu: %d\n", current->pid, cpu);
 
-		PDEBUG_V("Sys Sleep: PID : %d, Sleep Secs: %llu "
+		PDEBUG_I("Sys Sleep: PID : %d, Sleep Secs: %llu "
 		         "Nano Secs: %llu, New wake up time : %llu\n",
 		         current->pid, tu.tv_sec, tu.tv_nsec, wakeup_time);
 
@@ -384,7 +384,7 @@ skip_sleep:
 			err = now - wakeup_time;
 		else
 			err = wakeup_time - now;
-		PDEBUG_V("Sys Sleep: Resumed Sleep Process Expiry %d. "
+		PDEBUG_I("Sys Sleep: Resumed Sleep Process Expiry %d. "
 		         "Resume time = %llu. Overshoot error = %llu\n",
 		         current->pid, now, err );
 
@@ -546,7 +546,7 @@ asmlinkage int sys_select_new(int k, fd_set __user *inp,
 
 		wakeup_time = now + ((secs_to_sleep * 1000000000) + nsecs_to_sleep);
 		s64 sleep_time = wakeup_time - now;
-		PDEBUG_V("Sys Select: Select Process Waiting %d. "
+		PDEBUG_I("Sys Select: Select Process Waiting %d. "
 		         "Timeout sec %llu, nsec %llu, wakeup_time = %llu\n",
 		         current->pid, secs_to_sleep, nsecs_to_sleep, wakeup_time);
 
@@ -604,14 +604,14 @@ next_select_step:
 		if (wakeup_time >  now) {
 			diff = wakeup_time - now;
 			if (diff != sleep_time)
-				PDEBUG_V("Sys Select: Resumed Select Process Early %d. "
+				PDEBUG_I("Sys Select: Resumed Select Process Early %d. "
 				         "Resume time = %llu. Overshoot error = %llu, "
 				         "N_wakeups = %d\n",
 				         current->pid, now, diff, n_wakeups);
 
 		} else {
 			diff = now - wakeup_time;
-			PDEBUG_V("Sys Select: Resumed Select Process Expiry %d. "
+			PDEBUG_I("Sys Select: Resumed Select Process Expiry %d. "
 			         "Resume time = %llu. Undershoot error = %llu\n",
 			         current->pid, now, diff );
 		}
@@ -755,7 +755,7 @@ asmlinkage int sys_poll_new(struct pollfd __user * ufds,
 		now = get_dilated_time(current);
 		s64 wakeup_time;
 		wakeup_time = now + ((secs_to_sleep * 1000000000) + nsecs_to_sleep);
-		PDEBUG_E("Sys Poll: Poll Process Waiting %d. "
+		PDEBUG_I("Sys Poll: Poll Process Waiting %d. "
 		         "Timeout sec %llu, nsec %llu\n", current->pid,
 		         secs_to_sleep, nsecs_to_sleep);
 
@@ -830,13 +830,13 @@ next_poll_step:
 		s64 diff = 0;
 		if (wakeup_time > now) {
 			diff = wakeup_time - now;
-			PDEBUG_V("Sys Poll: Resumed Poll Process Early %d. "
+			PDEBUG_I("Sys Poll: Resumed Poll Process Early %d. "
 			         "Resume time = %llu. Difference = %llu\n",
 			         current->pid, now, diff );
 
 		} else {
 			diff = now - wakeup_time;
-			PDEBUG_V("Sys Poll: Resumed Poll Process Expiry %d. "
+			PDEBUG_I("Sys Poll: Resumed Poll Process Expiry %d. "
 			         "Resume time = %llu. Difference = %llu\n",
 			         current->pid, now, diff );
 

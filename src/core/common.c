@@ -329,12 +329,11 @@ void add_process_to_schedule_queue_recurse(tracer * tracer_entry,
 	// they are not dilated.
 	me = tsk;
 	t = me;
-
-	do {
-
-		if (tracer_entry->tracer_task->pid != t->pid)
+	if (tracer_entry->tracer_task->pid != tsk->pid) {
+		do {
 			add_to_tracer_schedule_queue(tracer_entry, t);
-	} while_each_thread(me, t);
+		} while_each_thread(me, t);
+	}
 
 	list_for_each(list, &tsk->children) {
 		taskRecurse = list_entry(list, struct task_struct, sibling);
@@ -372,8 +371,9 @@ int register_tracer_process(char * write_buffer) {
 	int i, nxt_idx;
 	int best_cpu = 0;
 	int should_create_spinner = 0;
-	int spinner_pid = 0;
+	int spinner_pid = 0, process_to_control_pid = 0;
 	struct task_struct * spinner_task = NULL;
+	struct task_struct * process_to_control = NULL;
 	dilation_factor = atoi(write_buffer);
 	nxt_idx = get_next_value(write_buffer);
 	tracer_freeze_quantum = atoi(write_buffer + nxt_idx);
@@ -390,7 +390,7 @@ int register_tracer_process(char * write_buffer) {
 	if (dilation_factor <= 0)
 		dilation_factor = REF_CPU_SPEED;	//no dilation
 
-	if (should_create_spinner > 0) {
+	if (should_create_spinner == 1) {
 		nxt_idx = nxt_idx + get_next_value(write_buffer + nxt_idx);
 		spinner_pid = atoi(write_buffer + nxt_idx);
 		should_create_spinner = 1;
@@ -408,8 +408,26 @@ int register_tracer_process(char * write_buffer) {
 			return FAIL;
 		}
 
-	} else
+	} else if(should_create_spinner == 0) {
 		should_create_spinner = 0;
+	} else {
+		should_create_spinner = 0;
+		nxt_idx = nxt_idx + get_next_value(write_buffer + nxt_idx);
+		process_to_control_pid = atoi(write_buffer + nxt_idx);
+		if (process_to_control_pid <= 0) {
+			PDEBUG_E("proccess_to_control_pid must be greater than zero. "
+			         "Received value: %d\n", process_to_control_pid);
+			return FAIL;
+		}
+
+		process_to_control = find_task_by_pid(process_to_control_pid);
+
+		if (!process_to_control) {
+			PDEBUG_E("proccess_to_control_pid task not found. "
+			         "Received pid: %d\n", process_to_control_pid);
+			return FAIL;
+		}
+	}
 
 
 	PDEBUG_I("Register Tracer: Starting ...\n");
@@ -444,6 +462,7 @@ int register_tracer_process(char * write_buffer) {
 	                REF_CPU_SPEED, &rem);
 	new_tracer->quantum_n_insns += rem;
 	new_tracer->create_spinner = should_create_spinner;
+	new_tracer->proc_to_control_task = NULL;
 
 	hmap_put_abs(&get_tracer_by_id, tracer_id, new_tracer);
 	hmap_put_abs(&get_tracer_by_pid, current->pid, new_tracer);
@@ -451,13 +470,25 @@ int register_tracer_process(char * write_buffer) {
 
 	mutex_unlock(&exp_lock);
 
-	PDEBUG_I("Register Tracer: Pid: %d, ID: %d, dilation factor: %d, "
-	         "freeze_quantum: %d, assigned cpu: %d, quantum_n_insns: %d. "
-	         "Spinner pid = %d\n", current->pid, new_tracer->tracer_id,
-	         new_tracer->dilation_factor, new_tracer->freeze_quantum,
-	         new_tracer->cpu_assignment, new_tracer->quantum_n_insns,
-	         spinner_pid);
+	if (should_create_spinner) {
+		PDEBUG_I("Register Tracer: Pid: %d, ID: %d, dilation factor: %d, "
+		 "freeze_quantum: %d, assigned cpu: %d, quantum_n_insns: %d. "
+		 "Spinner pid = %d\n", current->pid, new_tracer->tracer_id,
+		 new_tracer->dilation_factor, new_tracer->freeze_quantum,
+		 new_tracer->cpu_assignment, new_tracer->quantum_n_insns,
+		 spinner_pid);
 
+	} 
+
+	if (process_to_control != NULL) {
+		PDEBUG_I("Register Tracer: Pid: %d, ID: %d, dilation factor: %d, "
+		 "freeze_quantum: %d, assigned cpu: %d, quantum_n_insns: %d. "
+		 "Process to control pid = %d\n", current->pid, new_tracer->tracer_id,
+		 new_tracer->dilation_factor, new_tracer->freeze_quantum,
+		 new_tracer->cpu_assignment, new_tracer->quantum_n_insns,
+		 process_to_control_pid);
+
+	}
 
 	bitmap_zero((&current->cpus_allowed)->bits, 8);
 
@@ -476,6 +507,15 @@ int register_tracer_process(char * write_buffer) {
 	}
 
 	refresh_tracer_schedule_queue(new_tracer);
+
+	if (process_to_control != NULL) {
+		add_to_tracer_schedule_queue(new_tracer, process_to_control);
+		new_tracer->proc_to_control_pid = process_to_control_pid;
+		new_tracer->proc_to_control_task = process_to_control;
+	} else {
+		new_tracer->proc_to_control_pid = -1;
+	}
+
 	put_tracer_struct_write(new_tracer);
 	return new_tracer->cpu_assignment;	//return the allotted cpu back to the tracer.
 
@@ -584,6 +624,15 @@ void update_task_virtual_time(tracer * tracer_entry,
 			tracer_entry->spinner_task->freeze_time =
 			    tracer_entry->round_start_virt_time + dilated_run_time;
 		}
+
+		if (tracer_entry->proc_to_control_task != NULL 
+			&& tracer_entry->proc_to_control_pid > 0 
+			&& tsk->pid != tracer_entry->proc_to_control_pid) {
+
+			if (find_task_by_pid(tracer_entry->proc_to_control_pid) != NULL)
+				tracer_entry->proc_to_control_task->freeze_time =
+				    tracer_entry->round_start_virt_time + dilated_run_time;
+		}
 	}
 
 }
@@ -610,6 +659,12 @@ void update_all_children_virtual_time(tracer * tracer_entry) {
 		if (tracer_entry->spinner_task)
 			tracer_entry->spinner_task->freeze_time =
 			    tracer_entry->round_start_virt_time  + dilated_run_time;
+
+		if (tracer_entry->proc_to_control_task != NULL) {
+			if (find_task_by_pid(tracer_entry->proc_to_control_pid) != NULL)
+				tracer_entry->proc_to_control_task->freeze_time =
+				    tracer_entry->round_start_virt_time + dilated_run_time;
+		}
 
 		curr_virtual_time =
 		    tracer_entry->round_start_virt_time  + dilated_run_time;

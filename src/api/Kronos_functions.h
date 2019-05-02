@@ -36,6 +36,8 @@ typedef unsigned long u32;
 
 int addToExp(float relative_cpu_speed, u32 n_round_instructions);
 int addToExp_sp(float relative_cpu_speed, u32 n_round_instructions, pid_t pid);
+int addToExp_child(float relative_cpu_speed, u32 n_round_instructions,
+                pid_t pid);
 int synchronizeAndFreeze(int n_expected_tracers);
 int update_tracer_params(int tracer_pid, float relative_cpu_speed,
                          u32 n_round_instructions);

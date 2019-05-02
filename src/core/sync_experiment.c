@@ -457,6 +457,15 @@ int sync_and_freeze(char * write_buffer) {
 				curr_tracer->spinner_task->wakeup_time = 0;
 
 			}
+
+			if (curr_tracer->proc_to_control_task != NULL) {
+				curr_tracer->proc_to_control_task->virt_start_time = now;
+				curr_tracer->proc_to_control_task->freeze_time = now;
+				curr_tracer->proc_to_control_task->past_physical_time = 0;
+				curr_tracer->proc_to_control_task->past_virtual_time = 0;
+				curr_tracer->proc_to_control_task->wakeup_time = 0;
+
+			}
 			curr_tracer->tracer_task->virt_start_time = 0;
 			curr_tracer->tracer_task->freeze_time = now;
 			curr_tracer->tracer_task->past_physical_time = 0;
@@ -966,6 +975,25 @@ void clean_up_all_irrelevant_processes(tracer * curr_tracer) {
 		PDEBUG_V("Clean up irrelevant processes: Got head.\n");
 		if (!curr_elem)
 			return;
+
+		if (curr_elem->pid == curr_tracer->proc_to_control_pid) {
+			if (find_task_by_pid(curr_elem->pid) != NULL) {
+				n_checked_processes ++;
+				continue;
+			} else {
+				PDEBUG_V("Clean up irrelevant processes: "
+				         "Curr elem: %d. Task is dead\n", curr_elem->pid);
+				put_tracer_struct_read(curr_tracer);
+				get_tracer_struct_write(curr_tracer);
+				pop_schedule_list(curr_tracer);
+				put_tracer_struct_write(curr_tracer);
+				get_tracer_struct_read(curr_tracer);
+				n_checked_processes ++;
+				curr_tracer->proc_to_control_pid = -1;
+				curr_tracer->proc_to_control_task = NULL;
+				continue;
+			}
+		}
 
 		PDEBUG_V("Clean up irrelevant processes: "
 		         "Curr elem: %d. n_scheduled_processes: %d\n",
