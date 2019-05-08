@@ -539,7 +539,7 @@ int main(int argc, char * argv[]) {
 	struct libperf_data * pd1 = libperf_initialize((int)cmd_pid[0], 0);
 	struct libperf_data * pd2 = libperf_initialize((int)cmd_pid[1], 0);
 
-	while (n_cmds < 10000) {
+	while (n_cmds < 1000) {
 
 		//n_insns = rand() % n_max_insns;
 		n_insns = 1000000;

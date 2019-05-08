@@ -204,9 +204,9 @@ int main(int argc, char * argv[]) {
 
   usleep(1000000);
 
-  printf("Progress Experiment for 2000 Rounds !\n");
+  printf("Progress Experiment for 200 Rounds !\n");
   fflush(stdout);
-  for (i = 0; i < 2000; i++) {
+  for (i = 0; i < 200; i++) {
     printf("%d,", i);
     progress_n_rounds(1);
   }
