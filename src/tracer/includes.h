@@ -94,6 +94,7 @@ typedef struct tracee_entry_struct {
 	int n_sleeps;
 	u32 vrun_time;
 	struct tracee_entry_struct * vfork_parent;
+	struct libperf_data * pd;
 
 } tracee_entry;
 
@@ -102,7 +103,7 @@ void printLog(const char *fmt, ...);
 
 
 #if defined DEBUG
-#define LOG(...)    //printLog(__VA_ARGS__)
+#define LOG(...)    printLog(__VA_ARGS__)
 #else
 #define LOG(...)	//printLog(__VA_ARGS__)
 #define LOG_ESP(...)	//printLog(__VA_ARGS__)

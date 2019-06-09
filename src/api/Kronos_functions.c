@@ -39,7 +39,7 @@ int addToExp_sp(float relative_cpu_speed, u32 n_round_instructions,
 
 	int rel_cpu_speed = (int)(1000.0 * relative_cpu_speed);
 
-	if (is_root() && isModuleLoaded()) {
+	if (isModuleLoaded()) {
 		char command[100];
 		flush_buffer(command, 100);
 		sprintf(command, "%c,%d,%d,1,%d", REGISTER_TRACER, rel_cpu_speed,
@@ -57,7 +57,7 @@ int addToExp_child(float relative_cpu_speed, u32 n_round_instructions,
 
 	int rel_cpu_speed = (int)(1000.0 * relative_cpu_speed);
 
-	if (is_root() && isModuleLoaded()) {
+	if (isModuleLoaded()) {
 		char command[100];
 		flush_buffer(command, 100);
 		sprintf(command, "%c,%d,%d,2,%d", REGISTER_TRACER, rel_cpu_speed,
@@ -77,7 +77,7 @@ int addToExp(float relative_cpu_speed, u32 n_round_instructions) {
 
 	int rel_cpu_speed = (int)(1000.0 * relative_cpu_speed);
 
-	if (is_root() && isModuleLoaded()) {
+	if (isModuleLoaded()) {
 		char command[100];
 		flush_buffer(command, 100);
 		sprintf(command, "%c,%d,%d,0,", REGISTER_TRACER, rel_cpu_speed,
@@ -91,7 +91,7 @@ int addToExp(float relative_cpu_speed, u32 n_round_instructions) {
 Starts a CBE Experiment
 */
 int startExp() {
-	if (is_root() && isModuleLoaded()) {
+	if (isModuleLoaded()) {
 		char command[100];
 		flush_buffer(command, 100);
 		sprintf(command, "%c,", START_EXP);
@@ -102,7 +102,7 @@ int startExp() {
 
 int initializeExp(int exp_type) {
 
-	if (is_root() && isModuleLoaded()) {
+	if (isModuleLoaded()) {
 		char command[100];
 		flush_buffer(command, 100);
 		sprintf(command, "%c,%d", INITIALIZE_EXP, exp_type);
@@ -120,7 +120,7 @@ int synchronizeAndFreeze(int n_expected_tracers) {
 
 	if (n_expected_tracers <= 0)
 		return -1;
-	if (is_root() && isModuleLoaded()) {
+	if (isModuleLoaded()) {
 		char command[100];
 		flush_buffer(command, 100);
 		sprintf(command, "%c,%d,", SYNC_AND_FREEZE, n_expected_tracers);
@@ -135,7 +135,7 @@ Stop a running experiment (CBE or CS) **Do not call stopExp if you are waiting
 for a s3fProgress to return!!**
 */
 int stopExp() {
-	if (is_root() && isModuleLoaded()) {
+	if (isModuleLoaded()) {
 		char command[100];
 		flush_buffer(command, 100);
 		sprintf(command, "%c,", STOP_EXP);
@@ -154,7 +154,7 @@ int update_tracer_params(int tracer_pid, float relative_cpu_speed,
 	int rel_cpu_speed = (int)(1000.0 * relative_cpu_speed);
 
 
-	if (is_root() && isModuleLoaded()) {
+	if (isModuleLoaded()) {
 		char command[100];
 		flush_buffer(command, 100);
 		sprintf(command, "%c,%d,%d,%d,", UPDATE_TRACER_PARAMS, tracer_pid,
@@ -169,7 +169,7 @@ int set_netdevice_owner(int tracer_pid, char * intf_name) {
 		return -1;
 
 
-	if (is_root() && isModuleLoaded()) {
+	if (isModuleLoaded()) {
 		char command[100];
 		flush_buffer(command, 100);
 		sprintf(command, "%c,%d,%s", SET_NETDEVICE_OWNER, tracer_pid,
@@ -186,7 +186,7 @@ int gettimepid(int pid) {
 		return -1;
 
 
-	if (is_root() && isModuleLoaded()) {
+	if (isModuleLoaded()) {
 		char command[100];
 		flush_buffer(command, 100);
 		sprintf(command, "%c,%d,", GETTIMEPID, pid);
@@ -202,7 +202,7 @@ int progress_n_rounds(int n_rounds) {
 	if (n_rounds <= 0)
 		return -1;
 
-	if (is_root() && isModuleLoaded()) {
+	if (isModuleLoaded()) {
 		char command[100];
 		flush_buffer(command, 100);
 		sprintf(command, "%c,%d,", PROGRESS_N_ROUNDS, n_rounds);
@@ -212,7 +212,7 @@ int progress_n_rounds(int n_rounds) {
 	return -1;
 }
 int progress() {
-	if (is_root() && isModuleLoaded()) {
+	if (isModuleLoaded()) {
 		char command[100];
 		flush_buffer(command, 100);
 		sprintf(command, "%c,", PROGRESS);
@@ -222,7 +222,7 @@ int progress() {
 }
 
 int fire_timers() {
-	if (is_root() && isModuleLoaded()) {
+	if (isModuleLoaded()) {
 		char command[100];
 		flush_buffer(command, 100);
 		sprintf(command, "%c,", RUN_DILATED_HRTIMERS);
@@ -237,7 +237,7 @@ int write_tracer_results(char * result) {
 		return -1;
 
 
-	if (is_root() && isModuleLoaded()) {
+	if (isModuleLoaded()) {
 	    int fp = open("/proc/status", O_RDWR);
 	    int ret = 0;
 	    if (fp < 0) {

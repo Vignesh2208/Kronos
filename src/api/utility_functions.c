@@ -56,12 +56,11 @@ int gettid() {
 }
 
 /*
-Checks if it is being ran as root or not. All of my code requires root.
+Checks if it is being ran as root or not.
 */
 int is_root() {
     if (geteuid() == 0)
         return 1;
-    printf("Needs to be ran as root\n");
     return 0;
 
 }
