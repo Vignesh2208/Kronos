@@ -1,0 +1,3 @@
+/home/moses/Kronos/tests/integration_test/cmd
+/home/moses/Kronos/tests/producer_consumer_test/cmd
+/home/moses/Kronos/tests/timerfd_test/cmd
