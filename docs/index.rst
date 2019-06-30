@@ -12,6 +12,7 @@ Kronos: A high precision virtual time system for linux
    about
    installation
    user_guide
+   tracked_bugs
    contact   
 
 
