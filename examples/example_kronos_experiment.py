@@ -41,8 +41,8 @@ def main():
                         type=str, required=True)
 
     parser.add_argument('--run_in_one_tracer', dest='run_in_one_tracer',
-            help='True/False runs all commands in one tracer if True',type=bool,
-            default=False)
+            help='True/False runs all commands in one tracer if True',
+            default="False")
 
     parser.add_argument('--rel_cpu_speed', dest='rel_cpu_speed',
                         help='relative cpu speed', type=float, \
@@ -62,7 +62,7 @@ def main():
     tracer_pids = []
     cmds_to_run = []
 
-    if args.run_in_one_tracer == True:
+    if args.run_in_one_tracer == "True":
         fd = os.open( "/tmp/tracer_log.txt", os.O_RDWR | os.O_CREAT )
         log_fds.append(fd)
         num_tracers = 1
@@ -85,7 +85,7 @@ def main():
 
     
     print "Starting all commands to run !"
-    if args.run_in_one_tracer == True:
+    if args.run_in_one_tracer == "True":
         start_all_cmds_in_one_tracer(args.cmds_to_run_file, args.rel_cpu_speed,\
             args.num_insns_per_round, log_fds[0])
     else:
