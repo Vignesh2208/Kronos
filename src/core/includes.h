@@ -119,7 +119,7 @@
 #ifdef KRONOS_DEBUG_INFO
 #define PDEBUG_I(fmt, args...) printk(KERN_INFO "Kronos: <INFO> " fmt, ## args)
 #else
-#define PDEBUG_I(fmt,args...)	//printk(KERN_INFO "Kronos: <INFO> " fmt, ## args)
+#define PDEBUG_I(fmt,args...)	printk(KERN_INFO "Kronos: <INFO> " fmt, ## args)
 #endif
 
 

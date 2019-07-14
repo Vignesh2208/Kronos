@@ -70,6 +70,7 @@ tracer * alloc_tracer_entry(uint32_t tracer_id, u32 dilation_factor) {
 	init_waitqueue_head(&new_tracer->w_queue);
 	rwlock_init(&new_tracer->tracer_lock);
 	atomic_set(&new_tracer->w_queue_control, 1);
+	new_tracer->proc_to_control_pid = -1;
 
 	new_tracer->last_run = NULL;
 

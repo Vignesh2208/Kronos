@@ -421,7 +421,7 @@ int is_tracee_blocked(tracee_entry * curr_tracee) {
  */
 int run_commanded_process(hashmap * tracees, llist * tracee_list,
                           llist * run_queue, pid_t pid,
-                          u32 n_insns, int cpu_assigned, float rel_cpu_speed) {
+                          u32 n_insns_orig, int cpu_assigned, float rel_cpu_speed) {
 
 
 	int i = 0;
@@ -432,6 +432,7 @@ int run_commanded_process(hashmap * tracees, llist * tracee_list,
 	tracee_entry * curr_tracee;
 	unsigned long buffer_window_size = 500;
 	u32 status = 0;
+        u32 n_insns;
 
 	u32 flags = 0;
 
@@ -442,7 +443,7 @@ int run_commanded_process(hashmap * tracees, llist * tracee_list,
 
 	LOG("Running Child: %d Quanta: %d instructions\n", pid, n_insns);
 
-	n_insns = n_insns * (int) rel_cpu_speed;
+	n_insns = n_insns_orig * (int) rel_cpu_speed;
 
 	if (n_insns <= buffer_window_size)
 		singlestepmode = 1;
@@ -492,7 +493,7 @@ int run_commanded_process(hashmap * tracees, llist * tracee_list,
 			ret = ptrace(PTRACE_SET_REM_MULTISTEP, pid, 0, (u32*)&n_insns);
 
 			LOG("PTRACE RESUMING process. "
-			        "ret = %d, error_code = %d. pid = %d\n", ret, errno, pid);
+			        "ret = %d, error_code = %d. pid = %d, n_insns = %d\n", ret, errno, pid, n_insns);
 
 			ret = ptrace(PTRACE_CONT, pid, 0, 0);
 
@@ -500,7 +501,7 @@ int run_commanded_process(hashmap * tracees, llist * tracee_list,
 		}
 
 		if (ret < 0 || errno == ESRCH) {
-			usleep(10000);
+			usleep(100000);
 			if (kill(pid, 0) == -1 && errno == ESRCH) {
 				LOG("PTRACE_RESUME ERROR. Child process is Dead. Breaking\n");
 				if (curr_tracee->vfork_parent != NULL) {
@@ -524,7 +525,10 @@ int run_commanded_process(hashmap * tracees, llist * tracee_list,
 				errno = 0;
 				return FAIL;
 			}
+			LOG("PTRACE CONT Error: %d\n", errno);
 			errno = 0;
+			n_insns = n_insns_orig * (int) rel_cpu_speed;
+			//assert(0);
 			continue;
 		}
 

@@ -34,6 +34,7 @@
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <inttypes.h>
 #include <time.h>
 #include <unistd.h>
 #include <linux/perf_event.h>
@@ -249,8 +250,13 @@ int libperf_ioctlrefresh(struct libperf_data * pd, int counter,
 
   if (counter == LIBPERF_COUNT_HW_INSTRUCTIONS) {
   errno = 0;
+
   ret = ioctl(pd->fds[counter], PERF_EVENT_IOC_PERIOD, &overflow_val);
   //printf("IOC PERIOD  return = %d, errno = %d\n", ret, errno);
+  if (ret < 0) {
+	printf("Overflow_val = %" PRIu64 ", errno = %d, ret = %d\n", overflow_val, errno, ret);
+        fflush(stdout); 
+  }
   assert(ret >= 0);
   
 

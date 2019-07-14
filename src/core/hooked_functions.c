@@ -367,7 +367,7 @@ asmlinkage long sys_sleep_new(struct timespec __user *rqtp,
 			if (cpu >= 0)
 				syscall_running[cpu] = 0;
 
-			PDEBUG_V("Sys Sleep: Wokeup. PID: %d, time: %llu\n",
+			PDEBUG_I("Sys Sleep: Wokeup. PID: %d, time: %llu\n",
 			         current->pid, now);
 			if (atomic_read(&experiment_stopping) == 1
 			        || experiment_stopped != RUNNING) {
@@ -384,7 +384,7 @@ skip_sleep:
 			err = now - wakeup_time;
 		else
 			err = wakeup_time - now;
-		PDEBUG_I("Sys Sleep: Resumed Sleep Process Expiry %d. "
+		PDEBUG_I("Sys Sleep: Exiting Sleep Process Expiry %d. "
 		         "Resume time = %llu. Overshoot error = %llu\n",
 		         current->pid, now, err );
 
@@ -456,7 +456,7 @@ asmlinkage int sys_select_new(int k, fd_set __user *inp,
 			nfds = max_fds;
 		}
 
-		PDEBUG_V("Sys Select: Select Process Entered: %d\n", current->pid);
+		PDEBUG_I("Sys Select: Select Process Entered: %d\n", current->pid);
 		atomic_inc(&n_active_syscalls);
 		is_dialated = 1;
 		if (copy_from_user(&tv, tvp, sizeof(tv)))
@@ -556,8 +556,8 @@ asmlinkage int sys_select_new(int k, fd_set __user *inp,
 		        || atomic_read(&experiment_stopping) == 1
 		        || experiment_stopped != RUNNING) {
 			select_helper->ret = ret;
-			PDEBUG_V("Sys Select: "
-			         "Select Wokeup Exiting: %d, time: %llu\n",
+			PDEBUG_I("Sys Select: "
+			         "Found data already! Exiting: %d, time: %llu\n",
 			         current->pid, now);
 			goto next_select_step;
 		} else if (time_to_sleep <= curr_tracer->freeze_quantum) {
@@ -605,14 +605,14 @@ next_select_step:
 			diff = wakeup_time - now;
 			if (diff != sleep_time)
 				PDEBUG_I("Sys Select: Resumed Select Process Early %d. "
-				         "Resume time = %llu. Overshoot error = %llu, "
+				         "Resume time = %llu. Undershoot error = %llu, "
 				         "N_wakeups = %d\n",
 				         current->pid, now, diff, n_wakeups);
 
 		} else {
 			diff = now - wakeup_time;
 			PDEBUG_I("Sys Select: Resumed Select Process Expiry %d. "
-			         "Resume time = %llu. Undershoot error = %llu\n",
+			         "Resume time = %llu. Overshoot error = %llu\n",
 			         current->pid, now, diff );
 		}
 
@@ -630,7 +630,7 @@ out:
 			kfree(select_helper->bits);
 
 out_nofds:
-		PDEBUG_V("Sys Select: Select finished PID %d\n", current->pid);
+		PDEBUG_I("Sys Select: Select finished PID %d\n", current->pid);
 		atomic_dec(&n_active_syscalls);
 		wake_up_interruptible(&expstop_call_proc_wqueue);
 		return ret;
@@ -679,7 +679,7 @@ asmlinkage int sys_poll_new(struct pollfd __user * ufds,
 	        && current->virt_start_time != NOTSET
 	        && timeout_msecs > 0 && atomic_read(&experiment_stopping) == 0) {
 
-		PDEBUG_V("Sys Poll: Poll Entered %d.\n", current->pid);
+		PDEBUG_I("Sys Poll: Poll Entered %d.\n", current->pid);
 		atomic_inc(&n_active_syscalls);
 		is_dialated = 1;
 
@@ -863,7 +863,7 @@ out_fds:
 		}
 		kfree(head);
 		kfree(poll_helper->table);
-		PDEBUG_V("Sys Poll: Poll Process Finished %d\n", current->pid);
+		PDEBUG_I("Sys Poll: Poll Process Finished %d\n", current->pid);
 		atomic_dec(&n_active_syscalls);
 
 		wake_up_interruptible(&expstop_call_proc_wqueue);
