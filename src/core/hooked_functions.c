@@ -1,4 +1,5 @@
 #include "module.h"
+#include <linux/ptrace.h>
 
 
 unsigned long **aquire_sys_call_table(void);
@@ -631,6 +632,24 @@ out:
 
 out_nofds:
 		PDEBUG_I("Sys Select: Select finished PID %d\n", current->pid);
+		if (test_bit(PTRACE_PERF_FINISH_FLAG, &current->ptrace_mflags) && current->ptrace_msteps) {
+			PDEBUG_I("Sys Select: PTRACE_PERF_FINISH_FLAG set for: %d\n", current->pid);
+		}
+
+		if (test_bit(PTRACE_BREAK_WAITPID_FLAG, &current->ptrace_mflags)) {
+			PDEBUG_I("Sys Select: PTRACE_BREAK_WAITPID_FLAG set for: %d\n", current->pid);
+		}
+
+		if (test_bit(PTRACE_ENTER_SYSCALL_FLAG, &current->ptrace_mflags)) {
+			PDEBUG_I("Sys Select: PTRACE_ENTER_SYSCALL_FLAG set for: %d\n", current->pid);
+		} 
+
+		if (test_bit(PTRACE_ENTER_FORK_FLAG, &current->ptrace_mflags)) {
+			PDEBUG_I("Sys Select: PTRACE_ENTER_SYSCALL_FLAG set for: %d\n", current->pid);
+		}
+
+		PDEBUG_I("Sys Select: Msteps: %d, PID: %d\n", current->ptrace_msteps, current->pid);
+
 		atomic_dec(&n_active_syscalls);
 		wake_up_interruptible(&expstop_call_proc_wqueue);
 		return ret;

@@ -881,8 +881,11 @@ read lock still acquired.
 void resume_all_syscall_blocked_processes(tracer * curr_tracer,
         int ignore_sleep) {
 
-	if (curr_tracer)
+	if (curr_tracer) {
+		PDEBUG_I("############# Resume all Syscalls: Tracer: %d\n", curr_tracer->tracer_task->pid); 
 		resume_all(curr_tracer, curr_tracer->tracer_task, ignore_sleep);
+
+	}
 
 }
 

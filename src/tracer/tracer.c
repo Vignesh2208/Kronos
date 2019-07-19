@@ -375,6 +375,25 @@ int is_tracee_blocked(tracee_entry * curr_tracee) {
 		ret = ptrace(PTRACE_GET_MSTEP_FLAGS,
 		             pid, 0, (u32*)&flags);
 
+		if (flags == 0) {
+			LOG("Waiting for unblocked tracee: %d to reach stop state\n", curr_tracee->pid); 
+			errno = 0;
+			do {
+				ret = waitpid(pid, &status,
+				              WTRACE_DESCENDENTS | __WALL);
+			} while (ret == (pid_t) - 1 && errno == EINTR);
+
+			if ((pid_t)ret != pid) {
+				LOG("Error during wait\n");
+				return TID_PROCESS_BLOCKED;
+			}
+			LOG("Tracee: %d unblocked\n", curr_tracee->pid);
+			curr_tracee->syscall_blocked = 0;
+			return FAIL;
+		} else{
+			return TID_PROCESS_BLOCKED;
+		}
+		/*
 		if (test_bit(flags, PTRACE_ENTER_SYSCALL_FLAG) &&
 		        !test_bit(flags, PTRACE_BREAK_WAITPID_FLAG)) {
 			errno = 0;
@@ -396,7 +415,7 @@ int is_tracee_blocked(tracee_entry * curr_tracee) {
 
 		} else {
 			return TID_PROCESS_BLOCKED;
-		}
+		}*/
 	}
 	if (curr_tracee->vfork_stop) {
 		return TID_PROCESS_BLOCKED;
@@ -492,10 +511,12 @@ int run_commanded_process(hashmap * tracees, llist * tracee_list,
 			libperf_enablecounter(curr_tracee->pd, LIBPERF_COUNT_HW_INSTRUCTIONS);
 			ret = ptrace(PTRACE_SET_REM_MULTISTEP, pid, 0, (u32*)&n_insns);
 
+			
+			ret = ptrace(PTRACE_CONT, pid, 0, 0);
+
 			LOG("PTRACE RESUMING process. "
 			        "ret = %d, error_code = %d. pid = %d, n_insns = %d\n", ret, errno, pid, n_insns);
 
-			ret = ptrace(PTRACE_CONT, pid, 0, 0);
 
 
 		}
@@ -806,6 +827,7 @@ void run_processes_in_round(hashmap * tracees,
 
 			}
 			usleep((n_insns_to_run * rel_cpu_speed) / 1000);
+			LOG("No Runnable tracees. Called resume blocked syscalls !");
 			ioctl(fp, TK_IO_RESUME_BLOCKED_SYSCALLS, (unsigned long)(n_insns_to_run));
 			if (n_insns_run < n_round_insns)
 				continue;
@@ -1233,7 +1255,7 @@ int main(int argc, char * argv[]) {
 		i = 0;
 		write_results(fp, nxt_cmd);
 		print_tracee_list(&tracee_list);
-		LOG_ESP("TracerID: %d, ##########################################\n",
+		LOG("TracerID: %d, ##########################################\n",
 		        tracer_id);
 		while (tail_ptr != -1) {
 			tail_ptr = get_next_command_tuple(nxt_cmd, tail_ptr, &new_cmd_pid,

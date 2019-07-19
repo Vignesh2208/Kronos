@@ -1101,15 +1101,14 @@ SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
 
 	if (request == PTRACE_GET_REM_MULTISTEP) {
 		unsigned long rem_steps = child->ptrace_msteps;
-		//trace_printk("Ptrace: Pid: %d, number of ints: %lu\n",  child->pid, child->n_ints);
-		//child->n_ints = 0;
+		
 		if (copy_to_user(datalp, &rem_steps, sizeof(unsigned long)))
 			return -EFAULT;
 		return 0;
 	} else if (request == PTRACE_SET_REM_MULTISTEP) {
 		if (__get_user(n_steps, datalp))
 			return -EFAULT;
-		//trace_printk("Ptrace: Pid: %d, set rem multistep: ptrace_msteps: %lu\n",  child->pid, child->ptrace_msteps);
+
 		child->ptrace_msteps = n_steps;
 		child->n_ints = 0;
 		trace_printk("Ptrace: Pid: %d, set rem multistep: ptrace_msteps: %lu\n",  child->pid, child->ptrace_msteps);

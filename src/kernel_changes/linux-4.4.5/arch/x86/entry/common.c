@@ -311,6 +311,7 @@ static void exit_to_usermode_loop(struct pt_regs *regs, u32 cached_flags) {
 __visible inline void prepare_exit_to_usermode(struct pt_regs *regs) {
 	u32 cached_flags;
 
+
 	if (IS_ENABLED(CONFIG_PROVE_LOCKING) && WARN_ON(!irqs_disabled()))
 		local_irq_disable();
 
@@ -321,26 +322,17 @@ __visible inline void prepare_exit_to_usermode(struct pt_regs *regs) {
 
 	BUG_ON(regs != task_pt_regs(current));
 
-	if (test_and_clear_bit(PTRACE_PERF_FINISH_FLAG, &current->ptrace_mflags) && current->ptrace_msteps) {
-		set_tsk_thread_flag(current, TIF_SINGLESTEP);
-		regs->flags |= X86_EFLAGS_TF;
-		set_tsk_thread_flag(current, TIF_FORCED_TF);
-	}
-	if (test_bit(PTRACE_ENTER_SYSCALL_FLAG, &current->ptrace_mflags)) {
-		current->ptrace_mflags = 0;
-		//trace_printk("Clearing ENTER SYSCALL FLAG bit for Pid: %d, msteps = %lu. Syscall no: %lu\n", current->pid, current->ptrace_msteps, regs->orig_ax);
-
-	} else if (test_bit(PTRACE_ENTER_FORK_FLAG, &current->ptrace_mflags)) {
-		//trace_printk("Clearing ENTER FORK FLAG bit for Pid: %d.\n", current->pid);
-		current->ptrace_mflags = 0;
-	} else {
-		current->ptrace_mflags = 0;
-	}
-
 	if (unlikely(cached_flags & EXIT_TO_USERMODE_LOOP_FLAGS))
 		exit_to_usermode_loop(regs, cached_flags);
 
-	BUG_ON(current->ptrace_mflags != 0);
+	if (test_and_clear_bit(PTRACE_PERF_FINISH_FLAG, &current->ptrace_mflags) && current->ptrace_msteps) {
+		
+		user_enable_single_step(current);
+	}
+
+	current->ptrace_mflags = 0;
+
+
 
 	user_enter();
 }
@@ -369,7 +361,7 @@ static void syscall_slow_exit_work(struct pt_regs *regs, u32 cached_flags) {
 	           (cached_flags & (_TIF_SINGLESTEP | _TIF_SYSCALL_EMU))
 	           == _TIF_SINGLESTEP);
 
-	if (!step && (cached_flags & _TIF_SYSCALL_TRACE)) {
+	if (step && (cached_flags & _TIF_SYSCALL_TRACE) && current->ptrace_msteps == 0) {
 		tracehook_report_syscall_exit(regs, step);
 	} else if (step && current->ptrace_msteps) {
 		set_bit(PTRACE_PERF_FINISH_FLAG, &current->ptrace_mflags);

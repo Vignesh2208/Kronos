@@ -595,7 +595,7 @@ dotraplinkage void do_debug(struct pt_regs *regs, long error_code) {
 		goto exit;
 	}*/
 
-	//trace_printk("Do_DEBUG: Pid: %d, number of rem steps: %lu, ptrace flag = %lu\n",  tsk->pid, tsk->ptrace_msteps, tsk->ptrace_mflags);
+
 
 	get_debugreg(dr6, 6);
 
