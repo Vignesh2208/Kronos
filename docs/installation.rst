@@ -104,3 +104,11 @@ Inorder to use Kronos, it must be loaded after each VM/machine reboot. It can be
 
   cd ~/Kronos
   sudo make load
+  
+Patching Kronos Kernel
+^^^^^^^^^^^^^^^^^^^^^^
+
+To patch an already installed Kronos kernel with the latest changes in git repository, perform the following operations::
+
+  cd ~/Kronos && git pull origin master
+  sudo make patch_kernel  # Follow the same installation steps when kernel menuconfig appears
