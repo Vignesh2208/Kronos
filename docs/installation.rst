@@ -77,6 +77,11 @@ To get started on Kronos, please perform the following setup steps:
  
     cd ~/Kronos
     sudo make build load
+    
+Ready to use VM
+^^^^^^^^^^^^^^^
+
+Link to a ready to use Kronos VM will be provided upon request. Please contact projectmoses@illinois.edu.
 
 Verifying Installation
 ----------------------
