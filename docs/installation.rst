@@ -39,10 +39,7 @@ To get started on Kronos, please perform the following setup steps:
     cd ~/Kronos 
     sudo make setup_kernel
 
-.. note::  During the setup process you would get a prompt asking if kexec toos should handle reboots. Choose no when the prompt appears.
-  
-
-  Over the course of kernel setup, a menu config would appear. 
+.. note:: Over the course of kernel setup, a menu config would appear. 
 
   The following additional config steps should also be performed inside menuconfig:
 
