@@ -1316,10 +1316,12 @@ end:
 	n_tracees = llist_size(&tracee_list);
 	i = 0;
 	while (i < n_tracees) {
-		tracee_entry * curr_tracee = llist_get(&tracee_list, 0);
+		tracee_entry * curr_tracee = llist_get(&tracee_list, i);
 		if (!curr_tracee)
 			break;
 		if (curr_tracee->pd != NULL) {
+			libperf_disablecounter(curr_tracee->pd,
+							LIBPERF_COUNT_HW_INSTRUCTIONS);
 			libperf_finalize(curr_tracee->pd, 0);
 		}
 		i++;
