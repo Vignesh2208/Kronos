@@ -62,12 +62,7 @@
 #define PTRACE_GET_MSTEP_FLAGS	0x42f3
 #define WTRACE_DESCENDENTS	0x00100000
 
-//#define RETRY_BLOCKED_PROCESSES_MODE
-//#define PROCESS_MULTI_CORE_SCHED_MODE
-//#define PROCESS_CFS_SCHED_MODE
 #define PROCESS_RR_SCHED_MODE
-
-
 
 #define PTRACE_ENTER_SYSCALL_FLAG	1
 #define PTRACE_BREAK_WAITPID_FLAG	2
@@ -105,8 +100,7 @@ void printLog(const char *fmt, ...);
 #if defined DEBUG
 #define LOG(...)    printLog(__VA_ARGS__)
 #else
-#define LOG(...)	//printLog(__VA_ARGS__)
-#define LOG_ESP(...)	//printLog(__VA_ARGS__)
+#define LOG(...)
 #endif
 
 

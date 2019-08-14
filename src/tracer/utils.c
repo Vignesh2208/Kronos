@@ -39,7 +39,7 @@ void print_tracee_list(llist * tracee_list) {
 	//LOG("Active tracees: ");
 	while (head != NULL) {
 		tracee = (tracee_entry *) head->item;
-		LOG_ESP("%d: %lu, %d, %d\n", tracee->pid, tracee->vrun_time, tracee->n_preempts, tracee->n_sleeps);
+		LOG("%d: %lu, %d, %d\n", tracee->pid, tracee->vrun_time, tracee->n_preempts, tracee->n_sleeps);
 		head = head->next;
 	}
 	//LOG("\n");

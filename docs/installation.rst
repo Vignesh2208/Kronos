@@ -39,7 +39,6 @@ To get started on Kronos, please perform the following setup steps:
     cd ~/Kronos 
     sudo make setup_kernel
 
-.. note::  During the setup process you would get a prompt asking if kexec toos should handle reboots. Choose no when the prompt appears.
   
 
   Over the course of kernel setup, a menu config would appear. 
@@ -102,3 +101,11 @@ Inorder to use Kronos, it must be loaded after each VM/machine reboot. It can be
 
   cd ~/Kronos
   sudo make load
+
+Patching Kronos kernel after an update
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If a previously installed Kronos kernel needs to be updated with new changes in the git repo::
+
+  cd ~/Kronos && git pull origin master
+  sudo make patch_kernel # Follow same installation steps when prompted in menuconfig

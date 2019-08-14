@@ -207,7 +207,7 @@ retry:
 		// this is a system call stop detected fork or clone event. get new tid.
 		if (status >> 8 == (SIGTRAP | PTRACE_EVENT_CLONE << 8)
 		        || status >> 8 == (SIGTRAP | PTRACE_EVENT_FORK << 8)) {
-
+			LOG("Detected PTRACE EVENT CLONE or FORK for : %d\n", pid);
 			ret = ptrace(PTRACE_GETEVENTMSG, pid, NULL, (u32*)&new_child_pid);
 			status = 0;
 			do {
@@ -252,7 +252,7 @@ retry:
 			}
 			return TID_EXITED;
 		} else if (status >> 8 == (SIGTRAP | PTRACE_EVENT_VFORK << 8)) {
-			LOG("Detected PTRACE EVENT FORK for : %d\n", pid);
+			LOG("Detected PTRACE EVENT VFORK for : %d\n", pid);
 			ret = ptrace(PTRACE_GETEVENTMSG, pid, NULL, (u32*)&new_child_pid);
 			status = 0;
 			do {
@@ -302,11 +302,11 @@ retry:
 
 
 			ret = ptrace(PTRACE_GET_REM_MULTISTEP, pid, 0, (u32*)&n_ints);
-#ifdef DEBUG_VERBOSE
+//#ifdef DEBUG_VERBOSE
 			ret = ptrace(PTRACE_GETREGS, pid, NULL, &regs);
 			LOG("Single step completed for Process : %d. "
 			    "Status = %lX. Rip: %lX\n\n ", pid, status, regs.rip);
-#endif
+//#endif
 
 			if (ret == -1) {
 				LOG("ERROR in GETREGS.\n");
@@ -345,6 +345,8 @@ retry:
 			}
 			ret = ptrace(PTRACE_CONT, pid, 0, WSTOPSIG(status));
 			return TID_EXITED;
+		} else {
+			LOG("Received Unknown Signal: %d\n", WSTOPSIG(status));
 		}
 	}
 
@@ -356,6 +358,8 @@ retry:
 			curr_tracee->vfork_parent = NULL;
 		}
 		return TID_EXITED;
+	} else {
+		LOG("Received Unknown Status: %d\n", WSTOPSIG(status));
 	}
 	return TID_OTHER;
 }
@@ -388,34 +392,13 @@ int is_tracee_blocked(tracee_entry * curr_tracee) {
 				return TID_PROCESS_BLOCKED;
 			}
 			LOG("Tracee: %d unblocked\n", curr_tracee->pid);
+			
 			curr_tracee->syscall_blocked = 0;
 			return FAIL;
 		} else{
+			LOG("Tracee : %d Still Blocked Flags: %d\n", pid, flags);
 			return TID_PROCESS_BLOCKED;
 		}
-		/*
-		if (test_bit(flags, PTRACE_ENTER_SYSCALL_FLAG) &&
-		        !test_bit(flags, PTRACE_BREAK_WAITPID_FLAG)) {
-			errno = 0;
-			do {
-				ret = waitpid(pid, &status,
-				              WTRACE_DESCENDENTS | __WALL);
-			} while (ret == (pid_t) - 1 && errno == EINTR);
-
-			if ((pid_t)ret != pid) {
-				return TID_PROCESS_BLOCKED;
-			}
-
-			curr_tracee->syscall_blocked = 0;
-			return FAIL;
-
-		} else if (test_bit(flags, PTRACE_ENTER_SYSCALL_FLAG) == 0) {
-			curr_tracee->syscall_blocked = 0;
-			return FAIL;
-
-		} else {
-			return TID_PROCESS_BLOCKED;
-		}*/
 	}
 	if (curr_tracee->vfork_stop) {
 		return TID_PROCESS_BLOCKED;
@@ -515,7 +498,7 @@ int run_commanded_process(hashmap * tracees, llist * tracee_list,
 			ret = ptrace(PTRACE_CONT, pid, 0, 0);
 
 			LOG("PTRACE RESUMING process. "
-			        "ret = %d, error_code = %d. pid = %d, n_insns = %d\n", ret, errno, pid, n_insns);
+			    "ret = %d, error_code = %d. pid = %d, n_insns = %d\n", ret, errno, pid, n_insns);
 
 
 
@@ -590,11 +573,15 @@ int run_commanded_process(hashmap * tracees, llist * tracee_list,
 			hmap_remove_abs(tracees, pid);
 			print_tracee_list(tracee_list);
 			// Exit is still not fully complete. need to do this to complete it.
-			ptrace(PTRACE_CONT, pid, 0, 0);
-			usleep(10);
+			
+			errno = 0;
+			ret = ptrace(PTRACE_DETACH, pid, 0, SIGCHLD);
+			LOG("Ptrace Detach: ret: %d, errno: %d\n", ret, errno);
 			LOG("Process: %d, EXITED\n", pid);
 			if (curr_tracee->pd != NULL)
 				libperf_finalize(curr_tracee->pd, 0);
+			
+
 			free(curr_tracee);
 			return TID_EXITED;
 
@@ -907,7 +894,7 @@ void run_processes_in_round(hashmap * tracees,
 					llist_requeue(run_queue);
 				} else {
 					// process not blocked and n_insns_left > 0. we reached end.
-					LOG_ESP("N-insns left %d Pid: %d\n", tracee->n_insns_left, tracee->pid);
+					LOG("N-insns left %d Pid: %d\n", tracee->n_insns_left, tracee->pid);
 					break;
 				}
 #endif
@@ -1256,7 +1243,7 @@ int main(int argc, char * argv[]) {
 		write_results(fp, nxt_cmd);
 		print_tracee_list(&tracee_list);
 		LOG("TracerID: %d, ##########################################\n",
-		        tracer_id);
+		    tracer_id);
 		while (tail_ptr != -1) {
 			tail_ptr = get_next_command_tuple(nxt_cmd, tail_ptr, &new_cmd_pid,
 			                                  &n_insns);
@@ -1316,10 +1303,12 @@ end:
 	n_tracees = llist_size(&tracee_list);
 	i = 0;
 	while (i < n_tracees) {
-		tracee_entry * curr_tracee = llist_get(&tracee_list, 0);
+		tracee_entry * curr_tracee = llist_get(&tracee_list, i);
 		if (!curr_tracee)
 			break;
 		if (curr_tracee->pd != NULL) {
+			libperf_disablecounter(curr_tracee->pd,
+							LIBPERF_COUNT_HW_INSTRUCTIONS);
 			libperf_finalize(curr_tracee->pd, 0);
 		}
 		i++;

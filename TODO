@@ -2,9 +2,5 @@
 
 2. Nmi counting was disabled in arc/x86/entry/entry64.S to make Socket-Test Pass. Need to figure out the root cause/design another mechanism to enable nmi counting. NMI counting may not be necessary because repeatability-test passes
 
-3. Disable module verification during kernel compilation in the menu config state.
+3. New bug which sometimes causes kernel panic after Kronos module is unloaded
 
-4. New bug which sometimes causes kernel panic after Kronos module is unloaded
-
-5. Kronos is currenly unable to trace/control shells. So if an application/process started under the control of Kronos spawns shells, then Kronos 
-would be unable to control that process or its children and their behaviour is undefined. This is probably because shells may be compiled to be untracable.

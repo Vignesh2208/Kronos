@@ -201,7 +201,7 @@ libperf_finalize(struct libperf_data *pd, void *id) {
       result = read(fds[i], count, sizeof(uint64_t));
       assert(result == sizeof(uint64_t));
 
-      update_stats(&event_stats[i], count[0]);
+      //update_stats(&event_stats[i], count[0]);
 
       close(fds[i]);
       fds[i] = -1;

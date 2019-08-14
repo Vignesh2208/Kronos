@@ -15,6 +15,11 @@ build: build_scripts build_core build_api build_tracer build_tests
 
 setup_kernel: download_4_4_kernel compile_4_4_kernel
 
+patch_kernel: update_kernel compile_4_4_kernel
+
+update_kernel:
+	@cd src/kernel_changes/linux-4.4.5 && ./patch_kernel.sh
+
 download_4_4_kernel:
 	@cd src/kernel_changes/linux-4.4.5 && ./setup.sh
 

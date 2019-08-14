@@ -54,7 +54,7 @@ def main():
 
     parser.add_argument('--num_progress_rounds', dest='num_progress_rounds',
                         help='Number of rounds to run', type=int,
-                        default=1000)
+                        default=2500)
 
     args = parser.parse_args()
     
@@ -73,6 +73,9 @@ def main():
         fd1 = open(args.cmds_to_run_file, "r")
         cmds_to_run = [x.strip() for x in fd1.readlines()]
         fd1.close()
+        for i in xrange(0, len(cmds_to_run)) :
+            with open("/tmp/tracer_log%d.txt" %(i), "w") as f:
+                pass
         log_fds = [ os.open("/tmp/tracer_log%d.txt" %(i), os.O_RDWR | os.O_CREAT ) \
             for i in xrange(0, len(cmds_to_run)) ]
         num_tracers = len(cmds_to_run)
@@ -113,6 +116,7 @@ def main():
             print "Ran %d rounds ..." %(num_finised_rounds)
 
 
+    raw_input("Press Enter to continue...")
     print "Stopping Synchronized Experiment !"
     kf.stopExp()
 

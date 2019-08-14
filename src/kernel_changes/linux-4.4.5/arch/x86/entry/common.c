@@ -41,15 +41,11 @@ void syscall_enter_mwork(struct pt_regs *regs) {
 		set_bit(PTRACE_ENTER_SYSCALL_FLAG, &current->ptrace_mflags);
 		BUG_ON(test_bit(PTRACE_ENTER_FORK_FLAG, &current->ptrace_mflags));
 		BUG_ON(test_bit(PTRACE_BREAK_WAITPID_FLAG, &current->ptrace_mflags));
-		//BUG_ON(test_bit(PTRACE_PERF_FINISH_FLAG, &current->ptrace_mflags));
-
 		trace_printk("Setting ENTER SYSCALL FLAG bit for Pid: %d. Syscall no: %lu\n", current->pid, regs->orig_ax);
 	} else if (current->ptrace_msteps > 0 && regs->orig_ax != __NR_execve) {
 		set_bit(PTRACE_ENTER_FORK_FLAG, &current->ptrace_mflags);
 		BUG_ON(test_bit(PTRACE_ENTER_SYSCALL_FLAG, &current->ptrace_mflags));
 		BUG_ON(test_bit(PTRACE_BREAK_WAITPID_FLAG, &current->ptrace_mflags));
-		//BUG_ON(test_bit(PTRACE_PERF_FINISH_FLAG, &current->ptrace_mflags));
-
 
 		current->ptrace_msteps = 1;
 		trace_printk("Setting ENTER FORK FLAG bit for Pid: %d\n", current->pid);
@@ -322,6 +318,7 @@ __visible inline void prepare_exit_to_usermode(struct pt_regs *regs) {
 
 	BUG_ON(regs != task_pt_regs(current));
 
+	clear_bit(PTRACE_ENTER_SYSCALL_FLAG, &current->ptrace_mflags);
 	if (unlikely(cached_flags & EXIT_TO_USERMODE_LOOP_FLAGS))
 		exit_to_usermode_loop(regs, cached_flags);
 
