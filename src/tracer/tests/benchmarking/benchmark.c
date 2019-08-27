@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include "linkedlist.h"
+#include "hashmap.h"
 #include <sys/socket.h>
 #include <linux/netlink.h>
 #include <sys/types.h>
@@ -54,6 +55,8 @@ struct sched_param param;
 #define PTRACE_SET_REM_MULTISTEP 0x42f2
 #define PTRACE_SET_DELTA_BUFFER_WINDOW 0x42f4
 #define PTRACE_GET_OVERSHOOT_ERROR 0x42f5
+
+#define BUFFER_WINDOW_SIZE 50
 
 
 struct sockaddr_nl src_addr, dest_addr;
@@ -270,8 +273,8 @@ void print_active_tids(llist * active_tids) {
 	printf("\n");
 }
 
-unsigned long wait_for_ptrace_events(llist * active_tids, pid_t pid,
-                                     unsigned long * new_pid,
+unsigned long wait_for_ptrace_events(hashmap * tracees, llist * active_tids,
+				     pid_t pid, unsigned long * new_pid,
                                      struct libperf_data * pd) {
 
 	llist_elem * head = active_tids->head;
@@ -329,17 +332,15 @@ unsigned long wait_for_ptrace_events(llist * active_tids, pid_t pid,
 		} else if (status >> 8 == (SIGTRAP | PTRACE_EVENT_EXIT << 8)) {
 			printf("Detected process exit for : %d\n", pid);
 			llist_remove(active_tids, &pid);
+			if (pd != NULL) {
+			libperf_finalize(pd, 0);
+			hmap_remove_abs(tracees, pid);
+			}
 			print_active_tids(active_tids);
 			return SUCCESS;
 		} else {
 
-			/* obtain counter value */
-			uint64_t counter = libperf_readcounter(pd, LIBPERF_COUNT_HW_INSTRUCTIONS);
-			/* disable HW counter */
-			libperf_disablecounter(pd, LIBPERF_COUNT_HW_INSTRUCTIONS);
-			libperf_finalize(pd, 0); /* log all counter values */
 			unsigned long overshoot_err = 0;
-
 			ret = ptrace(PTRACE_GET_OVERSHOOT_ERROR, pid, NULL, &overshoot_err);
 			if (ret == -1) {
 				printf("ERROR in PTRACE_GET_OVERSHOOT_ERROR.\n");
@@ -349,7 +350,6 @@ unsigned long wait_for_ptrace_events(llist * active_tids, pid_t pid,
 
 		}
 
-
 	}
 
 
@@ -357,6 +357,10 @@ unsigned long wait_for_ptrace_events(llist * active_tids, pid_t pid,
 	if (WIFEXITED(status)) {
 		printf("Detected exit status is %d\n", WEXITSTATUS(status));
 		llist_remove(active_tids, &pid);
+		if (pd != NULL) {
+			libperf_finalize(pd, 0);
+			hmap_remove_abs(tracees, pid);
+		}
 		print_active_tids(active_tids);
 		return SUCCESS;
 
@@ -367,7 +371,8 @@ unsigned long wait_for_ptrace_events(llist * active_tids, pid_t pid,
 
 }
 
-int run_commanded_process(llist * active_tids, pid_t pid, int n_instructions,
+int run_commanded_process(hashmap * tracees,
+			  llist * active_tids, pid_t pid, int n_instructions,
                           int disable_buffer_window) {
 
 
@@ -376,50 +381,48 @@ int run_commanded_process(llist * active_tids, pid_t pid, int n_instructions,
 	int ret;
 	int cont = 1, counter = 0;
 	unsigned long n_insns = (unsigned long) n_instructions;
-	struct libperf_data * pd;
+	struct libperf_data * pd = hmap_get_abs(tracees, pid);
 	struct pollfd ufd;
 	memset(&ufd, 0, sizeof(ufd));
 	uint64_t counter_val; /* obtain counter value */
 	int poll_count = 0;
 	char buffer[100];
 	int singlestepmode = 1;
-	unsigned long buffer_window_size = 1;
+	unsigned long buffer_window_size = BUFFER_WINDOW_SIZE;
 
-	if (n_insns < 500)
+	if (n_insns < BUFFER_WINDOW_SIZE)
 		singlestepmode = 1;
 	else
 		singlestepmode = 0;
 
-	flush_buffer(buffer, 100);
-
-	singlestepmode = 1;
-
+	memset(buffer, 0, 100);
 
 	while (1) {
 
 
 		if (singlestepmode) {
-			/* init lib */
-			pd = libperf_initialize((int)pid, 0);
-			/* enable HW counter */
-			libperf_enablecounter(pd, LIBPERF_COUNT_HW_INSTRUCTIONS);
-			/* enable CONTEXT SWITCH counter */
-			libperf_enablecounter(pd, LIBPERF_COUNT_SW_CONTEXT_SWITCHES);
 			ptrace(PTRACE_SET_REM_MULTISTEP, pid, 0, (unsigned long *)&n_insns);
 			ptrace(PTRACE_MULTISTEP, pid, 0, (unsigned long *)&n_insns);
 		} else {
-			if (!disable_buffer_window)
-				n_insns = n_insns - 500;
-			else {
+			
 
+			if (!disable_buffer_window){
+				n_insns = n_insns - BUFFER_WINDOW_SIZE;
+				ptrace(PTRACE_SET_DELTA_BUFFER_WINDOW, pid, 0,
+				       (unsigned long *)&buffer_window_size);
+			} else {
+				buffer_window_size = 1;
 				ptrace(PTRACE_SET_DELTA_BUFFER_WINDOW, pid, 0,
 				       (unsigned long *)&buffer_window_size);
 			}
-			pd = libperf_initialize((int)pid, 0);
+			if (pd == NULL) {
+				pd = libperf_initialize((int)pid, 0);
+				hmap_put_abs(tracees, pid, pd);
+			}
 			libperf_ioctlrefresh(pd, LIBPERF_COUNT_HW_INSTRUCTIONS,
-			                     (uint64_t )n_insns);
+				             (uint64_t )n_insns);
 			libperf_enablecounter(pd, LIBPERF_COUNT_HW_INSTRUCTIONS);
-			libperf_enablecounter(pd, LIBPERF_COUNT_SW_CONTEXT_SWITCHES);
+				
 			ptrace(PTRACE_SET_REM_MULTISTEP, pid, 0, (unsigned long *)&n_insns);
 			ptrace(PTRACE_CONT, pid, 0, 0);
 		}
@@ -431,6 +434,10 @@ int run_commanded_process(llist * active_tids, pid_t pid, int n_instructions,
 			if (kill(pid, 0) == -1 && errno == ESRCH) {
 				printf("PTRACE_RESUME ERROR. Child process is Dead. Breaking\n");
 				llist_remove(active_tids, &pid);
+				if (pd != NULL) {
+					libperf_finalize(pd, 0);
+					hmap_remove_abs(tracees, pid);
+				}
 				print_active_tids(active_tids);
 				cont = 0;
 				errno = 0;
@@ -439,7 +446,7 @@ int run_commanded_process(llist * active_tids, pid_t pid, int n_instructions,
 			errno = 0;
 			continue;
 		}
-		return wait_for_ptrace_events(active_tids, pid, &new_pid, pd);
+		return wait_for_ptrace_events(tracees, active_tids, pid, &new_pid, pd);
 	}
 
 	return FAIL;
@@ -469,6 +476,7 @@ int main(int argc, char * argv[]) {
 	int new_pid;
 	int proc_to_control, n_insns;
 	llist active_tids;
+	hashmap tracees;
 	pid_t cmd_pid[2];
 	int n_recv_commands = 0;
 	struct libperf_data * pd;
@@ -482,6 +490,7 @@ int main(int argc, char * argv[]) {
 	measurements[2].n_insns = 100000;
 	measurements[3].n_insns = 1000000;
 	measurements[4].n_insns = 10000000;
+	hmap_init(&tracees, 1000);
 
 	for (i = 0; i < 5; i++) {
 		measurements[i].count = 0;
@@ -559,13 +568,13 @@ int main(int argc, char * argv[]) {
 	long secs_used, micros_used;
 	int measurement_idx = 0;
 
-	while (n_cmds < 100) {
+	while (n_cmds < 1000) {
 
 		measurement_idx = n_cmds % 5;
 		n_insns = measurements[measurement_idx].n_insns;
 
 		gettimeofday(&start, NULL);
-		ret1 = run_commanded_process(&active_tids, cmd_pid[0], n_insns, 0);
+		ret1 = run_commanded_process(&tracees, &active_tids, cmd_pid[0], n_insns, 0);
 		gettimeofday(&end, NULL);
 		secs_used = (end.tv_sec - start.tv_sec);
 		micros_used = ((secs_used * 1000000) + end.tv_usec) - (start.tv_usec);
@@ -583,7 +592,7 @@ int main(int argc, char * argv[]) {
 
 
 		gettimeofday(&start, NULL);
-		ret2 = run_commanded_process(&active_tids, cmd_pid[1], n_insns, 1);
+		ret2 = run_commanded_process(&tracees, &active_tids, cmd_pid[1], n_insns, 1);
 		gettimeofday(&end, NULL);
 		secs_used = (end.tv_sec - start.tv_sec);
 		micros_used = ((secs_used * 1000000) + end.tv_usec) - (start.tv_usec);
@@ -618,6 +627,22 @@ int main(int argc, char * argv[]) {
 			       sqrt(measurements[i].std_elapsed_time_nowindow / (float)measurements[i].count - (mu * mu)));
 		}
 	}
+	int n_tracees = llist_size(&active_tids);
+	i = 0;
+	while (i < 2) {
+		int curr_tracee_pid = cmd_pid[i];
+		printf("Cleaning up PID: %d\n", curr_tracee_pid);
+		pd = hmap_get_abs(&tracees, curr_tracee_pid);
+		if (pd != NULL) {
+			libperf_disablecounter(pd,
+		 			       LIBPERF_COUNT_HW_INSTRUCTIONS);
+			libperf_finalize(pd, 0);
+		}
+		i++;
+	}
+	printf("Cleaning up Hashmaps and LinkedLists !\n");
+	llist_destroy(&active_tids);
+	hmap_destroy(&tracees);
 	return 0;
 
 }

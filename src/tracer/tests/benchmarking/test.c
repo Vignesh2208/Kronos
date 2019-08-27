@@ -44,4 +44,5 @@ void main() {
 		curr = ret;
 		i++;
 	}
+	while(1);
 }

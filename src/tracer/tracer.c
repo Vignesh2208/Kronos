@@ -19,6 +19,8 @@
 #define PTRACE_SET_DELTA_BUFFER_WINDOW 0x42f4
 #define TRACER_RESULTS 'J'
 
+#define BUFFER_WINDOW_SIZE 50
+
 
 #ifdef TEST
 struct sockaddr_nl src_addr, dest_addr;
@@ -432,7 +434,7 @@ int run_commanded_process(hashmap * tracees, llist * tracee_list,
 	char buffer[100];
 	int singlestepmode = 1;
 	tracee_entry * curr_tracee;
-	unsigned long buffer_window_size = 500;
+	unsigned long buffer_window_size = BUFFER_WINDOW_SIZE;
 	u32 status = 0;
         u32 n_insns;
 
