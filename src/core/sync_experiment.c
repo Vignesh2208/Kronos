@@ -1025,7 +1025,7 @@ void clean_up_all_irrelevant_processes(tracer * curr_tracer) {
 		                                  curr_elem->pid) != NULL) {
 
 			if (task == NULL) { // task is dead
-				PDEBUG_V("Clean up irrelevant processes: "
+				PDEBUG_I("Clean up irrelevant processes: "
 				         "Curr elem: %d. Task is dead\n", curr_elem->pid);
 				put_tracer_struct_read(curr_tracer);
 				get_tracer_struct_write(curr_tracer);
@@ -1033,7 +1033,7 @@ void clean_up_all_irrelevant_processes(tracer * curr_tracer) {
 				put_tracer_struct_write(curr_tracer);
 				get_tracer_struct_read(curr_tracer);
 			} else { // task is ignored
-				PDEBUG_V("Clean up irrelevant processes: "
+				PDEBUG_I("Clean up irrelevant processes: "
 				         "Curr elem: %d. Task is ignored\n", curr_elem->pid);
 
 				put_tracer_struct_read(curr_tracer);
@@ -1238,28 +1238,6 @@ lxc_schedule_elem * get_next_runnable_task(tracer * curr_tracer) {
 	llist_elem* head = schedule_queue->head;
 
 
-	/*
-	n_scheduled_processes = schedule_list_size(curr_tracer);
-
-	while (n_checked_processes < n_scheduled_processes) {
-
-		curr_elem =
-		    (lxc_schedule_elem *)llist_get(&curr_tracer->schedule_queue, 0);
-
-		if (!curr_elem)
-			return NULL;
-
-		put_tracer_struct_read(curr_tracer);
-		get_tracer_struct_write(curr_tracer);
-		requeue_schedule_list(curr_tracer);
-		put_tracer_struct_write(curr_tracer);
-		get_tracer_struct_read(curr_tracer);
-		n_checked_processes ++;
-		if (curr_elem->n_insns_curr_round)
-			return curr_elem;
-	}
-	*/
-
 	head = schedule_queue->head;
 	while (head != NULL) {
 		curr_elem = (lxc_schedule_elem *)head->item;
@@ -1318,6 +1296,7 @@ void wait_for_tracer_completion(tracer * curr_tracer) {
 
 }
 
+
 #ifndef __TK_MULTI_CORE_MODE
 int unfreeze_proc_exp_single_core_mode(tracer * curr_tracer) {
 
@@ -1339,7 +1318,7 @@ int unfreeze_proc_exp_single_core_mode(tracer * curr_tracer) {
 	if (curr_tracer->quantum_n_insns == 0)
 		return SUCCESS;
 
-
+	
 
 	/* for adding any new tasks that might have been spawned */
 	put_tracer_struct_read(curr_tracer);
@@ -1364,9 +1343,6 @@ int unfreeze_proc_exp_single_core_mode(tracer * curr_tracer) {
 		put_tracer_struct_read(curr_tracer);
 		get_tracer_struct_write(curr_tracer);
 		add_task_to_tracer_run_queue(curr_tracer, curr_elem);
-		//if (rem_n_insns > 0)
-		//	update_task_virtual_time(curr_tracer, curr_elem->curr_task,
-		//	                         rem_n_insns);
 		rem_n_insns += curr_elem->n_insns_curr_round;
 		curr_elem->n_insns_curr_round = 0; // reset to zero
 		put_tracer_struct_write(curr_tracer);
@@ -1380,14 +1356,7 @@ int unfreeze_proc_exp_single_core_mode(tracer * curr_tracer) {
 		signal_tracer_resume(curr_tracer);
 		wait_for_tracer_completion(curr_tracer);
 		get_tracer_struct_read(curr_tracer);
-	}
-
-
-	//curr_tracer->tracer_task->freeze_time =
-	//    curr_tracer->tracer_task->freeze_time + curr_tracer->freeze_quantum;
-
-
-
+	} 
 	return SUCCESS;
 }
 

@@ -19,7 +19,7 @@
 #define PTRACE_SET_DELTA_BUFFER_WINDOW 0x42f4
 #define TRACER_RESULTS 'J'
 
-#define BUFFER_WINDOW_SIZE 50
+#define BUFFER_WINDOW_SIZE 100
 
 
 #ifdef TEST
@@ -575,17 +575,18 @@ int run_commanded_process(hashmap * tracees, llist * tracee_list,
 			hmap_remove_abs(tracees, pid);
 			print_tracee_list(tracee_list);
 			// Exit is still not fully complete. need to do this to complete it.
+
 			
 			errno = 0;
 			ret = ptrace(PTRACE_DETACH, pid, 0, SIGCHLD);
+			
 			LOG("Ptrace Detach: ret: %d, errno: %d\n", ret, errno);
 			LOG("Process: %d, EXITED\n", pid);
 			if (curr_tracee->pd != NULL)
 				libperf_finalize(curr_tracee->pd, 0);
-			
 
 			free(curr_tracee);
-			return TID_EXITED;
+			return TID_IGNORE_PROCESS;
 
 		default:		return SUCCESS;
 
@@ -1281,6 +1282,7 @@ int main(int argc, char * argv[]) {
 			if (!hmap_get_abs(&tracees,
 			                  processes_pids[i])) {
 				ignored_pids[j] = processes_pids[i];
+				printf("Ignoring PID: %d\n", ignored_pids[j]);
 				j++;
 			}
 		}

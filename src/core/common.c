@@ -261,7 +261,7 @@ void add_to_tracer_schedule_queue(tracer * tracer_entry,
 	new_elem =
 	    (lxc_schedule_elem *)kmalloc(sizeof(lxc_schedule_elem), GFP_KERNEL);
 	if (new_elem == NULL) {
-		PDEBUG_E("Add to tracer schedule queue: "
+		PDEBUG_I("Add to tracer schedule queue: "
 		         "Tracer %d, tracee %d. Failed to alot Memory\n",
 		         tracer_entry->tracer_id, tracee->pid);
 		return;
@@ -304,7 +304,7 @@ void add_to_tracer_schedule_queue(tracer * tracer_entry,
 	sp.sched_priority = 99;
 	sched_setscheduler(tracee, SCHED_RR, &sp);
 	hmap_put_abs(&tracer_entry->valid_children, new_elem->pid, new_elem);
-	PDEBUG_I("Add to tracer schedule queue: "
+	PDEBUG_E("Add to tracer schedule queue: "
 	         "Tracer %d, tracee %d. Succeeded.\n", tracer_entry->tracer_id,
 	         tracee->pid);
 }
@@ -400,7 +400,7 @@ int register_tracer_process(char * write_buffer) {
 			return FAIL;
 		}
 
-		spinner_task = find_task_by_pid(spinner_pid);
+		spinner_task = get_task_ns(spinner_pid, current);
 
 		if (!spinner_task) {
 			PDEBUG_E("Spinner pid task not found. "
@@ -813,6 +813,36 @@ void update_all_tracers_virtual_time(int cpuID) {
 }
 
 
+struct task_struct* get_task_ns(pid_t pid, struct task_struct * parent) {
+	if (!parent)
+		return NULL;
+	int num_children = 0;
+	struct list_head *list;
+	struct task_struct *me;
+	struct task_struct *t;
+	me = parent;
+	t = me;
+	
+	do {
+		if (task_pid_nr_ns(t, task_active_pid_ns(t)) == pid)
+			return t; 
+	} while_each_thread(me, t);
+	
+
+
+
+	list_for_each(list, &parent->children) {
+		struct task_struct * taskRecurse = list_entry(list, struct task_struct, sibling);
+		if (task_pid_nr_ns(taskRecurse, task_active_pid_ns(taskRecurse)) == pid)
+			return taskRecurse;
+		t =  get_task_ns(pid, taskRecurse);
+		if (t != NULL)
+			return t;
+	}
+	return NULL;
+}
+
+
 /**
 * write_buffer: result which indicates overflow number of instructions.
   It specifies the total number of instructions by which the tracer overshot
@@ -857,10 +887,14 @@ int handle_tracer_results(char * buffer) {
 
 		if (result) {
 			//result is a pid to be ignored
-			PDEBUG_V("Handle tracer results: Pid: %d, Tracer ID: %d, "
+			PDEBUG_I("Handle tracer results: Pid: %d, Tracer ID: %d, "
 			         "Ignoring Process: %d\n", current->pid,
 			         curr_tracer->tracer_id, result);
-			hmap_put_abs(&curr_tracer->ignored_children, result, current);
+			struct task_struct * mappedTask = get_task_ns(result, current);
+			if (mappedTask != NULL) {
+				PDEBUG_I("MAPPED TASK PID = %d, Ignoring it.\n", mappedTask->pid);
+				hmap_put_abs(&curr_tracer->ignored_children, mappedTask->pid, current);
+			}
 		}
 	}
 	put_tracer_struct_write(curr_tracer);

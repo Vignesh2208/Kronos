@@ -38,5 +38,5 @@ main:
 	addl	$1, -32(%rbp)
 	jmp	.L4
 	.size	main, .-main
-	.ident	"GCC: (Ubuntu 5.4.0-6ubuntu1~16.04.11) 5.4.0 20160609"
+	.ident	"GCC: (Ubuntu 6.5.0-2ubuntu1~16.04) 6.5.0 20181026"
 	.section	.note.GNU-stack,"",@progbits
