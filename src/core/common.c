@@ -69,6 +69,35 @@ extern s64 round_error_sq;
 extern s64 expected_time;
 
 
+struct task_struct* get_task_ns(pid_t pid, struct task_struct * parent) {
+	if (!parent)
+		return NULL;
+	int num_children = 0;
+	struct list_head *list;
+	struct task_struct *me;
+	struct task_struct *t;
+	me = parent;
+	t = me;
+	
+	do {
+		if (task_pid_nr_ns(t, task_active_pid_ns(t)) == pid)
+			return t; 
+	} while_each_thread(me, t);
+	
+
+
+
+	list_for_each(list, &parent->children) {
+		struct task_struct * taskRecurse = list_entry(list, struct task_struct, sibling);
+		if (task_pid_nr_ns(taskRecurse, task_active_pid_ns(taskRecurse)) == pid)
+			return taskRecurse;
+		t =  get_task_ns(pid, taskRecurse);
+		if (t != NULL)
+			return t;
+	}
+	return NULL;
+}
+
 
 
 /***
@@ -813,34 +842,7 @@ void update_all_tracers_virtual_time(int cpuID) {
 }
 
 
-struct task_struct* get_task_ns(pid_t pid, struct task_struct * parent) {
-	if (!parent)
-		return NULL;
-	int num_children = 0;
-	struct list_head *list;
-	struct task_struct *me;
-	struct task_struct *t;
-	me = parent;
-	t = me;
-	
-	do {
-		if (task_pid_nr_ns(t, task_active_pid_ns(t)) == pid)
-			return t; 
-	} while_each_thread(me, t);
-	
 
-
-
-	list_for_each(list, &parent->children) {
-		struct task_struct * taskRecurse = list_entry(list, struct task_struct, sibling);
-		if (task_pid_nr_ns(taskRecurse, task_active_pid_ns(taskRecurse)) == pid)
-			return taskRecurse;
-		t =  get_task_ns(pid, taskRecurse);
-		if (t != NULL)
-			return t;
-	}
-	return NULL;
-}
 
 
 /**
