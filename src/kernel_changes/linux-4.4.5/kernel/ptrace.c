@@ -1102,37 +1102,54 @@ SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
 	if (request == PTRACE_GET_REM_MULTISTEP) {
 		unsigned long rem_steps = child->ptrace_msteps;
 		
-		if (copy_to_user(datalp, &rem_steps, sizeof(unsigned long)))
-			return -EFAULT;
-		return 0;
-	} else if (request == PTRACE_SET_REM_MULTISTEP) {
-		if (__get_user(n_steps, datalp))
-			return -EFAULT;
+		if (copy_to_user(datalp, &rem_steps, sizeof(unsigned long))) {
+			ret = -EFAULT;
+		} else {
+			ret = 0;
+		}
+		goto out_put_task_struct;
 
-		child->ptrace_msteps = n_steps;
-		child->n_ints = 0;
-		trace_printk("Ptrace: Pid: %d, set rem multistep: ptrace_msteps: %lu\n",  child->pid, child->ptrace_msteps);
-		return 0;
+	} else if (request == PTRACE_SET_REM_MULTISTEP) {
+		if (__get_user(n_steps, datalp)) {
+			ret = -EFAULT;
+		} else {
+			child->ptrace_msteps = n_steps;
+			child->n_ints = 0;
+			trace_printk("Ptrace: Pid: %d, set rem multistep: ptrace_msteps: %lu\n",  child->pid, child->ptrace_msteps);
+			ret = 0;
+		}
+		goto out_put_task_struct;
 
 	} else if (request == PTRACE_GET_MSTEP_FLAGS) {
 		flags = child->ptrace_mflags;
 		trace_printk("Ptrace: Pid: %d, get ptrace flags: %lX\n",  child->pid, child->ptrace_mflags);
-		if (copy_to_user(datalp, &flags, sizeof(unsigned long)))
-			return -EFAULT;
-		return 0;
+		if (copy_to_user(datalp, &flags, sizeof(unsigned long))) {
+			ret = -EFAULT;
+		} else{
+			ret = 0;
+		}
+		goto out_put_task_struct;
+
 	} else if (request == PTRACE_SET_DELTA_BUFFER_WINDOW) {
-		if (__get_user(n_steps, datalp))
-			return -EFAULT;
-		child->past_physical_time = n_steps;
-		trace_printk("Ptrace: Pid: %d, set rem delta buffer window size: %lu\n",  child->pid, child->past_physical_time);
-		return 0;
+		if (__get_user(n_steps, datalp)) {
+			ret = -EFAULT;
+		} else {
+			child->past_physical_time = n_steps;
+			trace_printk("Ptrace: Pid: %d, set rem delta buffer window size: %lu\n",  child->pid, child->past_physical_time);
+			ret = 0;
+		}
+		goto out_put_task_struct;
+
 	} else if (request == PTRACE_GET_OVERSHOOT_ERROR) {
 		unsigned long error = child->past_virtual_time;
 		child->past_virtual_time = 0;
-		if (copy_to_user(datalp, &error, sizeof(unsigned long)))
-			return -EFAULT;
-		trace_printk("Ptrace: Pid: %d, overshoot error: %lu\n",  child->pid, child->past_virtual_time);
-		return 0;
+		if (copy_to_user(datalp, &error, sizeof(unsigned long))) {
+			ret = -EFAULT;
+		} else {
+			trace_printk("Ptrace: Pid: %d, overshoot error: %lu\n",  child->pid, child->past_virtual_time);
+			ret = 0;
+		}
+		goto out_put_task_struct;
 	}
 
 	ret = ptrace_check_attach(child, request == PTRACE_KILL ||

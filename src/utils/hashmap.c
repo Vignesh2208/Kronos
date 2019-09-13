@@ -218,7 +218,8 @@ void hmap_remove_abs(hashmap * h, int key) {
 	while (head != NULL) {
 		temp = (hashmap_elem *) head->item;
 		if (temp->key_val == key) {
-			temp->key_val = 0;
+			llist_remove_at(list, i);
+			kfree(temp);
 			spin_unlock(&h->hmap_lock);
 			return;
 		}

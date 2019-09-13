@@ -21,6 +21,7 @@ build_tracer:
 	 @mv tracer /usr/bin
 	 @mv cmd_sender /usr/bin
 	 @cp /usr/local/lib/libperf.so.0 /usr/lib/
+	 @cd ${tracer_dir}/utils && $(MAKE) build
 
 build_tracer_debug:
 	@gcc -w -I/usr/local/include/perf -I/usr/local/lib/perf/include -I${tracer_dir}/utils \
@@ -32,6 +33,7 @@ build_tracer_debug:
 	@mv tracer /usr/bin
 	@mv cmd_sender /usr/bins
 	@cp /usr/local/lib/libperf.so.0 /usr/lib/
+	@cd ${tracer_dir}/utils && $(MAKE) build
 
 build_tracer_test: 
 	@gcc -w -I/usr/local/include/perf -I/usr/local/lib/perf/include -I${tracer_dir}/utils \
@@ -43,6 +45,7 @@ build_tracer_test:
 	@mv tracer_test /usr/bin
 	@mv cmd_sender /usr/bin
 	@cp /usr/local/lib/libperf.so.0 /usr/lib/
+	@cd ${tracer_dir}/utils && $(MAKE) build
 
 clean: 
 	@cd ${tracer_dir}/libperf && ./configure && $(MAKE) clean
@@ -51,9 +54,11 @@ clean:
 	@rm -f /usr/bin/tracer > /dev/null
 	@rm -f /usr/bin/tracer_test > /dev/null
 	@rm -f /usr/bin/cmd_sender > /dev/null
+	@cd ${tracer_dir}/utils && $(MAKE) clean
 
 build_tests:
 	@cd ${tracer_dir}/tests && $(MAKE) build
+	@cd ${tracer_dir}/utils && $(MAKE) build
 
 build: libs build_tracer build_tracer_test build_tests
 

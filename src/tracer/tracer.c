@@ -19,7 +19,7 @@
 #define PTRACE_SET_DELTA_BUFFER_WINDOW 0x42f4
 #define TRACER_RESULTS 'J'
 
-#define BUFFER_WINDOW_SIZE 100
+#define BUFFER_WINDOW_SIZE 50
 
 
 #ifdef TEST
@@ -1282,7 +1282,6 @@ int main(int argc, char * argv[]) {
 			if (!hmap_get_abs(&tracees,
 			                  processes_pids[i])) {
 				ignored_pids[j] = processes_pids[i];
-				printf("Ignoring PID: %d\n", ignored_pids[j]);
 				j++;
 			}
 		}

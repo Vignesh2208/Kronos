@@ -114,6 +114,7 @@ int pop_schedule_list(tracer * tracer_entry) {
 	if (head != NULL) {
 		pid = head->pid;
 		hmap_remove_abs(&tracer_entry->valid_children, head->pid);
+		hmap_remove_abs(&tracer_entry->ignored_children, head->pid);
 		kfree(head);
 		return pid;
 	}
@@ -334,8 +335,8 @@ void add_to_tracer_schedule_queue(tracer * tracer_entry,
 	sched_setscheduler(tracee, SCHED_RR, &sp);
 	hmap_put_abs(&tracer_entry->valid_children, new_elem->pid, new_elem);
 	PDEBUG_E("Add to tracer schedule queue: "
-	         "Tracer %d, tracee %d. Succeeded.\n", tracer_entry->tracer_id,
-	         tracee->pid);
+	         "Tracer %d, tracee %d. Succeeded. Schedule list size: %d\n", tracer_entry->tracer_task->pid,
+	         tracee->pid, schedule_list_size(tracer_entry));
 }
 
 
