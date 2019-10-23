@@ -447,7 +447,7 @@ int run_commanded_process(hashmap * tracees, llist * tracee_list,
 
 	LOG("Running Child: %d Quanta: %d instructions\n", pid, n_insns);
 
-	n_insns = n_insns_orig * (int) rel_cpu_speed;
+	n_insns = (int)(n_insns_orig * rel_cpu_speed);
 
 	if (n_insns <= buffer_window_size)
 		singlestepmode = 1;
@@ -533,7 +533,7 @@ int run_commanded_process(hashmap * tracees, llist * tracee_list,
 			}
 			LOG("PTRACE CONT Error: %d\n", errno);
 			errno = 0;
-			n_insns = n_insns_orig * (int) rel_cpu_speed;
+			n_insns = (int)(n_insns_orig * rel_cpu_speed);
 			//assert(0);
 			continue;
 		}
