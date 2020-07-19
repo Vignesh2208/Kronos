@@ -15,7 +15,6 @@ build:
 	-I${tracer_dir}/utils ${test_dir}/insn_tester.c ${tracer_dir}/utils/linkedlist.c \
 	${tracer_dir}/utils/hashmap.c -o ${test_dir}/insn_tester -lperf
 	@gcc ${test_dir}/test.c -fno-asynchronous-unwind-tables -fno-dwarf2-cfi-asm -o ${test_dir}/test
-	@gcc ${test_dir}/test.c -S -fno-asynchronous-unwind-tables -fno-dwarf2-cfi-asm -o ${test_dir}/test.s
 	@echo ${test_dir}/test > cmds.txt
 	@chmod 777 ${test_dir}/test
 	@chmod 777 ${test_dir}/insn_tester

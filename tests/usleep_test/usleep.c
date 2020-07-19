@@ -43,15 +43,11 @@ int main(int argc, char *argv[])
 		// printf("Sleeping for %d\n", sleep_usec);
 		
 
-		if(usleep( sleep_usec ) == -1)
-		{
-			printf("Usleep Error\n");
-			printf("Oh dear, something went wrong with usleep()! %s\n", strerror(errno));
-
+		if (usleep( sleep_usec ) == -1) {
+			printf("Oh dear, something went wrong with usleep !\n");
 			fflush(stdout);
-			exit(1);
+			exit(0);
 		}
-
 		printf("Woke up after sleep\n");
 		fflush(stdout);
 

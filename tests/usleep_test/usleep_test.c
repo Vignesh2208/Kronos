@@ -64,7 +64,7 @@ int main(int argc, char * argv[]) {
   pid_t ret_val;
   int n_exited_tracers = 0;
   int status;
-  int test_n_insns = 1000000;
+  int test_n_insns = 100000;
 
   if (argc < 2 || !strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
     fprintf(stderr, "\n");
@@ -213,9 +213,9 @@ int main(int argc, char * argv[]) {
 
   usleep(1000000);
 
-  printf("Progress Experiment for 100000 Rounds !\n");
+  printf("Progress Experiment for 2000 Rounds !\n");
   fflush(stdout);
-  progress_n_rounds(100000);
+  progress_n_rounds(2000);
   fflush(stdout);
   printf("Stopping Experiment ... \n");
   fflush(stdout);

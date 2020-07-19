@@ -393,7 +393,7 @@ skip_sleep:
 		wake_up_interruptible(&expstop_call_proc_wqueue);
 
 		rmt = ktime_to_timespec(rem);
-		if (copy_to_user(rmtp, &rmt, sizeof(*rmtp)))
+		if (rmtp && copy_to_user(rmtp, &rmt, sizeof(*rmtp)))
 			return -EFAULT;
 		return 0;
 
