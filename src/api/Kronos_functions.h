@@ -43,6 +43,7 @@ int update_tracer_params(int tracer_pid, float relative_cpu_speed,
                          u32 n_round_instructions);
 int write_tracer_results(char * result);
 int set_netdevice_owner(int tracer_pid, char * intf_name);
+int add_netdevice_to_vt_control(char * intf_name);
 int gettimepid(int pid);
 
 int startExp();

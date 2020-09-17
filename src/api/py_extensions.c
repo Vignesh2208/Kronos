@@ -27,7 +27,7 @@ int o_get_stats(ioctl_args * args) {
 static PyObject * py_addToExp(PyObject *self, PyObject *args) {
     float rel_cpu_speed;
     u32 n_insns;
-    int ret;
+    int ret = 1;
 
     if (!PyArg_ParseTuple(args, "fl", &rel_cpu_speed, &n_insns))
         return NULL;
@@ -35,17 +35,12 @@ static PyObject * py_addToExp(PyObject *self, PyObject *args) {
     return Py_BuildValue("i", ret);
 }
 
-static PyObject * py_hello(PyObject *self, PyObject *args) {
-    int ret = 1;
-    hello();
-    return Py_BuildValue("i", ret);
-}
 
 
 static PyObject * py_addToExp_sp(PyObject *self, PyObject *args) {
     float rel_cpu_speed;
     u32 n_insns;
-    int ret;
+    int ret = 1;
     pid_t pid;
 
     if (!PyArg_ParseTuple(args, "fli", &rel_cpu_speed, &n_insns, &pid))
@@ -58,7 +53,7 @@ static PyObject * py_addToExp_sp(PyObject *self, PyObject *args) {
 static PyObject * py_update_tracer_params(PyObject *self, PyObject *args) {
     float rel_cpu_speed;
     u32 n_insns;
-    int ret;
+    int ret = 1;
     pid_t pid;
 
     if (!PyArg_ParseTuple(args, "ifl", &pid, &rel_cpu_speed, &n_insns))
@@ -71,7 +66,7 @@ static PyObject * py_update_tracer_params(PyObject *self, PyObject *args) {
 static PyObject * py_write_tracer_results(PyObject *self, PyObject *args) {
     float rel_cpu_speed;
     u32 n_insns;
-    int ret;
+    int ret = 1;
     pid_t pid;
     char * command;
 
@@ -87,7 +82,7 @@ static PyObject * py_set_netdevice_owner(PyObject *self, PyObject *args) {
 
     int pid;
     char * intf_name;
-    int ret;
+    int ret = 1;
 
     if (!PyArg_ParseTuple(args, "is", &pid, &intf_name))
         return NULL;
@@ -95,9 +90,20 @@ static PyObject * py_set_netdevice_owner(PyObject *self, PyObject *args) {
     return Py_BuildValue("i", ret);
 }
 
+static PyObject * py_add_netdevice_to_vt_control(PyObject *self, PyObject *args) {
+
+    char * intf_name;
+    int ret = 1;
+
+    if (!PyArg_ParseTuple(args, "s", &intf_name))
+        return NULL;
+    ret = add_netdevice_to_vt_control(intf_name);
+    return Py_BuildValue("i", ret);
+}
+
 static PyObject * py_startExp(PyObject *self, PyObject *args) {
 
-    int ret;
+    int ret = 1;
 
     ret = startExp();
     return Py_BuildValue("i", ret);
@@ -106,7 +112,7 @@ static PyObject * py_startExp(PyObject *self, PyObject *args) {
 
 static PyObject * py_stopExp(PyObject *self, PyObject *args) {
 
-    int ret;
+    int ret = 1;
 
     ret = stopExp();
     return Py_BuildValue("i", ret);
@@ -114,7 +120,7 @@ static PyObject * py_stopExp(PyObject *self, PyObject *args) {
 
 static PyObject * py_initializeExp(PyObject *self, PyObject *args) {
 
-    int ret;
+    int ret = 1;
     int n_tracers;
     if (!PyArg_ParseTuple(args, "i", &n_tracers))
         return NULL;
@@ -126,7 +132,7 @@ static PyObject * py_initializeExp(PyObject *self, PyObject *args) {
 
 static PyObject * py_progress_n_rounds(PyObject *self, PyObject *args) {
     int n_rounds;
-    int ret;
+    int ret = 1;
 
     if (!PyArg_ParseTuple(args, "i", &n_rounds))
         return NULL;
@@ -137,7 +143,7 @@ static PyObject * py_progress_n_rounds(PyObject *self, PyObject *args) {
 
 static PyObject * py_progress(PyObject *self, PyObject *args) {
 
-    int ret;
+    int ret = 1;
 
     ret = progress();
     return Py_BuildValue("i", ret);
@@ -145,7 +151,7 @@ static PyObject * py_progress(PyObject *self, PyObject *args) {
 
 static PyObject * py_fire_timers(PyObject *self, PyObject *args) {
 
-    int ret;
+    int ret = 1;
 
     ret = fire_timers();
     return Py_BuildValue("i", ret);
@@ -153,7 +159,7 @@ static PyObject * py_fire_timers(PyObject *self, PyObject *args) {
 
 static PyObject * py_synchronizeAndFreeze(PyObject *self, PyObject *args) {
     int n_tracers;
-    int ret;
+    int ret =  1;
 
     if (!PyArg_ParseTuple(args, "i", &n_tracers))
         return NULL;
@@ -167,7 +173,7 @@ static PyObject * py_get_experiment_stats(PyObject *self, PyObject *arg) {
     args.round_error = 0;
     args.round_error_sq = 0;
     args.n_rounds = 0;
-    int ret;
+    int ret = 1;
 
 
     ret = get_experiment_stats(&args);
@@ -184,7 +190,7 @@ static PyObject * py_o_get_experiment_stats(PyObject *self, PyObject *arg) {
     args.round_error = 0;
     args.round_error_sq = 0;
     args.n_rounds = 0;
-    int ret;
+    int ret = 1;
 
     ret = o_get_stats(&args);
 
@@ -207,6 +213,7 @@ static PyMethodDef kronos_functions_methods[] = {
     { "update_tracer_params", py_update_tracer_params, METH_VARARGS, NULL },
     { "write_tracer_results", py_write_tracer_results, METH_VARARGS, NULL },
     { "set_netdevice_owner", py_set_netdevice_owner, METH_VARARGS, NULL },
+    { "add_netdevice_to_vt_control", py_add_netdevice_to_vt_control, METH_VARARGS, NULL },
     { "startExp", py_startExp, METH_VARARGS, NULL },
     { "stopExp", py_stopExp, METH_VARARGS, NULL },
     { "initializeExp", py_initializeExp, METH_VARARGS, NULL },
@@ -214,7 +221,6 @@ static PyMethodDef kronos_functions_methods[] = {
     { "progress", py_progress, METH_VARARGS, NULL },
     { "fire_timers", py_fire_timers, METH_VARARGS, NULL},
     { "get_experiment_stats", py_get_experiment_stats, METH_VARARGS, NULL },
-    { "hello", py_hello, METH_VARARGS, NULL },
     { "o_get_experiment_stats", py_o_get_experiment_stats, METH_VARARGS, NULL },
     {NULL, NULL, 0, NULL}
 };

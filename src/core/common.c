@@ -501,7 +501,7 @@ int register_tracer_process(char * write_buffer) {
 	mutex_unlock(&exp_lock);
 
 	if (should_create_spinner) {
-		PDEBUG_I("Register Tracer: Pid: %d, ID: %d, dilation factor: %d, "
+		PDEBUG_E("Register Tracer: Pid: %d, ID: %d, dilation factor: %d, "
 		 "freeze_quantum: %d, assigned cpu: %d, quantum_n_insns: %d. "
 		 "Spinner pid = %d\n", current->pid, new_tracer->tracer_id,
 		 new_tracer->dilation_factor, new_tracer->freeze_quantum,
@@ -928,86 +928,93 @@ int handle_stop_exp_cmd() {
 * write_buffer: <tracer_pid>,<network device name>
 * Can be called after successfull synchronize and freeze command
 **/
-int handle_set_netdevice_owner_cmd(char * write_buffer) {
+int handle_set_netdevice_owner_cmd(char * write_buffer, int attach_to_any_tracer) {
 
 
 	char dev_name[IFNAMSIZ];
-	int pid;
+	int pid_or_id = 0;
 	struct pid * pid_struct = NULL;
 	int i = 0;
 	struct net * net;
 	struct task_struct * task;
-	tracer * curr_tracer;
+	tracer * curr_tracer = NULL;
 	int found = 0;
+	int next_idx = 0;
 
 	for (i = 0; i < IFNAMSIZ; i++)
 		dev_name[i] = '\0';
 
-	pid = atoi(write_buffer);
-	int next_idx = get_next_value(write_buffer);
-
+	if (!attach_to_any_tracer) {
+		pid_or_id = atoi(write_buffer);
+		next_idx = get_next_value(write_buffer);
+	}
 
 	for (i = 0; * (write_buffer + next_idx + i) != '\0'
 	        && *(write_buffer + next_idx + i) != ','  && i < IFNAMSIZ ; i++)
 		dev_name[i] = *(write_buffer + next_idx + i);
 
-	PDEBUG_A("Set Net Device Owner: Received Pid: %d, Dev Name: %s\n",
-	         pid, dev_name);
+
+	if (attach_to_any_tracer) 
+		PDEBUG_A("Set Net Device Owner: Dev Name: %s. Attempting to attach to any tracer..\n",
+	        dev_name);
+	else
+		PDEBUG_A("Set Net Device Owner: Received Pid: %d, Dev Name: %s\n",
+			 pid_or_id, dev_name);
 
 	struct net_device * dev;
-	for_each_process(task) {
-		if (task != NULL) {
-			if (task->pid == pid) {
-				pid_struct = get_task_pid(task, PIDTYPE_PID);
-				found = 1;
+
+	if (attach_to_any_tracer) {
+		for (i = 1; i <= tracer_num; i++) {
+			curr_tracer = hmap_get_abs(&get_tracer_by_id, i);
+			if (curr_tracer && curr_tracer->spinner_task)
 				break;
-			}
 		}
 	}
+	else
+		curr_tracer = hmap_get_abs(&get_tracer_by_pid, pid_or_id);
+	
 
-
-	if (task && found) {
-		curr_tracer = hmap_get_abs(&get_tracer_by_pid, task->pid);
-		if (!curr_tracer)
-			return FAIL;
-
-		get_tracer_struct_read(curr_tracer);
-		task = curr_tracer->spinner_task;
-		put_tracer_struct_read(curr_tracer);
-		if (!task) {
-			PDEBUG_E("Must have spinner task to "
-			         "be able to set net device owner\n");
-			return FAIL;
-		}
-
-		pid_struct = get_task_pid(task, PIDTYPE_PID);
-		if (!pid_struct) {
-			PDEBUG_E("Pid Struct of spinner task not found for tracer: %d\n",
-			         curr_tracer->tracer_task->pid);
-			return FAIL;
-		}
-
-		write_lock_bh(&dev_base_lock);
-		for_each_net(net) {
-			for_each_netdev(net, dev) {
-				if (dev != NULL) {
-					if (strcmp(dev->name, dev_name) == 0) {
-						PDEBUG_A("Set Net Device Owner: "
-						         "Found Specified Net Device: %s\n", dev_name);
-						dev->owner_pid = pid_struct;
-						found = 1;
-					}
-				}
-			}
-		}
-
-		write_unlock_bh(&dev_base_lock);
-
-	} else {
-		PDEBUG_E("Failed to set Net Device Owner for: %s\n", dev_name);
+	if (!curr_tracer) {
+		PDEBUG_E("No suitable tracer found. Failed to set Net Device Owner for: %s\n", dev_name);
 		return FAIL;
 	}
 
+	get_tracer_struct_read(curr_tracer);
+	task = curr_tracer->spinner_task;
+	put_tracer_struct_read(curr_tracer);
+	if (!task) {
+		PDEBUG_E("Must have spinner task to "
+		         "be able to set net device owner\n");
+		return FAIL;
+	}
+
+	pid_struct = get_task_pid(task, PIDTYPE_PID);
+	if (!pid_struct) {
+		PDEBUG_E("Pid Struct of spinner task not found for tracer: %d\n",
+		         curr_tracer->tracer_task->pid);
+		return FAIL;
+	}
+
+	write_lock_bh(&dev_base_lock);
+	for_each_net(net) {
+		for_each_netdev(net, dev) {
+			if (dev != NULL) {
+				if (strcmp(dev->name, dev_name) == 0) {
+					PDEBUG_A("Set Net Device Owner: "
+					         "Found Specified Net Device: %s\n", dev_name);
+					dev->owner_pid = pid_struct;
+					found = 1;
+					break;
+				}
+			}
+		}
+		if (found)
+			break;
+	}
+
+	write_unlock_bh(&dev_base_lock);
+
+	
 
 	return SUCCESS;
 }

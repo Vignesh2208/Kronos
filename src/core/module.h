@@ -137,7 +137,7 @@ extern void update_all_tracers_virtual_time(int cpuID);
 extern void resume_all_syscall_blocked_processes_from_tracer(unsigned long arg);
 extern int handle_tracer_results(char * buffer);
 extern int handle_stop_exp_cmd();
-extern int handle_set_netdevice_owner_cmd(char * write_buffer);
+extern int handle_set_netdevice_owner_cmd(char * write_buffer, int is_arg_tracer_id);
 extern int do_dialated_poll(unsigned int nfds,  struct poll_list *list,
                             struct poll_wqueues *wait, struct task_struct * tsk);
 extern int do_dialated_select(int n, fd_set_bits *fds, struct task_struct * tsk,

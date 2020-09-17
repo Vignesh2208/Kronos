@@ -180,6 +180,23 @@ int set_netdevice_owner(int tracer_pid, char * intf_name) {
 	return -1;
 
 }
+
+int add_netdevice_to_vt_control(char * intf_name) {
+	if (intf_name == NULL || strlen(intf_name) > IFNAMESIZ)
+		return -1;
+
+
+	if (isModuleLoaded()) {
+		char command[100];
+		flush_buffer(command, 100);
+		sprintf(command, "%c,%s", ADD_NETDEVICE_TO_VT_CONTROL, intf_name);
+		return send_to_kronos(command);
+	}
+
+	return -1;
+
+}
+
 int gettimepid(int pid) {
 
 	if (pid <= 0)

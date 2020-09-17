@@ -384,7 +384,10 @@ ssize_t status_write(struct file *file, const char __user *buffer,
 		ret = handle_tracer_results(write_buffer + 2);
 		mutex_unlock(&file_lock);
 	} else if (write_buffer[0] == SET_NETDEVICE_OWNER) {
-		ret = handle_set_netdevice_owner_cmd(write_buffer + 2);
+		ret = handle_set_netdevice_owner_cmd(write_buffer + 2, 0);
+		mutex_unlock(&file_lock);
+	} else if (write_buffer[0] == ADD_NETDEVICE_TO_VT_CONTROL) {
+		ret = handle_set_netdevice_owner_cmd(write_buffer + 2, 1);
 		mutex_unlock(&file_lock);
 	} else if (write_buffer[0] == GETTIMEPID) {
 		ret = handle_gettimepid(write_buffer + 2);
