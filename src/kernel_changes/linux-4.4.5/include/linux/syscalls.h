@@ -841,9 +841,9 @@ asmlinkage long sys_clone(unsigned long, unsigned long, int __user *,
 #endif
 
 asmlinkage long sys_gettimeofdayreal(struct timeval __user *tv,
-                                struct timezone __user *tz);
+				     struct timezone __user *tz);
 asmlinkage long sys_gettimepid(pid_t pid, struct timeval __user *tv,
-                                struct timezone __user *tz);
+			       struct timezone __user *tz);
 
 asmlinkage long sys_execve(const char __user *filename,
 		const char __user *const __user *argv,

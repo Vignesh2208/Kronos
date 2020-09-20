@@ -3,81 +3,84 @@ KERNEL_SRC:= /lib/modules/$(shell uname -r)/build
 SUBDIR= $(shell pwd)
 GCC:=gcc
 RM:=rm
+CD:=cd
+ECHO:=echo
 
-.PHONY : clean
 nCpus=$(shell nproc --all)
 
 all: clean build
 
-clean: clean_build clean_core clean_utils clean_api clean_tracer clean_tests clean_scripts
+.PHONY : clean
+clean: clean_core clean_utils clean_api clean_tracer clean_scripts
 
-build: build_scripts build_core build_api build_tracer build_tests
+.PHONY : build
+build: build_core build_api build_tracer build_scripts
 
+.PHONY : setup_kernel
 setup_kernel: download_4_4_kernel compile_4_4_kernel
 
+.PHONY : patch_kernel
 patch_kernel: update_kernel compile_4_4_kernel
 
+.PHONY : update_kernel
 update_kernel:
-	@cd src/kernel_changes/linux-4.4.5 && ./patch_kernel.sh
+	@$(CD) src/kernel_changes/linux-4.4.5 && ./patch_kernel.sh
 
+.PHONY : download_4_4_kernel
 download_4_4_kernel:
-	@cd src/kernel_changes/linux-4.4.5 && ./setup.sh
+	@$(CD) src/kernel_changes/linux-4.4.5 && ./setup.sh
 
+.PHONY : compile_4_4_kernel
 compile_4_4_kernel:
-	@cd /src/linux-4.4.5 && sudo cp -v /boot/config-`uname -r` .config && $(MAKE) menuconfig && $(MAKE) -j$(nCpus) && $(MAKE) modules_install && $(MAKE) install;
-	
+	@$(CD) /src/linux-4.4.5 && sudo cp -v /boot/config-`uname -r` .config && $(MAKE) menuconfig && $(MAKE) -j$(nCpus) && $(MAKE) modules_install && $(MAKE) install;
 
-build_tests: 
-	@cd tests && $(MAKE) build
-
-build_scripts:
-	@cd scripts && $(MAKE) clean && $(MAKE);
-
+.PHONY : build_core
 build_core: 
 	$(MAKE) -C $(KERNEL_SRC) M=$(SUBDIR)/build modules
 
+.PHONY : build_api
 build_api:
-	@cd src/api; $(MAKE) build_api;
+	@$(CD) src/api; $(MAKE) build_api;
 
+.PHONY : build_tracer
 build_tracer:
-	@cd src/tracer; $(MAKE) build;
+	@$(CD) src/tracer; $(MAKE) build;
 
+.PHONY : build_scripts
+build_scripts:
+	@$(CD) scripts; $(MAKE) build;
+
+.PHONY : load
 load:
-	sudo insmod build/Kronos.ko
+	sudo insmod build/vt_module.ko
 
+.PHONY : unload
 unload:
-	sudo rmmod build/Kronos.ko
+	sudo rmmod build/vt_module.ko
 
+.PHONY : clean_scripts
 clean_scripts:
-	@echo "Cleaning old Kronos script files ..."
-	@cd scripts && $(MAKE) clean
-
-clean_tests:
-	@echo "Cleaning Kronos test files ..."
-	@cd tests && $(MAKE) clean
-
-clean_build:
-	@echo "Cleaning old Kronos build files ..."
-	@$(RM) -f build/*.ko build/*.o build/*.mod.c build/Module.symvers build/modules.order ;
+	@$(ECHO) "Cleaning scripts ..."
+	@$(CD) scripts && $(MAKE) clean
 	
-
-
+.PHONY : clean_core
 clean_core:
-	@echo "Cleaning old Kronos core files ..."
-	@$(RM) -f src/core/*.o 	
-	@cd build && $(MAKE) clean > /dev/null
+	@$(ECHO) "Cleaning old build files ..."
+	@$(RM) -f build/*.ko build/*.o build/*.mod.c build/Module.symvers build/modules.order ;
 
+.PHONY : clean_utils
 clean_utils:
-	@echo "Cleaning old Kronos utils files ..."
+	@$(ECHO) "Cleaning old utils files ..."
 	@$(RM) -f src/utils/*.o 	
 
+.PHONY : clean_api
 clean_api:
-	@echo "Cleaning old Kronos api files ..."
+	@$(ECHO) "Cleaning old api files ..."
 	@$(RM) -f src/api/*.o 	
-	@cd src/api && $(MAKE) clean
+	@$(CD) src/api && $(MAKE) clean
 
+.PHONY : clean_tracer
 clean_tracer:
-	@echo "Cleaning Tracer files ..."
+	@$(ECHO) "Cleaning Tracer files ..."
 	@$(RM) -f src/tracer/*.o src/tracer/utils/*.o src/tracer/tests/*.o
-	@cd src/tracer && $(MAKE) clean
-
+	@$(CD) src/tracer && $(MAKE) clean

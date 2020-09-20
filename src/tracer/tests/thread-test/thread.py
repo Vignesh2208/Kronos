@@ -4,9 +4,9 @@ import time
 
 
 def daemon():
-    print 'daemon Starting'
+    print 'daemon Starting at: ', time.time()
     time.sleep(0.2)
-    print 'daemon Exiting'
+    print 'daemon Exiting at: ', time.time()
 
 
 def non_daemon():

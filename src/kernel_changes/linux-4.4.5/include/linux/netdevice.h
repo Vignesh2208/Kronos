@@ -50,8 +50,8 @@
 #include <linux/netdev_features.h>
 #include <linux/neighbour.h>
 #include <uapi/linux/netdevice.h>
-#include <linux/pid.h>
 #include <uapi/linux/if_bonding.h>
+#include <linux/pid.h>
 
 struct netpoll_info;
 struct device;
@@ -1538,7 +1538,7 @@ enum netdev_priv_flags {
 
 struct net_device {
 	char			name[IFNAMSIZ];
-    	struct pid*             owner_pid;		// to be used with timekeeper
+	struct pid *owner_pid; // to be used with vt manager
 
 	/* device name hash chain, please keep it close to name[] */
 	struct hlist_node	name_hlist;

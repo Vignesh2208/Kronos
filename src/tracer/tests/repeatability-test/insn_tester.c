@@ -52,6 +52,7 @@ struct sched_param param;
 #define PTRACE_MULTISTEP 0x42f0
 #define PTRACE_GET_REM_MULTISTEP 0x42f1
 #define PTRACE_SET_REM_MULTISTEP 0x42f2
+#define PTRACE_SET_DELTA_BUFFER_WINDOW 0x42f4
 #define WTRACE_DESCENDENTS	0x00100000
 
 struct sockaddr_nl src_addr, dest_addr;
@@ -94,7 +95,7 @@ void print_curr_time(char * str) {
 
 
 
-int run_command(char * full_command_str, pid_t * child_pid) {
+int runCommand(char * full_command_str, pid_t * child_pid) {
 
 	char ** args;
 	char * iter = full_command_str;
@@ -228,7 +229,7 @@ void get_next_command(int sockfd, struct sockaddr_nl * dst_addr,
 
 }
 
-void setup_all_traces(llist * active_tids) {
+void setupAllTracees(llist * active_tids) {
 
 	llist_elem * head = active_tids->head;
 	int * tid;
@@ -273,7 +274,7 @@ void print_active_tids(llist * active_tids) {
 	printf("\n");
 }
 
-unsigned long wait_for_ptrace_events(llist * active_tids, pid_t pid,
+unsigned long waitForPtraceEvents(llist * active_tids, pid_t pid,
                                      unsigned long * new_pid,
                                      struct libperf_data * pd) {
 
@@ -387,7 +388,7 @@ unsigned long wait_for_ptrace_events(llist * active_tids, pid_t pid,
 
 }
 
-int run_commanded_process(llist * active_tids, pid_t pid, 
+int runCommandedProcess(llist * active_tids, pid_t pid, 
 	struct libperf_data * pd, int n_instructions) {
 
 
@@ -403,8 +404,9 @@ int run_commanded_process(llist * active_tids, pid_t pid,
 	int poll_count = 0;
 	char buffer[100];
 	int singlestepmode = 1;
+	unsigned long buffer_window_length = 500;
 
-	if (n_insns < 500)
+	if (n_insns < buffer_window_length)
 		singlestepmode = 1;
 	else
 		singlestepmode = 0;
@@ -421,13 +423,16 @@ int run_commanded_process(llist * active_tids, pid_t pid,
 			ptrace(PTRACE_SET_REM_MULTISTEP, pid, 0, (unsigned long *)&n_insns);
 			ptrace(PTRACE_MULTISTEP, pid, 0, (unsigned long *)&n_insns);
 		} else {
-			n_insns = n_insns - 500;
+			n_insns = n_insns - buffer_window_length;
+			ptrace(PTRACE_SET_DELTA_BUFFER_WINDOW, pid, 0,
+			       (unsigned long *)&buffer_window_length);
 			libperf_ioctlrefresh(pd, LIBPERF_COUNT_HW_INSTRUCTIONS,
 			                     (uint64_t )n_insns);
 			libperf_enablecounter(pd, LIBPERF_COUNT_HW_INSTRUCTIONS);
 			libperf_enablecounter(pd, LIBPERF_COUNT_SW_PAGE_FAULTS);
 			libperf_enablecounter(pd, LIBPERF_COUNT_SW_CONTEXT_SWITCHES);
 			libperf_enablecounter(pd, LIBPERF_COUNT_SW_CPU_MIGRATIONS);
+			
 			ptrace(PTRACE_SET_REM_MULTISTEP, pid, 0, (unsigned long *)&n_insns);
 			ptrace(PTRACE_CONT, pid, 0, 0);
 		}
@@ -447,7 +452,7 @@ int run_commanded_process(llist * active_tids, pid_t pid,
 			errno = 0;
 			continue;
 		}
-		return wait_for_ptrace_events(active_tids, pid, &new_pid, pd);
+		return waitForPtraceEvents(active_tids, pid, &new_pid, pd);
 	}
 
 	return FAIL;
@@ -471,7 +476,7 @@ int main(int argc, char * argv[]) {
 	struct libperf_data * pd;
 	int n_cmds = 0, n_max_insns = 100000;
 	time_t start, end;
-    double cpu_time_used;
+    	double cpu_time_used;
 
 
 	unsigned long ret_acc = 0;
@@ -524,13 +529,13 @@ int main(int argc, char * argv[]) {
 
 	while ((read = getline(&line, &len, fp)) != -1) {
 		printf("Starting Command: %s", line);
-		run_command(line, &cmd_pid[0]);
+		runCommand(line, &cmd_pid[0]);
 		llist_append(&active_tids, &cmd_pid[0]);
-		run_command(line, &cmd_pid[1]);
+		runCommand(line, &cmd_pid[1]);
 		llist_append(&active_tids, &cmd_pid[1]);
 	}
 
-	setup_all_traces(&active_tids);
+	setupAllTracees(&active_tids);
 	ret_acc = 0;
 
 
@@ -549,8 +554,8 @@ int main(int argc, char * argv[]) {
 
 		
 
-		ret1 = run_commanded_process(&active_tids, cmd_pid[0], pd1, n_insns);
-		ret2 = run_commanded_process(&active_tids, cmd_pid[1], pd2, n_insns);
+		ret1 = runCommandedProcess(&active_tids, cmd_pid[0], pd1, n_insns);
+		ret2 = runCommandedProcess(&active_tids, cmd_pid[1], pd2, n_insns);
 
 		if (ret1 == 0 || ret2 == 0) {
 			printf("TEST FAILED. Couldn't run command\n");
@@ -567,10 +572,10 @@ int main(int argc, char * argv[]) {
 			// 2 instructions and check. We only print an error if both checks fail (which
 			// shouldn't happen)
 
-			ret1 = run_commanded_process(&active_tids, cmd_pid[0], pd1, 1);
+			ret1 = runCommandedProcess(&active_tids, cmd_pid[0], pd1, 1);
 			if (ret1 != ret2) {
 				
-				ret2 = run_commanded_process(&active_tids, cmd_pid[1], pd1, 2);
+				ret2 = runCommandedProcess(&active_tids, cmd_pid[1], pd1, 2);
 				if (ret1 != ret2) {
 					printf("TEST FAILED. Command = %d, ret1  = %lX, ret2 = %lX\n",
 					       n_insns, ret1, ret2);

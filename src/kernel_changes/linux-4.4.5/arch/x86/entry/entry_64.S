@@ -509,9 +509,6 @@ END(irq_entries_start)
 	 */
 	SWAPGS
 
-	
-	
-
 	/*
 	 * We need to tell lockdep that IRQs are off.  We can't do this until
 	 * we fix gsbase, and we should do it before enter_from_user_mode
@@ -520,7 +517,6 @@ END(irq_entries_start)
 	 * we enter from user mode.  There's no reason to optimize this since
 	 * TRACE_IRQS_OFF is a no-op if lockdep is off.
 	 */
-	 
 	TRACE_IRQS_OFF
 
 	/** New **/
@@ -538,9 +534,7 @@ END(irq_entries_start)
 	call enter_from_user_mode
 #endif
 
-1:
-
-	
+1:	
 	/*
 	 * Save previous stack pointer, optionally switch to interrupt stack.
 	 * irq_count is used to check if a CPU is already on an interrupt stack
@@ -1463,8 +1457,6 @@ ENTRY(nmi)
 	pushq	%r13		/* pt_regs->r13 */
 	pushq	%r14		/* pt_regs->r14 */
 	pushq	%r15		/* pt_regs->r15 */
-
-	
 
 	/*
 	 * At this point we no longer need to worry about stack damage

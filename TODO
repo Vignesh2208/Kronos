@@ -1,6 +1,0 @@
-1. Alarm Test has a bug which needs to be fixed. The alarm mechanism is not working reliably under Kronos. Need to look at the kernel/time/hrtimer.c file.
-
-2. Nmi counting was disabled in arc/x86/entry/entry64.S to make Socket-Test Pass. Need to figure out the root cause/design another mechanism to enable nmi counting. NMI counting may not be necessary because repeatability-test passes
-
-3. New bug which sometimes causes kernel panic after Kronos module is unloaded
-

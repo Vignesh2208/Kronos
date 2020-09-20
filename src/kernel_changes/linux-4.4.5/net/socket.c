@@ -381,11 +381,11 @@ struct file *sock_alloc_file(struct socket *sock, int flags, const char *dname)
 		return file;
 	}
 
-	sock->file = file;
-	file->f_flags = O_RDWR | (flags & O_NONBLOCK);
-	file->private_data = sock;
-	f_setown(sock->file,current->pid,1);
-	return file;
+  sock->file = file;
+  file->f_flags = O_RDWR | (flags & O_NONBLOCK);
+  file->private_data = sock;
+  f_setown(sock->file, current->pid, 1);
+  return file;
 }
 EXPORT_SYMBOL(sock_alloc_file);
 

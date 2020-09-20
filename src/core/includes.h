@@ -39,29 +39,25 @@
 #include <linux/delay.h>
 #include <linux/ptrace.h>
 
+#include <linux/uaccess.h>
+#include <linux/debugfs.h>
+#include <linux/mm.h>
+
 /* user defined headers */
 #include "../utils/linkedlist.h"
 #include "../utils/hashmap.h"
-#include "kronos_cmds.h"
+#include "vt_api_cmds.h"
 
 
-#define TK_IOC_MAGIC  'k'
 
-#define TK_IO_GET_STATS _IOW(TK_IOC_MAGIC,  1, int)
-#define TK_IO_WRITE_RESULTS _IOW(TK_IOC_MAGIC,  2, int)
-#define TK_IO_RESUME_BLOCKED_SYSCALLS _IOW(TK_IOC_MAGIC,  3, int)
-#define TK_IO_GET_CURRENT_VIRTUAL_TIME _IOW(TK_IOC_MAGIC,  4, int)
-
-//#define __TK_MULTI_CORE_MODE
-
-/* Define this macro to enable debug kernel logging in INFO mode*/
-//#define KRONOS_DEBUG_VERBOSE
-//#define KRONOS_DEBUG_INFO
 
 #define IGNORE_BLOCKED_PROCESS_SCHED_MODE
 
-/* Define this macro to enable debug kernel logging in VERBOSE mode*/
-//#define KRONOS_DEBUG_VERBOSE
+#define TRACER_TYPE_INS_VT 1
+#define TRACER_TYPE_APP_VT 2
+
+#define PROCESS_MIN_QUANTA_NS 100000
+
 
 #define DEBUG_LEVEL_NONE 0
 #define DEBUG_LEVEL_INFO 1
@@ -72,18 +68,8 @@
 
 //Number of Instructions per uSec or 1 instruction per nano sec
 #define REF_CPU_SPEED	1000
+#define ENABLE_LOCKING
 
-
-
-
-//#define BITS_PER_LONG 32
-#define POLLIN_SET (POLLRDNORM | POLLRDBAND | POLLIN | POLLHUP | POLLERR)
-#define POLLOUT_SET (POLLWRBAND | POLLWRNORM | POLLOUT | POLLERR)
-#define POLLEX_SET (POLLPRI)
-#define FDS_IN(fds, n)          (fds->in + n)
-#define FDS_OUT(fds, n)         (fds->out + n)
-#define FDS_EX(fds, n)          (fds->ex + n)
-#define BITS(fds, n)    (*FDS_IN(fds, n)|*FDS_OUT(fds, n)|*FDS_EX(fds, n))
 
 #define MSEC_PER_SEC    1000L
 #define USEC_PER_MSEC   1000L
@@ -92,47 +78,53 @@
 #define USEC_PER_SEC    1000000L
 #define NSEC_PER_SEC    1000000000L
 #define FSEC_PER_SEC    1000000000000000L
-#define EFAULT          14
-#define EINVAL          22
-#define EINTR            4
-#define ENOMEM          12
-#define POLL_STACK_ALLOC      256
-#define SELECT_STACK_ALLOC      256
-#define RLIMIT_NOFILE           7       /* max number of open files */
-
-#define N_STACK_PPS ((POLL_STACK_ALLOC - sizeof(struct poll_list))  / \
-                         sizeof(struct pollfd))
-
-#define POLLFD_PER_PAGE  ((4096-sizeof(struct poll_list)) / sizeof(struct pollfd))
-#define FINISHED 2
-#define GOT_RESULT -1
-#define IFNAMESIZ 16
-#define NR_select __NR_select
-#define ENABLE_LOCKING
 
 #define EXP_CBE 1
 #define EXP_CS 2
-
+#define NOT_SET 0
 
 
 
 #ifdef KRONOS_DEBUG_INFO
-#define PDEBUG_I(fmt, args...) printk(KERN_INFO "Kronos: <INFO> " fmt, ## args)
+#define PDEBUG_I(fmt, args...) \
+ 	do {                                \
+        printk(KERN_DEBUG "Kronos: <INFO> [Process: %d] (%s:%d): %s: ",    \
+               current->pid, __FILE__, __LINE__, __func__);          \
+        printk(KERN_INFO fmt, ## args);	\
+    } while (0)
+	
 #else
-#define PDEBUG_I(fmt,args...)	//printk(KERN_INFO "Kronos: <INFO> " fmt, ## args)
+#define PDEBUG_I(fmt,args...)
 #endif
 
 
 
 #ifdef KRONOS_DEBUG_VERBOSE
-#define PDEBUG_V(fmt,args...) printk(KERN_INFO "Kronos: <VERBOSE> " fmt, ## args)
+#define PDEBUG_V(fmt, args...) \
+ 	do {                                \
+        printk(KERN_DEBUG "Kronos: <VERBOSE> [Process: %d] (%s:%d): %s: ",    \
+               current->pid, __FILE__, __LINE__, __func__);          \
+        printk(KERN_INFO fmt, ## args);	\
+    } while (0)
 #else
-#define PDEBUG_V(fmt,args...) //printk(KERN_INFO "Kronos: <VERBOSE> " fmt, ## args)
+#define PDEBUG_V(fmt,args...)
 #endif
 
-#define PDEBUG_A(fmt, args...) //printk(KERN_INFO "Kronos: <NOTICE> " fmt, ## args)
-#define PDEBUG_E(fmt, args...) printk(KERN_ERR "Kronos: <ERROR> " fmt, ## args)
 
+#define PDEBUG_A(fmt, args...) \
+ 	do {                                \
+        printk(KERN_DEBUG "Kronos: <NOTICE> [Process: %d] (%s:%d): %s: ",    \
+               current->pid, __FILE__, __LINE__, __func__);          \
+        printk(KERN_INFO fmt, ## args);	\
+    } while (0)
+
+
+#define PDEBUG_E(fmt, args...) \
+ 	do {                                \
+        printk(KERN_DEBUG "Kronos: <ERROR> [Process: %d] (%s:%d): %s: ",    \
+               current->pid, __FILE__, __LINE__, __func__);          \
+        printk(KERN_INFO fmt, ## args);	\
+    } while (0)
 
 
 #ifdef ENABLE_IRQ_LOCKING
@@ -181,6 +173,9 @@
 
 typedef unsigned long long u64;
 typedef unsigned int uint32_t;
+typedef int int32_t;
+typedef short int int16_t;
+typedef unsigned short int uint16_t;
 
 
 #endif

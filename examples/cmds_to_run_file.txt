@@ -1,1 +1,5 @@
-/home/kronos/cmd_executor -f /home/kronos/test_cmds.txt
+sysbench --test=cpu --cpu-max-prime=10000 --num-threads=1 run
+sysbench --test=cpu --cpu-max-prime=10000 --num-threads=1 run
+sysbench --test=cpu --cpu-max-prime=10000 --num-threads=1 run
+sysbench --test=cpu --cpu-max-prime=10000 --num-threads=1 run
+sysbench --test=cpu --cpu-max-prime=10000 --num-threads=1 run

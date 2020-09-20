@@ -134,11 +134,10 @@
 #include <linux/hashtable.h>
 #include <linux/vmalloc.h>
 #include <linux/if_macvlan.h>
-#include <linux/pid.h>
 #include <linux/errqueue.h>
 #include <linux/hrtimer.h>
 #include <linux/netfilter_ingress.h>
-
+#include <linux/pid.h>
 #include "net-sysfs.h"
 
 /* Instead of increasing this, you should create a hash table. */
@@ -1711,52 +1710,31 @@ void net_disable_timestamp(void)
 }
 EXPORT_SYMBOL(net_disable_timestamp);
 
-
 extern s64 get_current_dilated_time(struct task_struct *);
 
-static inline void __set_dilated_timestamp(struct sk_buff * skb, struct pid * owner_pid){
+static inline void __set_dilated_timestamp(struct sk_buff *skb,
+                                           struct pid *owner_pid) {
+  struct task_struct *result;
+  s64 dilated_time = 0;
+  result = NULL;
+  result = pid_task(owner_pid, PIDTYPE_PID);
 
-	struct task_struct * result;
-	s64 dilated_time = 0;
-	result = NULL;
-	result = pid_task(owner_pid,PIDTYPE_PID);
-
-	if(result != NULL) {
-		dilated_time = get_current_dilated_time(result);
-		skb->tstamp.tv64 = dilated_time;
-	}
+  if (result != NULL) {
+    dilated_time = get_current_dilated_time(result);
+    skb->tstamp.tv64 = dilated_time;
+  }
 }
 
-static inline void net_timestamp_set(struct sk_buff *skb)
-{
-	struct task_struct * result;
-	s64 dilated_time = 0;
-	
+static inline void net_timestamp_set(struct sk_buff *skb) {}
 
-	//if(skb->tstamp.tv64 > 0)
-	//	return;
-	//skb->tstamp.tv64 = 0;
-	/*if (static_key_false(&netstamp_needed)) {
-		if(skb->dev != NULL && skb->dev->owner_pid != NULL) {
-			__set_dilated_timestamp(skb, skb->dev->owner_pid);
-			return;
-		}
-		__net_timestamp(skb);
-	}*/
-	//skb->tstamp.tv64 = 0;
-	//if (static_key_false(&netstamp_needed))
-	//	__net_timestamp(skb);
-}
-
-#define net_timestamp_check(COND, SKB)			\
-	if (static_key_false(&netstamp_needed)) {		\
-		if((COND) && (SKB) ->dev !=NULL) {   \
-			if((SKB)->dev->owner_pid != NULL)    \
-				__set_dilated_timestamp(SKB,(SKB)->dev->owner_pid); \
-		} \
-		if ((COND) && !(SKB)->tstamp.tv64)	\
-			__net_timestamp(SKB);		\
-	}						\
+#define net_timestamp_check(COND, SKB)                       \
+  if (static_key_false(&netstamp_needed)) {                  \
+    if ((COND) && (SKB)->dev != NULL) {                      \
+      if ((SKB)->dev->owner_pid != NULL)                     \
+        __set_dilated_timestamp(SKB, (SKB)->dev->owner_pid); \
+    }                                                        \
+    if ((COND) && !(SKB)->tstamp.tv64) __net_timestamp(SKB); \
+  }
 
 bool is_skb_forwardable(struct net_device *dev, struct sk_buff *skb)
 {

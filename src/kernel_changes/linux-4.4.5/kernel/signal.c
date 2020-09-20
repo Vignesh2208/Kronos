@@ -1845,11 +1845,9 @@ static void ptrace_stop(int exit_code, int why, int clear_code, siginfo_t *info)
 		do_notify_parent_cldstop(current, true, why);
 		if (gstop_done && ptrace_reparented(current))
 			do_notify_parent_cldstop(current, false, why);
-
-		if(current->virt_start_time != 0) {
+		if (current->virt_start_time != 0) {
 			current->ptrace_mflags = 0;
 		}
-
 		/*
 		 * Don't want to allow preemption here, because
 		 * sys_ptrace() needs this task to be inactive.

@@ -112,18 +112,20 @@ struct hrtimer {
 #endif
 };
 
-
 struct hrtimer_dilated {
 	struct timerqueue_node node;
-	ktime_t 	_softexpires;
-	enum hrtimer_restart	(*function)(struct hrtimer_dilated *);
-	struct hrtimer_dilated_clock_base	*base;
+	ktime_t _softexpires;
+	enum hrtimer_restart (*function)(struct hrtimer_dilated *);
+	struct hrtimer_dilated_clock_base *base;
 	u8 active;
-	u8	is_rel;
+	u8 is_rel;
 	u8 state;
-
 };
 
+struct dilated_hrtimer_sleeper {
+	struct hrtimer_dilated timer_dilated;
+	struct task_struct * task;
+};
 
 /**
  * struct hrtimer_sleeper - simple sleeper structure
@@ -171,12 +173,14 @@ enum  hrtimer_base_type {
 };
 
 struct hrtimer_dilated_clock_base {
-	struct hrtimer_cpu_base	*cpu_base;
-	int clock_active;	//indicates whether dilated clock is active i.e whether Kronos experiment is running. If not new dilated hrtimer init should fail and existing hrtimer callbacks should end.
-	struct timerqueue_head	active;
-	ktime_t	 (*get_time)(void);
+	struct hrtimer_cpu_base *cpu_base;
+	int clock_active; // indicates whether dilated clock is active i.e whether
+		// VT experiment is running. If not new dilated hrtimer
+		// init should fail and existing hrtimer callbacks should
+		// end.
+	struct timerqueue_head active;
+	ktime_t (*get_time)(void);
 } __attribute__((__aligned__(HRTIMER_CLOCK_BASE_ALIGN)));
-
 
 /*
  * struct hrtimer_cpu_base - the per cpu clock bases
@@ -216,8 +220,8 @@ struct hrtimer_cpu_base {
 	bool				nohz_active;
 #ifdef CONFIG_HIGH_RES_TIMERS
 	unsigned int			in_hrtirq	: 1,
-	                    hres_active	: 1,
-	                    hang_detected	: 1;
+					hres_active	: 1,
+					hang_detected	: 1;
 	ktime_t				expires_next;
 	struct hrtimer			*next_timer;
 	unsigned int			nr_events;
@@ -225,68 +229,81 @@ struct hrtimer_cpu_base {
 	unsigned int			nr_hangs;
 	unsigned int			max_hang_time;
 #endif
-	struct hrtimer_clock_base	clock_base[HRTIMER_MAX_CLOCK_BASES];
+	struct hrtimer_clock_base clock_base[HRTIMER_MAX_CLOCK_BASES];
 	struct hrtimer_dilated_clock_base dilated_clock_base;
-	ktime_t 			nxt_dilated_expiry;
-	struct hrtimer_dilated 	*running_dilated_timer;
+	ktime_t nxt_dilated_expiry;
+	struct hrtimer_dilated *running_dilated_timer;
 } ____cacheline_aligned;
 
-static inline void hrtimer_set_expires(struct hrtimer *timer, ktime_t time) {
+static inline void hrtimer_set_expires(struct hrtimer *timer, ktime_t time)
+{
 	BUILD_BUG_ON(sizeof(struct hrtimer_clock_base) > HRTIMER_CLOCK_BASE_ALIGN);
 
 	timer->node.expires = time;
 	timer->_softexpires = time;
 }
 
-static inline void hrtimer_set_expires_range(struct hrtimer *timer, ktime_t time, ktime_t delta) {
+static inline void hrtimer_set_expires_range(struct hrtimer *timer, ktime_t time, ktime_t delta)
+{
 	timer->_softexpires = time;
 	timer->node.expires = ktime_add_safe(time, delta);
 }
 
-static inline void hrtimer_set_expires_range_ns(struct hrtimer *timer, ktime_t time, unsigned long delta) {
+static inline void hrtimer_set_expires_range_ns(struct hrtimer *timer, ktime_t time, unsigned long delta)
+{
 	timer->_softexpires = time;
 	timer->node.expires = ktime_add_safe(time, ns_to_ktime(delta));
 }
 
-static inline void hrtimer_set_expires_tv64(struct hrtimer *timer, s64 tv64) {
+static inline void hrtimer_set_expires_tv64(struct hrtimer *timer, s64 tv64)
+{
 	timer->node.expires.tv64 = tv64;
 	timer->_softexpires.tv64 = tv64;
 }
 
-static inline void hrtimer_add_expires(struct hrtimer *timer, ktime_t time) {
+static inline void hrtimer_add_expires(struct hrtimer *timer, ktime_t time)
+{
 	timer->node.expires = ktime_add_safe(timer->node.expires, time);
 	timer->_softexpires = ktime_add_safe(timer->_softexpires, time);
 }
 
-static inline void hrtimer_add_expires_ns(struct hrtimer *timer, u64 ns) {
+static inline void hrtimer_add_expires_ns(struct hrtimer *timer, u64 ns)
+{
 	timer->node.expires = ktime_add_ns(timer->node.expires, ns);
 	timer->_softexpires = ktime_add_ns(timer->_softexpires, ns);
 }
 
-static inline ktime_t hrtimer_get_expires(const struct hrtimer *timer) {
+static inline ktime_t hrtimer_get_expires(const struct hrtimer *timer)
+{
 	return timer->node.expires;
 }
 
-static inline ktime_t hrtimer_get_softexpires(const struct hrtimer *timer) {
+static inline ktime_t hrtimer_get_softexpires(const struct hrtimer *timer)
+{
 	return timer->_softexpires;
 }
 
-static inline s64 hrtimer_get_expires_tv64(const struct hrtimer *timer) {
+static inline s64 hrtimer_get_expires_tv64(const struct hrtimer *timer)
+{
 	return timer->node.expires.tv64;
 }
-static inline s64 hrtimer_get_softexpires_tv64(const struct hrtimer *timer) {
+static inline s64 hrtimer_get_softexpires_tv64(const struct hrtimer *timer)
+{
 	return timer->_softexpires.tv64;
 }
 
-static inline s64 hrtimer_get_expires_ns(const struct hrtimer *timer) {
+static inline s64 hrtimer_get_expires_ns(const struct hrtimer *timer)
+{
 	return ktime_to_ns(timer->node.expires);
 }
 
-static inline ktime_t hrtimer_expires_remaining(const struct hrtimer *timer) {
+static inline ktime_t hrtimer_expires_remaining(const struct hrtimer *timer)
+{
 	return ktime_sub(timer->node.expires, timer->base->get_time());
 }
 
-static inline ktime_t hrtimer_cb_get_time(struct hrtimer *timer) {
+static inline ktime_t hrtimer_cb_get_time(struct hrtimer *timer)
+{
 	return timer->base->get_time();
 }
 
@@ -295,7 +312,8 @@ struct clock_event_device;
 
 extern void hrtimer_interrupt(struct clock_event_device *dev);
 
-static inline int hrtimer_is_hres_active(struct hrtimer *timer) {
+static inline int hrtimer_is_hres_active(struct hrtimer *timer)
+{
 	return timer->base->cpu_base->hres_active;
 }
 
@@ -325,7 +343,8 @@ extern unsigned int hrtimer_resolution;
 
 static inline void hrtimer_peek_ahead_timers(void) { }
 
-static inline int hrtimer_is_hres_active(struct hrtimer *timer) {
+static inline int hrtimer_is_hres_active(struct hrtimer *timer)
+{
 	return 0;
 }
 
@@ -334,7 +353,8 @@ static inline void clock_was_set_delayed(void) { }
 #endif
 
 static inline ktime_t
-__hrtimer_expires_remaining_adjusted(const struct hrtimer *timer, ktime_t now) {
+__hrtimer_expires_remaining_adjusted(const struct hrtimer *timer, ktime_t now)
+{
 	ktime_t rem = ktime_sub(timer->node.expires, now);
 
 	/*
@@ -347,9 +367,10 @@ __hrtimer_expires_remaining_adjusted(const struct hrtimer *timer, ktime_t now) {
 }
 
 static inline ktime_t
-hrtimer_expires_remaining_adjusted(const struct hrtimer *timer) {
+hrtimer_expires_remaining_adjusted(const struct hrtimer *timer)
+{
 	return __hrtimer_expires_remaining_adjusted(timer,
-	        timer->base->get_time());
+						    timer->base->get_time());
 }
 
 extern void clock_was_set(void);
@@ -367,17 +388,18 @@ DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
 
 /* Initialize timers: */
 extern void hrtimer_init(struct hrtimer *timer, clockid_t which_clock,
-                         enum hrtimer_mode mode);
+			 enum hrtimer_mode mode);
 
 #ifdef CONFIG_DEBUG_OBJECTS_TIMERS
 extern void hrtimer_init_on_stack(struct hrtimer *timer, clockid_t which_clock,
-                                  enum hrtimer_mode mode);
+				  enum hrtimer_mode mode);
 
 extern void destroy_hrtimer_on_stack(struct hrtimer *timer);
 #else
 static inline void hrtimer_init_on_stack(struct hrtimer *timer,
-        clockid_t which_clock,
-        enum hrtimer_mode mode) {
+					 clockid_t which_clock,
+					 enum hrtimer_mode mode)
+{
 	hrtimer_init(timer, which_clock, mode);
 }
 static inline void destroy_hrtimer_on_stack(struct hrtimer *timer) { }
@@ -385,7 +407,7 @@ static inline void destroy_hrtimer_on_stack(struct hrtimer *timer) { }
 
 /* Basic timer operations: */
 extern void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
-                                   unsigned long range_ns, const enum hrtimer_mode mode);
+			unsigned long range_ns, const enum hrtimer_mode mode);
 
 /**
  * hrtimer_start - (re)start an hrtimer on the current CPU
@@ -395,7 +417,8 @@ extern void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
  *		relative (HRTIMER_MODE_REL)
  */
 static inline void hrtimer_start(struct hrtimer *timer, ktime_t tim,
-                                 const enum hrtimer_mode mode) {
+				 const enum hrtimer_mode mode)
+{
 	hrtimer_start_range_ns(timer, tim, 0, mode);
 }
 
@@ -403,7 +426,8 @@ extern int hrtimer_cancel(struct hrtimer *timer);
 extern int hrtimer_try_to_cancel(struct hrtimer *timer);
 
 static inline void hrtimer_start_expires(struct hrtimer *timer,
-        enum hrtimer_mode mode) {
+					 enum hrtimer_mode mode)
+{
 	unsigned long delta;
 	ktime_t soft, hard;
 	soft = hrtimer_get_softexpires(timer);
@@ -412,14 +436,16 @@ static inline void hrtimer_start_expires(struct hrtimer *timer,
 	hrtimer_start_range_ns(timer, soft, delta, mode);
 }
 
-static inline void hrtimer_restart(struct hrtimer *timer) {
+static inline void hrtimer_restart(struct hrtimer *timer)
+{
 	hrtimer_start_expires(timer, HRTIMER_MODE_ABS);
 }
 
 /* Query timers: */
 extern ktime_t __hrtimer_get_remaining(const struct hrtimer *timer, bool adjust);
 
-static inline ktime_t hrtimer_get_remaining(const struct hrtimer *timer) {
+static inline ktime_t hrtimer_get_remaining(const struct hrtimer *timer)
+{
 	return __hrtimer_get_remaining(timer, false);
 }
 
@@ -430,7 +456,8 @@ extern bool hrtimer_active(const struct hrtimer *timer);
 /*
  * Helper function to check, whether the timer is on one of the queues
  */
-static inline int hrtimer_is_queued(struct hrtimer *timer) {
+static inline int hrtimer_is_queued(struct hrtimer *timer)
+{
 	return timer->state & HRTIMER_STATE_ENQUEUED;
 }
 
@@ -438,7 +465,8 @@ static inline int hrtimer_is_queued(struct hrtimer *timer) {
  * Helper function to check, whether the timer is running the callback
  * function
  */
-static inline int hrtimer_callback_running(struct hrtimer *timer) {
+static inline int hrtimer_callback_running(struct hrtimer *timer)
+{
 	return timer->base->cpu_base->running == timer;
 }
 
@@ -463,24 +491,25 @@ hrtimer_forward(struct hrtimer *timer, ktime_t now, ktime_t interval);
  * the timer.
  */
 static inline u64 hrtimer_forward_now(struct hrtimer *timer,
-                                      ktime_t interval) {
+				      ktime_t interval)
+{
 	return hrtimer_forward(timer, timer->base->get_time(), interval);
 }
 
 /* Precise sleep: */
 extern long hrtimer_nanosleep(struct timespec *rqtp,
-                              struct timespec __user *rmtp,
-                              const enum hrtimer_mode mode,
-                              const clockid_t clockid);
+			      struct timespec __user *rmtp,
+			      const enum hrtimer_mode mode,
+			      const clockid_t clockid);
 extern long hrtimer_nanosleep_restart(struct restart_block *restart_block);
 
 extern void hrtimer_init_sleeper(struct hrtimer_sleeper *sl,
-                                 struct task_struct *tsk);
+				 struct task_struct *tsk);
 
 extern int schedule_hrtimeout_range(ktime_t *expires, unsigned long delta,
-                                    const enum hrtimer_mode mode);
+						const enum hrtimer_mode mode);
 extern int schedule_hrtimeout_range_clock(ktime_t *expires,
-        unsigned long delta, const enum hrtimer_mode mode, int clock);
+		unsigned long delta, const enum hrtimer_mode mode, int clock);
 extern int schedule_hrtimeout(ktime_t *expires, const enum hrtimer_mode mode);
 
 /* Soft interrupt function to run the hrtimer queues: */
@@ -492,15 +521,20 @@ extern void __init hrtimers_init(void);
 /* Show pending timers: */
 extern void sysrq_timer_list_show(void);
 
-
 /** Dilated hrtimer functions **/
-
 
 extern int dilated_hrtimer_cancel(struct hrtimer_dilated *timer);
 extern int dilated_hrtimer_try_to_cancel(struct hrtimer_dilated *timer);
-extern void dilated_hrtimer_start(struct hrtimer_dilated *timer, ktime_t expiry_time, const enum hrtimer_mode mode);
-extern int dilated_hrtimer_init(struct hrtimer_dilated *timer, int cpu, enum hrtimer_mode mode);
-extern int dilated_hrtimer_forward(struct hrtimer_dilated *timer, ktime_t interval);
-extern void dilated_hrtimer_start_range_ns(struct hrtimer_dilated *timer, ktime_t expiry_time, const enum hrtimer_mode mode);
+extern void dilated_hrtimer_start(struct hrtimer_dilated *timer,
+				  ktime_t expiry_time,
+				  const enum hrtimer_mode mode);
+extern int dilated_hrtimer_init(struct hrtimer_dilated *timer, int cpu,
+				enum hrtimer_mode mode);
+extern int dilated_hrtimer_forward(struct hrtimer_dilated *timer,
+				   ktime_t interval);
+extern void dilated_hrtimer_start_range_ns(struct hrtimer_dilated *timer,
+					   ktime_t expiry_time,
+					   const enum hrtimer_mode mode);
+extern int dilated_hrtimer_sleep(ktime_t duration);
 
 #endif

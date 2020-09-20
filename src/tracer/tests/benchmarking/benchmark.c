@@ -99,7 +99,7 @@ void print_curr_time(char * str) {
 
 
 
-int run_command(char * full_command_str, pid_t * child_pid) {
+int runCommand(char * full_command_str, pid_t * child_pid) {
 
 	char ** args;
 	char * iter = full_command_str;
@@ -228,7 +228,7 @@ void get_next_command(int sockfd, struct sockaddr_nl * dst_addr,
 
 }
 
-void setup_all_traces(llist * active_tids) {
+void setupAllTracees(llist * active_tids) {
 
 	llist_elem * head = active_tids->head;
 	int * tid;
@@ -273,9 +273,9 @@ void print_active_tids(llist * active_tids) {
 	printf("\n");
 }
 
-unsigned long wait_for_ptrace_events(hashmap * tracees, llist * active_tids,
-				     pid_t pid, unsigned long * new_pid,
-                                     struct libperf_data * pd) {
+unsigned long waitForPtraceEvents(hashmap * tracees, llist * active_tids,
+				     			  pid_t pid, unsigned long * new_pid,
+                                  struct libperf_data * pd) {
 
 	llist_elem * head = active_tids->head;
 	unsigned long status;
@@ -371,7 +371,7 @@ unsigned long wait_for_ptrace_events(hashmap * tracees, llist * active_tids,
 
 }
 
-int run_commanded_process(hashmap * tracees,
+int runCommandedProcess(hashmap * tracees,
 			  llist * active_tids, pid_t pid, int n_instructions,
                           int disable_buffer_window) {
 
@@ -388,7 +388,7 @@ int run_commanded_process(hashmap * tracees,
 	int poll_count = 0;
 	char buffer[100];
 	int singlestepmode = 1;
-	unsigned long buffer_window_size = BUFFER_WINDOW_SIZE;
+	unsigned long burst_target = BUFFER_WINDOW_SIZE;
 
 	if (n_insns < BUFFER_WINDOW_SIZE)
 		singlestepmode = 1;
@@ -409,11 +409,11 @@ int run_commanded_process(hashmap * tracees,
 			if (!disable_buffer_window){
 				n_insns = n_insns - BUFFER_WINDOW_SIZE;
 				ptrace(PTRACE_SET_DELTA_BUFFER_WINDOW, pid, 0,
-				       (unsigned long *)&buffer_window_size);
+				       (unsigned long *)&burst_target);
 			} else {
-				buffer_window_size = 1;
+				burst_target = 1;
 				ptrace(PTRACE_SET_DELTA_BUFFER_WINDOW, pid, 0,
-				       (unsigned long *)&buffer_window_size);
+				       (unsigned long *)&burst_target);
 			}
 			if (pd == NULL) {
 				pd = libperf_initialize((int)pid, 0);
@@ -446,7 +446,7 @@ int run_commanded_process(hashmap * tracees,
 			errno = 0;
 			continue;
 		}
-		return wait_for_ptrace_events(tracees, active_tids, pid, &new_pid, pd);
+		return waitForPtraceEvents(tracees, active_tids, pid, &new_pid, pd);
 	}
 
 	return FAIL;
@@ -554,13 +554,13 @@ int main(int argc, char * argv[]) {
 
 	while ((read = getline(&line, &len, fp)) != -1) {
 		printf("Starting Command: %s", line);
-		run_command(line, &cmd_pid[0]);
+		runCommand(line, &cmd_pid[0]);
 		llist_append(&active_tids, &cmd_pid[0]);
-		run_command(line, &cmd_pid[1]);
+		runCommand(line, &cmd_pid[1]);
 		llist_append(&active_tids, &cmd_pid[1]);
 	}
 
-	setup_all_traces(&active_tids);
+	setupAllTracees(&active_tids);
 	ret_acc = 0;
 
 	unsigned long avg_err_1000_insns = 0;
@@ -574,7 +574,7 @@ int main(int argc, char * argv[]) {
 		n_insns = measurements[measurement_idx].n_insns;
 
 		gettimeofday(&start, NULL);
-		ret1 = run_commanded_process(&tracees, &active_tids, cmd_pid[0], n_insns, 0);
+		ret1 = runCommandedProcess(&tracees, &active_tids, cmd_pid[0], n_insns, 0);
 		gettimeofday(&end, NULL);
 		secs_used = (end.tv_sec - start.tv_sec);
 		micros_used = ((secs_used * 1000000) + end.tv_usec) - (start.tv_usec);
@@ -592,7 +592,7 @@ int main(int argc, char * argv[]) {
 
 
 		gettimeofday(&start, NULL);
-		ret2 = run_commanded_process(&tracees, &active_tids, cmd_pid[1], n_insns, 1);
+		ret2 = runCommandedProcess(&tracees, &active_tids, cmd_pid[1], n_insns, 1);
 		gettimeofday(&end, NULL);
 		secs_used = (end.tv_sec - start.tv_sec);
 		micros_used = ((secs_used * 1000000) + end.tv_usec) - (start.tv_usec);

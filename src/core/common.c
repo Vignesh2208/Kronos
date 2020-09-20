@@ -1,75 +1,44 @@
 #include "includes.h"
-#include "module.h"
+#include "vt_module.h"
+#include "sync_experiment.h"
 #include "utils.h"
 
-// number of TRACERS in the experiment
 extern int tracer_num;
-// number of tracers for which a spinner has already been spawned
-extern int n_processed_tracers;
 extern int EXP_CPUS;
 extern int TOTAL_CPUS;
-// the main synchronization kernel thread for experiments
-extern struct task_struct *round_task;
-// flag to determine state of the experiment
-extern int experiment_stopped;
+extern struct task_struct ** chaintask;
 extern int experiment_status;
 extern int experiment_type;
+extern int initialization_status;
+extern s64 virt_exp_start_time;
 
 extern struct mutex exp_lock;
-extern int *per_cpu_chain_length;
-extern llist * per_cpu_tracer_list;
+extern int *per_timeline_chain_length;
+extern llist * per_timeline_tracer_list;
 
-extern hashmap poll_process_lookup;
-extern hashmap select_process_lookup;
-extern hashmap sleep_process_lookup;
-//hashmap of <TRACER_NUMBER, TRACER_STRUCT>
+extern s64 * tracer_clock_array;
+extern s64 * aligned_tracer_clock_array;
+
 extern hashmap get_tracer_by_id;
-//hashmap of <TRACER_PID, TRACER_STRUCT>
 extern hashmap get_tracer_by_pid;
-extern atomic_t experiment_stopping;
+
 extern wait_queue_head_t expstop_call_proc_wqueue;
-extern unsigned long **sys_call_table;
 
-extern int run_usermode_tracer_spin_process(char *path, char **argv,
-        char **envp, int wait);
-extern void signal_cpu_worker_resume(tracer * curr_tracer);
-extern s64 get_dilated_time(struct task_struct * task);
-extern int cleanup_experiment_components(void);
-
-
-extern struct poll_list {
-	struct poll_list *next;
-	int len;
-	struct pollfd entries[0];
-};
-extern struct poll_helper_struct;
-extern hashmap poll_process_lookup;
 extern atomic_t progress_n_rounds ;
-extern atomic_t progress_n_enabled ;
 extern atomic_t n_waiting_tracers;
 extern wait_queue_head_t progress_sync_proc_wqueue;
+extern wait_queue_head_t * timeline_wqueue;
 
 
-extern asmlinkage long (*ref_sys_sleep)(struct timespec __user *rqtp,
-                                        struct timespec __user *rmtp);
-extern asmlinkage int (*ref_sys_poll)(struct pollfd __user * ufds,
-                                      unsigned int nfds, int timeout_msecs);
-extern asmlinkage int (*ref_sys_select)(int n, fd_set __user *inp,
-                                        fd_set __user *outp, fd_set __user *exp,
-                                        struct timeval __user *tvp);
-extern asmlinkage long (*ref_sys_clock_nanosleep)(const clockid_t which_clock,
-        int flags, const struct timespec __user * rqtp,
-        struct timespec __user * rmtp);
-extern asmlinkage int (*ref_sys_clock_gettime)(const clockid_t which_clock,
-        struct timespec __user * tp);
-extern unsigned long orig_cr0;
-extern s64 round_error;
-extern s64 n_rounds;
-extern s64 round_error_sq;
-extern s64 expected_time;
+extern void SignalCPUWorkerResume(tracer * curr_tracer);
+extern s64 GetDilatedTime(struct task_struct * task);
+extern int CleanUpExperimentComponents(void);
 
 
-struct task_struct* get_task_ns(pid_t pid, struct task_struct * parent) {
+
+
+
+struct task_struct* GetTaskNs(pid_t pid, struct task_struct * parent) {
 	if (!parent)
 		return NULL;
 	int num_children = 0;
@@ -85,13 +54,11 @@ struct task_struct* get_task_ns(pid_t pid, struct task_struct * parent) {
 	} while_each_thread(me, t);
 	
 
-
-
 	list_for_each(list, &parent->children) {
 		struct task_struct * taskRecurse = list_entry(list, struct task_struct, sibling);
 		if (task_pid_nr_ns(taskRecurse, task_active_pid_ns(taskRecurse)) == pid)
 			return taskRecurse;
-		t =  get_task_ns(pid, taskRecurse);
+		t =  GetTaskNs(pid, taskRecurse);
 		if (t != NULL)
 			return t;
 	}
@@ -104,7 +71,7 @@ struct task_struct* get_task_ns(pid_t pid, struct task_struct * parent) {
 Remove head of schedule queue and return the task_struct of the head element.
 Assumes tracer write lock is acquired prior to call.
 ***/
-int pop_schedule_list(tracer * tracer_entry) {
+int PopScheduleList(tracer * tracer_entry) {
 	if (!tracer_entry)
 		return 0;
 	lxc_schedule_elem * head;
@@ -113,8 +80,6 @@ int pop_schedule_list(tracer * tracer_entry) {
 	int pid;
 	if (head != NULL) {
 		pid = head->pid;
-		hmap_remove_abs(&tracer_entry->valid_children, head->pid);
-		hmap_remove_abs(&tracer_entry->ignored_children, head->pid);
 		kfree(head);
 		return pid;
 	}
@@ -125,104 +90,104 @@ int pop_schedule_list(tracer * tracer_entry) {
 Requeue schedule queue, i.e pop from head and add to tail. Assumes tracer
 write lock is acquired prior to call
 ***/
-void requeue_schedule_list(tracer * tracer_entry) {
+void RequeueScheduleList(tracer * tracer_entry) {
 	if (tracer_entry == NULL)
 		return;
 	llist_requeue(&tracer_entry->schedule_queue);
+}
+
+
+/***
+Remove head of schedule queue and return the task_struct of the head element.
+Assumes tracer write lock is acquired prior to call.
+***/
+lxc_schedule_elem * PopRunQueue(tracer * tracer_entry) {
+	if (!tracer_entry)
+		return 0;
+	return llist_pop(&tracer_entry->run_queue);
+}
+
+/***
+Requeue schedule queue, i.e pop from head and add to tail. Assumes tracer
+write lock is acquired prior to call
+***/
+void RequeueRunQueue(tracer * tracer_entry) {
+	if (!tracer_entry)
+		return;
+	llist_requeue(&tracer_entry->run_queue);
 }
 
 /*
 Assumes tracer write lock is acquired prior to call. Must return with lock
 still held
 */
-void clean_up_schedule_list(tracer * tracer_entry) {
+void CleanUpScheduleList(tracer * tracer_entry) {
 
 	int pid = 1;
 	struct pid *pid_struct;
 	struct task_struct * task;
 
+	if (tracer_entry && tracer_entry->tracer_task) {
+		tracer_entry->tracer_task->associated_tracer_id = -1;
+		tracer_entry->tracer_task->virt_start_time = 0;
+		tracer_entry->tracer_task->curr_virt_time = 0;
+		tracer_entry->tracer_task->wakeup_time = 0;
+		tracer_entry->tracer_task->burst_target = 0;
+	}
 	while ( pid != 0) {
-		pid = pop_schedule_list(tracer_entry);
-		hmap_remove_abs(&tracer_entry->ignored_children, pid);
+		pid = PopScheduleList(tracer_entry);
 		if (pid) {
 			pid_struct = find_get_pid(pid);
 			task = pid_task(pid_struct, PIDTYPE_PID);
 			if (task != NULL) {
 				task->virt_start_time = 0;
-				task->past_physical_time = 0;
-				task->dilation_factor = 0;
-				task->freeze_time = 0;
-				task->past_virtual_time = 0;
+				task->curr_virt_time = 0;
 				task->wakeup_time = 0;
+				task->burst_target = 0;
+				task->associated_tracer_id = -1;
 			}
 		} else
 			break;
 	}
 }
 
+void CleanUpRunQueue(tracer * tracer_entry) {
+
+	if (!tracer_entry)
+		return;
+
+	while (llist_size(&tracer_entry->run_queue)) {
+		PopRunQueue(tracer_entry);
+	}
+}
+
 /*
 Assumes tracer read lock is acquired before function call
 */
-int schedule_list_size(tracer * tracer_entry) {
+int ScheduleListSize(tracer * tracer_entry) {
 	if (!tracer_entry)
 		return 0;
 	return llist_size(&tracer_entry->schedule_queue);
 }
 
 
-
 /*
-Assumes tracer write lock is acquired prior to call. Must return with write
-lock still acquired.
+Assumes tracer read lock is acquired before function call
 */
-void update_tracer_schedule_queue_elem(tracer * tracer_entry,
-                                       struct task_struct * tracee) {
-
-	lxc_schedule_elem * elem =
-	    (lxc_schedule_elem *)hmap_get_abs(&tracer_entry->valid_children,
-	                                      tracee->pid);
-	// represents base time allotted to each process by the Kronos scheduler.
-	// Only useful in single core mode.
-	s64 base_time_quanta;
-	s64 base_quanta_n_insns = 0;
-	s32 rem = 0;
-
-	if (elem) {
-
-#ifdef __TK_MULTI_CORE_MODE
-
-		elem->n_insns_share = tracer_entry->quantum_n_insns;
-		elem->n_insns_left = tracer_entry->quantum_n_insns;
-		elem->n_insns_curr_round = 0;
-
-#else
-		if (tracee->static_prio <= 120) {
-			//base_time_quanta = (140 - tracee->static_prio) * 10000;
-			base_time_quanta = (140 - tracee->static_prio) * 1250; //25us
-		} else {
-			/* 200 us for now for all lower priority process. TODO */
-			base_time_quanta = 200000;
-		}
-
-		base_quanta_n_insns =
-		    div_s64_rem(tracer_entry->dilation_factor * base_time_quanta,
-		                REF_CPU_SPEED, &rem);
-		base_quanta_n_insns += rem;
-
-		elem->n_insns_share = base_quanta_n_insns;
-		PDEBUG_V("Update tracer schedule queue elem: "
-		         "Pid: %d, n_insns_share: %d\n", elem->pid, elem->n_insns_share);
-#endif
-
-	}
+int RunQueueSize(tracer * tracer_entry) {
+	if (!tracer_entry)
+		return 0;
+	return llist_size(&tracer_entry->run_queue);
 }
+
+
 
 /*
 Assumes tracer write lock is acquired prior to call. Must return with lock still
 acquired.
 */
-void add_to_tracer_schedule_queue(tracer * tracer_entry,
-                                  struct task_struct * tracee) {
+void AddToTracerScheduleQueue(tracer * tracer_entry,
+                                  int tracee_pid) {
 
 	lxc_schedule_elem * new_elem;
 	//represents base time allotted to each process by the Kronos scheduler
@@ -231,67 +196,26 @@ void add_to_tracer_schedule_queue(tracer * tracer_entry,
 	s64 base_quanta_n_insns = 0;
 	s32 rem = 0;
 	struct sched_param sp;
+	struct task_struct * tracee = FindTaskByPid(tracee_pid);
 
-	if (!tracee ||
-	        hmap_get_abs(&tracer_entry->ignored_children,
-	                     tracee->pid) != NULL ||
-	        hmap_get_abs(&tracer_entry->valid_children, tracee->pid) != NULL) {
-
-		if (tracee &&
-		        hmap_get_abs(&tracer_entry->ignored_children,
-		                     tracee->pid) == NULL
-		        && tracee != tracer_entry->spinner_task) {
-			PDEBUG_V("Add to tracer schedule queue: "
-			         "Tracer %d, tracee %d is already present. "
-			         "Updating its attributes\n", tracer_entry->tracer_id,
-			         tracee->pid);
-			update_tracer_schedule_queue_elem(tracer_entry, tracee);
-		} else if (tracee && tracee == tracer_entry->spinner_task ) {
-			PDEBUG_A("Tracee spinner: %d ignored and not added to "
-			         "Tracer: %d schedule queue\n", tracee->pid,
-			         tracer_entry->tracer_id);
-		} else if (tracee && tracee == tracer_entry->tracer_task) {
-			PDEBUG_A("Tracee: %d ignored and not added to "
-			         "Tracer: %d schedule queue\n", tracee->pid,
-			         tracer_entry->tracer_id);
-		} else {
-			if (!tracee)
-				PDEBUG_V("Add to tracer schedule queue: "
-				         "Tracer %d, tracee is NULL \n",
-				         tracer_entry->tracer_id);
-		}
-
+	if (!tracee) {
+		PDEBUG_E("AddToTracerScheduleQueue: tracee: %d not found!\n", tracee_pid);
+		return;
+	}
+	
+	if (experiment_status == STOPPING) {
+		PDEBUG_E("AddToTracerScheduleQueue: cannot add when experiment is stopping !\n");
 		return;
 	}
 
-	if (hmap_get_abs(&tracer_entry->ignored_children, tracee->pid) != NULL ) {
-		PDEBUG_A("Tracee: %d ignored and not added to "
-		         "Tracer: %d schedule queue\n", tracee->pid,
-		         tracer_entry->tracer_id);
-		return;
-	}
-	if (tracee && tracer_entry->spinner_task
-	        && tracee->pid == tracer_entry->spinner_task->pid ) {
-		PDEBUG_A("Tracee spinner: %d ignored and not added to "
-		         "Tracer: %d schedule queue\n", tracee->pid,
-		         tracer_entry->tracer_id);
-		return ;
-	} else if (tracee
-	           && tracee == tracer_entry->tracer_task) {
-		PDEBUG_A("Tracee: %d ignored and not added to "
-		         "Tracer: %d schedule queue\n", tracee->pid,
-		         tracer_entry->tracer_id);
-		return ;
-	}
+	PDEBUG_I("AddToTracerScheduleQueue: "
+	         "Adding new tracee %d to tracer-id: %d\n",
+	         tracee->pid, tracer_entry->tracer_id);
 
-	PDEBUG_I("Add to tracer schedule queue: "
-	         "Tracer %d, Adding new tracee %d. \n",
-	         tracer_entry->tracer_id, tracee->pid);
-
-	new_elem =
-	    (lxc_schedule_elem *)kmalloc(sizeof(lxc_schedule_elem), GFP_KERNEL);
-	if (new_elem == NULL) {
-		PDEBUG_I("Add to tracer schedule queue: "
+	new_elem = (lxc_schedule_elem *)kmalloc(sizeof(lxc_schedule_elem), GFP_KERNEL);
+	memset(new_elem, 0, sizeof(lxc_schedule_elem));
+	if (!new_elem) {
+		PDEBUG_E("AddToTracerScheduleQueue: "
 		         "Tracer %d, tracee %d. Failed to alot Memory\n",
 		         tracer_entry->tracer_id, tracee->pid);
 		return;
@@ -299,32 +223,35 @@ void add_to_tracer_schedule_queue(tracer * tracer_entry,
 
 	new_elem->pid = tracee->pid;
 	new_elem->curr_task = tracee;
+	tracee->associated_tracer_id = tracer_entry->tracer_id;
 
+	new_elem->base_quanta = PROCESS_MIN_QUANTA_NS;
+	new_elem->quanta_left_from_prev_round = 0;
+	new_elem->quanta_curr_round = 0;
+	new_elem->blocked = 0;
 
-#ifdef __TK_MULTI_CORE_MODE
+		
 
-	new_elem->n_insns_share = tracer_entry->quantum_n_insns;
-	new_elem->n_insns_left = tracer_entry->quantum_n_insns;
-	new_elem->n_insns_curr_round = 0;
-
-#else
-	if (tracee->static_prio <= 120) {
-		base_time_quanta = (140 - tracee->static_prio) * 1250; //25us
+	if (tracer_entry->tracer_type == TRACER_TYPE_APP_VT) {
+		BUG_ON(!aligned_tracer_clock_array);
+		BUG_ON(!chaintask[tracer_entry->timeline_assignment]);
+		tracee->tracer_clock = (s64 *)&aligned_tracer_clock_array[tracee->associated_tracer_id - 1];
+		tracee->vt_exec_task = chaintask[tracer_entry->timeline_assignment];
+		tracee->ready = 0;
+		tracee->ptrace_msteps = 0;
+		tracee->n_ints = 0;
 	} else {
-		/* 200 us for now for all lower priority process. TODO */
-		base_time_quanta = 200000;
+		//tracee->vt_exec_task_wqueue = NULL;
+		tracee->vt_exec_task = NULL;
+		tracee->ready = 0;
 	}
 
-	base_quanta_n_insns =
-	    div_s64_rem(tracer_entry->dilation_factor * base_time_quanta,
-	                REF_CPU_SPEED, &rem);
-	base_quanta_n_insns += rem;
-	new_elem->n_insns_share = base_quanta_n_insns;
-	//new_elem->n_insns_left = base_quanta_n_insns;
-	new_elem->n_insns_left = 0;
-	new_elem->n_insns_curr_round = 0;
-
-#endif
+	if (!tracee->virt_start_time) {
+		tracee->virt_start_time = virt_exp_start_time;
+		tracee->curr_virt_time = tracer_entry->curr_virtual_time;
+		tracee->wakeup_time = 0;
+		tracee->burst_target = 0;
+	}
 
 	llist_append(&tracer_entry->schedule_queue, new_elem);
 
@@ -333,104 +260,113 @@ void add_to_tracer_schedule_queue(tracer * tracer_entry,
 	cpumask_set_cpu(tracer_entry->cpu_assignment, &tracee->cpus_allowed);
 	sp.sched_priority = 99;
 	sched_setscheduler(tracee, SCHED_RR, &sp);
-	hmap_put_abs(&tracer_entry->valid_children, new_elem->pid, new_elem);
-	PDEBUG_E("Add to tracer schedule queue: "
-	         "Tracer %d, tracee %d. Succeeded. Schedule list size: %d\n", tracer_entry->tracer_task->pid,
-	         tracee->pid, schedule_list_size(tracer_entry));
+	PDEBUG_A("AddToTracerScheduleQueue:  "
+	         "Tracee %d added successfully to tracer-id: %d. schedule list size: %d\n",
+	         tracee->pid, tracer_entry->tracer_id, ScheduleListSize(tracer_entry));
 }
 
 
+
 /*
-Assumes tracer write lock is acquired prior to call. Must return with write
-lock still acquired.
+Assumes tracer write lock is acquired prior to call. Must return with lock still
+acquired.
 */
-void add_process_to_schedule_queue_recurse(tracer * tracer_entry,
-        struct task_struct * tsk) {
+void RemoveFromTracerScheduleQueue(tracer * tracer_entry, int tracee_pid) 
+{
 
-	struct list_head *list;
-	struct task_struct *taskRecurse;
-	struct task_struct *me;
-	struct task_struct *t;
+	lxc_schedule_elem * curr_elem;
+	lxc_schedule_elem * removed_elem;
+	struct task_struct * tracee = FindTaskByPid(tracee_pid);
 
-	if (!tsk || tsk->pid == 0 || !tracer_entry)
-		return;
+	llist_elem * head_1;
+	llist_elem * head_2;
+	int pos = 0;
 
-	// Do not add any of the threads of the tracer itself because
-	// they are not dilated.
-	me = tsk;
-	t = me;
-	if (tracer_entry->tracer_task->pid != tsk->pid) {
-		do {
-			add_to_tracer_schedule_queue(tracer_entry, t);
-		} while_each_thread(me, t);
+	
+
+	PDEBUG_I("RemoveFromTracerScheduleQueue: "
+	         "Removing tracee %d from tracer-id: %d\n",
+	         tracee_pid, tracer_entry->tracer_id);
+
+	head_1 = tracer_entry->schedule_queue.head;
+	head_2 = tracer_entry->run_queue.head;
+
+	if (tracee) {
+		tracee->associated_tracer_id = -1;
+		tracee->virt_start_time = 0;
+		tracee->curr_virt_time = 0;
+		tracee->wakeup_time = 0;
+		tracee->burst_target = 0;
 	}
 
-	list_for_each(list, &tsk->children) {
-		taskRecurse = list_entry(list, struct task_struct, sibling);
-		if (taskRecurse->pid == 0) {
-			return;
+	while (head_1 != NULL || head_2 != NULL) {
+
+		if (head_1) {
+			curr_elem = (lxc_schedule_elem *)head_1->item;
+			if (curr_elem && curr_elem->pid == tracee_pid) {
+				removed_elem = llist_remove_at(&tracer_entry->schedule_queue, pos);
+			}
+			head_1 = head_1->next;
 		}
-		add_process_to_schedule_queue_recurse(tracer_entry, taskRecurse);
-	}
-}
 
-/*
-Assumes tracer write lock is acquired prior to call. Must return with write
-lock still acquired.
-*/
-void refresh_tracer_schedule_queue(tracer * tracer_entry) {
-	if (tracer_entry) {
-		add_process_to_schedule_queue_recurse(tracer_entry,
-		                                      tracer_entry->tracer_task);
+		if (head_2) {
+			curr_elem = (lxc_schedule_elem *)head_2->item;
+			if (curr_elem && curr_elem->pid == tracee_pid) {
+				llist_remove_at(&tracer_entry->run_queue, pos);
+			}
+			head_2 = head_2->next;
+		}
+		pos ++;
 	}
+
+	if (removed_elem) 
+		kfree(removed_elem);
 }
 
 
 /**
-* write_buffer: <dilation_factor>,<tracer freeze_quantum>,<create_spinner>
+* write_buffer: <tracer_id>,<tracer_type>,<meta_task_type>,<timeline_id>,<spinner_pid> or <proc_to_control_pid>
 **/
-int register_tracer_process(char * write_buffer) {
-	//Tracer will register itself by specifying the dilation factor
-	u32 dilation_factor = 0;
-	s64	tracer_freeze_quantum = 0;	//in ns
-	//number of instructions per freeze quantum if REF_CPU_SPEED was used
-	s64 tracer_ref_quantum_n_insns = 0;
-	s32 rem = 0;
+int RegisterTracerProcess(char * write_buffer) {
+
 	tracer * new_tracer;
 	uint32_t tracer_id;
-	int i, nxt_idx;
+	int i;
 	int best_cpu = 0;
-	int should_create_spinner = 0;
+	int meta_task_type = 0;
+	int tracer_type;
 	int spinner_pid = 0, process_to_control_pid = 0;
 	struct task_struct * spinner_task = NULL;
 	struct task_struct * process_to_control = NULL;
-	dilation_factor = atoi(write_buffer);
-	nxt_idx = get_next_value(write_buffer);
-	tracer_freeze_quantum = atoi(write_buffer + nxt_idx);
-	nxt_idx = nxt_idx + get_next_value(write_buffer + nxt_idx);
-	should_create_spinner = atoi(write_buffer + nxt_idx);
+	int api_args[MAX_API_ARGUMENT_SIZE];
+	int num_args;
+	int assigned_timeline_id;
 
 
-	if (experiment_status != INITIALIZED) {
-		PDEBUG_E("Experiment must be initialized first "
-		         "before tracer registration\n");
+	num_args = ConvertStringToArray(write_buffer, api_args, MAX_API_ARGUMENT_SIZE);
+
+	BUG_ON(num_args <= 3);
+
+	tracer_type = api_args[1];
+	tracer_id = api_args[0];
+	meta_task_type = api_args[2];
+	assigned_timeline_id = api_args[3];
+
+	if (tracer_type != TRACER_TYPE_INS_VT && tracer_type != TRACER_TYPE_APP_VT) {
+		PDEBUG_E("Unknown Tracer Type !");
 		return FAIL;
 	}
 
-	if (dilation_factor <= 0)
-		dilation_factor = REF_CPU_SPEED;	//no dilation
-
-	if (should_create_spinner == 1) {
-		nxt_idx = nxt_idx + get_next_value(write_buffer + nxt_idx);
-		spinner_pid = atoi(write_buffer + nxt_idx);
-		should_create_spinner = 1;
+	if (meta_task_type == 1) {
+		BUG_ON(num_args != 5);
+		spinner_pid  = api_args[4];
 		if (spinner_pid <= 0) {
 			PDEBUG_E("Spinner pid must be greater than zero. "
 			         "Received value: %d\n", spinner_pid);
 			return FAIL;
 		}
 
-		spinner_task = get_task_ns(spinner_pid, current);
+		spinner_task = GetTaskNs(spinner_pid, current);
 
 		if (!spinner_task) {
 			PDEBUG_E("Spinner pid task not found. "
@@ -438,20 +374,18 @@ int register_tracer_process(char * write_buffer) {
 			return FAIL;
 		}
 
-	} else if(should_create_spinner == 0) {
-		should_create_spinner = 0;
-	} else {
-		should_create_spinner = 0;
-		nxt_idx = nxt_idx + get_next_value(write_buffer + nxt_idx);
-		process_to_control_pid = atoi(write_buffer + nxt_idx);
+
+	} else if (meta_task_type != 0) {
+		meta_task_type = 0;
+		BUG_ON(num_args != 5);
+		process_to_control_pid = api_args[4];
 		if (process_to_control_pid <= 0) {
 			PDEBUG_E("proccess_to_control_pid must be greater than zero. "
 			         "Received value: %d\n", process_to_control_pid);
 			return FAIL;
 		}
 
-		process_to_control = find_task_by_pid(process_to_control_pid);
-
+		process_to_control = FindTaskByPid(process_to_control_pid);
 		if (!process_to_control) {
 			PDEBUG_E("proccess_to_control_pid task not found. "
 			         "Received pid: %d\n", process_to_control_pid);
@@ -460,384 +394,183 @@ int register_tracer_process(char * write_buffer) {
 	}
 
 
-	PDEBUG_I("Register Tracer: Starting ...\n");
+	PDEBUG_I("Register Tracer: Starting for tracer: %d\n", tracer_id);
 
-	new_tracer = alloc_tracer_entry(tracer_id, dilation_factor);
+	new_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
+
+	if (!new_tracer) {
+		new_tracer = AllocTracerEntry(tracer_id, tracer_type);
+		hmap_put_abs(&get_tracer_by_id, tracer_id, new_tracer);
+		hmap_put_abs(&get_tracer_by_pid, current->pid, new_tracer);
+	} else {
+		InitializeTracerEntry(new_tracer, tracer_id, tracer_type);
+		hmap_put_abs(&get_tracer_by_pid, current->pid, new_tracer);
+	}
 
 	if (!new_tracer)
-		return -ENOMEM;
-
-	//freeze quantum must be at-least 1000 ns or 1 uS
-	if (tracer_freeze_quantum < REF_CPU_SPEED )
-		return -EFAULT;
+		return FAIL;
 
 	for (i = 0; i < EXP_CPUS; i++) {
-		if (per_cpu_chain_length[i] < per_cpu_chain_length[best_cpu])
+		if (per_timeline_chain_length[i] < per_timeline_chain_length[best_cpu])
 			best_cpu = i;
 	}
 
+	if (experiment_type == EXP_CBE)
+		assigned_timeline_id = best_cpu;
+
 	mutex_lock(&exp_lock);
-	tracer_id = ++tracer_num;
-
-	per_cpu_chain_length[best_cpu] ++;
-
+	
+	per_timeline_chain_length[best_cpu] ++;
 	new_tracer->tracer_id = tracer_id;
 	new_tracer->cpu_assignment = best_cpu + 2;
+	new_tracer->timeline_assignment = assigned_timeline_id;
 	new_tracer->tracer_task = current;
-	new_tracer->freeze_quantum = tracer_freeze_quantum;
-
-	tracer_ref_quantum_n_insns = tracer_freeze_quantum;
-	new_tracer->quantum_n_insns =
-	    div_s64_rem(new_tracer->dilation_factor * tracer_ref_quantum_n_insns,
-	                REF_CPU_SPEED, &rem);
-	new_tracer->quantum_n_insns += rem;
-	new_tracer->create_spinner = should_create_spinner;
+	new_tracer->create_spinner = meta_task_type;
 	new_tracer->proc_to_control_task = NULL;
+	new_tracer->spinner_task = NULL;
+	new_tracer->w_queue = &timeline_wqueue[new_tracer->timeline_assignment];
+	new_tracer->tracer_pid = current->pid;
 
-	hmap_put_abs(&get_tracer_by_id, tracer_id, new_tracer);
-	hmap_put_abs(&get_tracer_by_pid, current->pid, new_tracer);
-	llist_append(&per_cpu_tracer_list[best_cpu], new_tracer);
+	BUG_ON(!chaintask[new_tracer->timeline_assignment]);
+	new_tracer->vt_exec_task = chaintask[new_tracer->timeline_assignment];
 
+	current->associated_tracer_id = tracer_id;
+	current->ready = 0;
+	current->ptrace_msteps = 0;
+	current->n_ints = 0;
+	current->ptrace_mflags = 0; 
+	current->vt_exec_task = NULL;
+
+	++tracer_num;
+	llist_append(&per_timeline_tracer_list[best_cpu], new_tracer);
 	mutex_unlock(&exp_lock);
 
-	if (should_create_spinner) {
-		PDEBUG_E("Register Tracer: Pid: %d, ID: %d, dilation factor: %d, "
-		 "freeze_quantum: %d, assigned cpu: %d, quantum_n_insns: %d. "
-		 "Spinner pid = %d\n", current->pid, new_tracer->tracer_id,
-		 new_tracer->dilation_factor, new_tracer->freeze_quantum,
-		 new_tracer->cpu_assignment, new_tracer->quantum_n_insns,
+	if (meta_task_type) {
+		PDEBUG_I("Register Tracer: Pid: %d, ID: %d "
+		 "assigned cpu: %d, assigned timeline: %d, spinner pid = %d\n",
+		 current->pid, new_tracer->tracer_id,
+		 new_tracer->cpu_assignment, new_tracer->timeline_assignment,
 		 spinner_pid);
 
 	} 
 
 	if (process_to_control != NULL) {
-		PDEBUG_I("Register Tracer: Pid: %d, ID: %d, dilation factor: %d, "
-		 "freeze_quantum: %d, assigned cpu: %d, quantum_n_insns: %d. "
-		 "Process to control pid = %d\n", current->pid, new_tracer->tracer_id,
-		 new_tracer->dilation_factor, new_tracer->freeze_quantum,
-		 new_tracer->cpu_assignment, new_tracer->quantum_n_insns,
-		 process_to_control_pid);
+		PDEBUG_I("Register Tracer: Pid: %d, ID: %d "
+		"assigned cpu: %d, assigned timeline: %d process_to_control pid = %d\n",
+		current->pid, new_tracer->tracer_id,
+		new_tracer->cpu_assignment, new_tracer->timeline_assignment,
+		process_to_control_pid);
 
 	}
 
 	bitmap_zero((&current->cpus_allowed)->bits, 8);
 
-	get_tracer_struct_write(new_tracer);
+	GetTracerStructWrite(new_tracer);
 	cpumask_set_cpu(new_tracer->cpu_assignment, &current->cpus_allowed);
-	if (should_create_spinner && spinner_task) {
+	
+
+	if (meta_task_type && spinner_task) {
 		PDEBUG_I("Set Spinner Task for Tracer: %d, Spinner: %d\n",
 		         current->pid, spinner_task->pid);
 		new_tracer->spinner_task = spinner_task;
-		kill_p(spinner_task, SIGSTOP);
+		KillProcess(spinner_task, SIGSTOP);
 		bitmap_zero((&spinner_task->cpus_allowed)->bits, 8);
 		cpumask_set_cpu(1, &spinner_task->cpus_allowed);
 
-	} else {
-		new_tracer->spinner_task = NULL;
-	}
-
-	refresh_tracer_schedule_queue(new_tracer);
-
-	if (process_to_control != NULL) {
-		add_to_tracer_schedule_queue(new_tracer, process_to_control);
+	} 
+	
+	if (!meta_task_type && process_to_control != NULL) {
+		AddToTracerScheduleQueue(new_tracer, process_to_control_pid);
 		new_tracer->proc_to_control_pid = process_to_control_pid;
 		new_tracer->proc_to_control_task = process_to_control;
 	} else {
 		new_tracer->proc_to_control_pid = -1;
 	}
 
-	put_tracer_struct_write(new_tracer);
+	PutTracerStructWrite(new_tracer);
+	PDEBUG_I("Register Tracer: Finished for tracer: %d\n", tracer_id);
 	return new_tracer->cpu_assignment;	//return the allotted cpu back to the tracer.
-
-
 }
 
-/**
-* write_buffer: <tracer_pid>,<dilation_factor>,<tracer freeze_quantum>
-Assumes no tracer lock is acquired prior to call.
-**/
-
-int update_tracer_params(char * write_buffer) {
-
-	u32 new_dilation_factor = 0;
-	s64	new_tracer_freeze_quantum = 0;	//in ns
-	//number of instructions per freeze quantum if REF_CPU_SPEED was used
-	s64 tracer_ref_quantum_n_insns = 0;
-	s32 rem = 0;
-	tracer * tracer_entry;
-	int i, nxt_idx;
-	int best_cpu = 0;
-	int tracer_pid = 0;
-	struct task_struct * task = NULL;
-	int found = 0;
-
-
-	if (experiment_status != INITIALIZED) {
-		PDEBUG_E("Experiment must be initialized first before "
-		         "tracer update params\n");
-		return FAIL;
-	}
-
-
-
-	tracer_pid = atoi(write_buffer);
-	nxt_idx = get_next_value(write_buffer);
-	new_dilation_factor = atoi(write_buffer + nxt_idx);
-	nxt_idx = nxt_idx + get_next_value(write_buffer + nxt_idx);
-	new_tracer_freeze_quantum = atoi(write_buffer + nxt_idx);
-
-	if (new_dilation_factor <= 0)
-		new_dilation_factor = REF_CPU_SPEED;	//no dilation
-
-	//freeze quantum must be at-least 1000 ns or 1 uS
-	if (new_tracer_freeze_quantum < REF_CPU_SPEED )
-		return -EFAULT;
-
-	if (experiment_stopped != RUNNING && experiment_stopped != FROZEN)
-		return -EFAULT;
-
-
-	for_each_process(task) {
-		if (task != NULL) {
-			if (task->pid == tracer_pid) {
-				found = 1;
-				break;
-			}
-		}
-	}
-
-	if (task && found) {
-		tracer_entry = hmap_get_abs(&get_tracer_by_pid, task->pid);
-	}
-
-	if (tracer_entry) {
-		get_tracer_struct_write(tracer_entry);
-		tracer_entry->freeze_quantum = new_tracer_freeze_quantum;
-		tracer_entry->dilation_factor = new_dilation_factor;
-
-		tracer_ref_quantum_n_insns = new_tracer_freeze_quantum;
-		tracer_entry->quantum_n_insns =
-		    div_s64_rem(
-		        tracer_entry->dilation_factor * tracer_ref_quantum_n_insns,
-		        REF_CPU_SPEED, &rem);
-		tracer_entry->quantum_n_insns += rem;
-		refresh_tracer_schedule_queue(tracer_entry);
-
-		PDEBUG_V("Updated params for tracer: %d, ID: %d, freeze_quantum: %d, "
-		         "dilation_factor: %d, quantum_n_insns: %d\n", tracer_pid,
-		         tracer_entry->tracer_id, tracer_entry->freeze_quantum,
-		         tracer_entry->dilation_factor, tracer_entry->quantum_n_insns);
-		put_tracer_struct_write(tracer_entry);
-	}
-	return SUCCESS;
-}
 
 
 /*
 Assumes tracer write lock is acquired prior to call. Must return with write lock
 still acquired.
 */
-void update_task_virtual_time(tracer * tracer_entry,
-                              struct task_struct * tsk, s64 n_insns_run) {
-
-	s64 dilated_run_time = 0;
-	s32 rem = 0;
-	if (tracer_entry && tsk && n_insns_run > 0) {
-		dilated_run_time = div_s64_rem(REF_CPU_SPEED * n_insns_run,
-		                               tracer_entry->dilation_factor, &rem);
-		dilated_run_time += rem;
-		tsk->freeze_time =
-		    tracer_entry->round_start_virt_time + dilated_run_time;
-
-		//also update the spinner task's time
-		if (tracer_entry->spinner_task && tsk != tracer_entry->spinner_task) {
-			tracer_entry->spinner_task->freeze_time =
-			    tracer_entry->round_start_virt_time + dilated_run_time;
-		}
-
-		if (tracer_entry->proc_to_control_task != NULL 
-			&& tracer_entry->proc_to_control_pid > 0 
-			&& tsk->pid != tracer_entry->proc_to_control_pid) {
-
-			if (find_task_by_pid(tracer_entry->proc_to_control_pid) != NULL)
-				tracer_entry->proc_to_control_task->freeze_time =
-				    tracer_entry->round_start_virt_time + dilated_run_time;
-		}
-	}
-
-}
+void UpdateAllChildrenVirtualTime(tracer * tracer_entry, s64 time_increment) {
 
 
-/*
-Assumes tracer write lock is acquired prior to call. Must return with write lock
-still acquired.
-*/
-void update_all_children_virtual_time(tracer * tracer_entry) {
-
-	s64 dilated_run_time;
-	s64 curr_virtual_time;
-	s32 rem;
 	if (tracer_entry && tracer_entry->tracer_task) {
-#ifndef __TK_MULTI_CORE_MODE
-		dilated_run_time = div_s64_rem(REF_CPU_SPEED * tracer_entry->quantum_n_insns,
-		                               tracer_entry->dilation_factor, &rem);
-		dilated_run_time += rem;
-#else
-		dilated_run_time = tracer_entry->freeze_quantum;
-#endif
+
+		tracer_entry->round_start_virt_time += time_increment;
+		tracer_entry->curr_virtual_time = tracer_entry->round_start_virt_time;
+
+		if (ScheduleListSize(tracer_entry) > 0)
+			SetChildrenTime(tracer_entry, tracer_entry->tracer_task,
+								tracer_entry->curr_virtual_time, 0);
 
 		if (tracer_entry->spinner_task)
-			tracer_entry->spinner_task->freeze_time =
-			    tracer_entry->round_start_virt_time  + dilated_run_time;
+			tracer_entry->spinner_task->curr_virt_time =
+			    tracer_entry->curr_virtual_time;
 
 		if (tracer_entry->proc_to_control_task != NULL) {
-			if (find_task_by_pid(tracer_entry->proc_to_control_pid) != NULL)
-				tracer_entry->proc_to_control_task->freeze_time =
-				    tracer_entry->round_start_virt_time + dilated_run_time;
+			if (FindTaskByPid(tracer_entry->proc_to_control_pid) != NULL)
+				tracer_entry->proc_to_control_task->curr_virt_time =
+				    tracer_entry->curr_virtual_time;
 		}
 
-		curr_virtual_time =
-		    tracer_entry->round_start_virt_time  + dilated_run_time;
-		set_children_time(tracer_entry, tracer_entry->tracer_task,
-		                  curr_virtual_time, 0);
 	}
 
 }
 
+
+void UpdateInitTaskVirtualTime(s64 time_to_set) {
+	init_task.curr_virt_time = time_to_set;
+}
 
 /*
 Assumes no tracer lock is acquired prior to call
 */
-void update_all_tracers_virtual_time(int cpuID) {
+void UpdateAllTracersVirtualTime(int timelineID) {
 	llist_elem * head;
 	llist * tracer_list;
 	tracer * curr_tracer;
-	s64 err;
-	int updated = 0;
-	s64 advanced_time;
-	s32 rem = 0;
-	s64 quantum_n_insns;
-	s64 overshot_n_insns;
-	s64 undershot_n_insns;
+	s64 overshoot_err;
+	s64 target_increment;
 
-	tracer_list =  &per_cpu_tracer_list[cpuID];
+	tracer_list =  &per_timeline_tracer_list[timelineID];
 	head = tracer_list->head;
 
 
 	while (head != NULL) {
 
 		curr_tracer = (tracer*)head->item;
-		get_tracer_struct_write(curr_tracer);
-		if (curr_tracer->quantum_n_insns) {
+		GetTracerStructWrite(curr_tracer);
+		target_increment = curr_tracer->nxt_round_burst_length;
 
-			if (schedule_list_size(curr_tracer) == 0) {
-				update_task_virtual_time(curr_tracer, curr_tracer->spinner_task,
-				                         curr_tracer->quantum_n_insns);
-			} else {
-				update_all_children_virtual_time(curr_tracer);
-			}
-
-		}
-#ifndef __TK_MULTI_CORE_MODE
-
-		if (experiment_type == EXP_CBE) {
-
-			if (cpuID == 0 && updated == 0) {
-				expected_time = expected_time + curr_tracer->freeze_quantum;
-				init_task.freeze_time = expected_time;
-				updated = 1;
-
-			}
-
-			//Quantum n insns contains amount of instructions actually run
-			//in previous round.
-			advanced_time = div_s64_rem(
-			                    curr_tracer->quantum_n_insns * REF_CPU_SPEED,
-			                    curr_tracer->dilation_factor, &rem);
-			advanced_time = advanced_time + rem;
-
-			curr_tracer->round_start_virt_time =
-			    curr_tracer->round_start_virt_time + advanced_time;
-			curr_tracer->tracked_virtual_time = expected_time;
-
-
-			/*
-			if (cpuID == 0) {
-				init_task.freeze_time = curr_tracer->round_start_virt_time;
-			} else if (
-			    curr_tracer->round_start_virt_time < init_task.freeze_time) {
-				init_task.freeze_time = curr_tracer->round_start_virt_time;
-			}
-
-			//Set quantum n insns for next round for the tracer.
-			if (expected_time  + curr_tracer->freeze_quantum
-			        < curr_tracer->round_start_virt_time) {
-				curr_tracer->quantum_n_insns = 0; // for next round.
-			} else if (expected_time < curr_tracer->round_start_virt_time) {
-				err = curr_tracer->round_start_virt_time - expected_time;
-				quantum_n_insns =
-				    div_s64_rem(
-				        curr_tracer->freeze_quantum * curr_tracer->dilation_factor,
-				        REF_CPU_SPEED, &rem);
-				quantum_n_insns = quantum_n_insns + rem;
-				overshot_n_insns =
-				    div_s64_rem(err * curr_tracer->dilation_factor,
-				                REF_CPU_SPEED, &rem);
-				overshot_n_insns = overshot_n_insns + rem;
-
-				if (quantum_n_insns > overshot_n_insns) // should always be true
-					curr_tracer->quantum_n_insns =
-					    quantum_n_insns - overshot_n_insns;
-				else {
-					PDEBUG_E("Should never happen\n");
-					curr_tracer->quantum_n_insns = quantum_n_insns;
+		if (target_increment > 0) {
+			if (curr_tracer && curr_tracer->tracer_type == TRACER_TYPE_APP_VT) {
+				BUG_ON(!aligned_tracer_clock_array);
+				//WARN_ON(aligned_tracer_clock_array[curr_tracer->tracer_id - 1] < curr_tracer->round_start_virt_time +  target_increment);
+				if (aligned_tracer_clock_array[curr_tracer->tracer_id - 1] < curr_tracer->round_start_virt_time +  target_increment) {
+					// this can happen if no process belonging to tracer was runnable in the previous round.
+					aligned_tracer_clock_array[curr_tracer->tracer_id - 1] = curr_tracer->round_start_virt_time +  target_increment;
 				}
-			} else if (expected_time > curr_tracer->round_start_virt_time) {
-				err = expected_time - curr_tracer->round_start_virt_time;
-				quantum_n_insns =
-				    div_s64_rem(
-				        curr_tracer->freeze_quantum * curr_tracer->dilation_factor,
-				        REF_CPU_SPEED, &rem);
-				quantum_n_insns = quantum_n_insns + rem;
+				overshoot_err = aligned_tracer_clock_array[curr_tracer->tracer_id - 1] - (curr_tracer->round_start_virt_time +  target_increment);
+				curr_tracer->round_overshoot = overshoot_err;
+				target_increment = target_increment + overshoot_err;
+				UpdateAllChildrenVirtualTime(curr_tracer, target_increment);
 
-				undershot_n_insns =
-				    div_s64_rem(err * curr_tracer->dilation_factor,
-				                REF_CPU_SPEED, &rem);
-				undershot_n_insns = undershot_n_insns + rem;
-				curr_tracer->quantum_n_insns = quantum_n_insns + undershot_n_insns;
+				WARN_ON(aligned_tracer_clock_array[curr_tracer->tracer_id - 1] != curr_tracer->curr_virtual_time);
 			} else {
-				quantum_n_insns =
-				    div_s64_rem(
-				        curr_tracer->freeze_quantum * curr_tracer->dilation_factor,
-				        REF_CPU_SPEED, &rem);
-				quantum_n_insns = quantum_n_insns + rem;
-				curr_tracer->quantum_n_insns = quantum_n_insns;
-			}*/
-
-		} else {
-			curr_tracer->round_start_virt_time =
-			    curr_tracer->round_start_virt_time + curr_tracer->freeze_quantum;
-			curr_tracer->tracked_virtual_time = curr_tracer->round_start_virt_time;
-
-			if (cpuID == 0) {
-				init_task.freeze_time = curr_tracer->round_start_virt_time;
-			} else if (curr_tracer->round_start_virt_time
-			           < init_task.freeze_time) {
-				init_task.freeze_time = curr_tracer->round_start_virt_time;
+				UpdateAllChildrenVirtualTime(curr_tracer, target_increment);
 			}
+		} else {
+			PDEBUG_E("Tracer nxt round burst length is 0\n");
 		}
-#else
-		if (cpuID == 0 && updated == 0) {
-			expected_time = expected_time + curr_tracer->freeze_quantum;
-			updated = 1;
-
-		}
-		curr_tracer->round_start_virt_time = expected_time;
-		curr_tracer->round_start_virt_time = expected_time;
-		if (cpuID == 0)
-			init_task.freeze_time = expected_time;
-#endif
-		put_tracer_struct_write(curr_tracer);
+		curr_tracer->nxt_round_burst_length = 0;
+		PutTracerStructWrite(curr_tracer);
 		head = head->next;
 	}
 }
@@ -853,145 +586,221 @@ void update_all_tracers_virtual_time(int cpuID) {
   Assumes no tracer lock is acquired prior to call.
 **/
 
-int handle_tracer_results(char * buffer) {
+int HandleTracerResults(tracer * curr_tracer, int * api_args, int num_args) {
 
-	s64 result = 0 ;
-	tracer * curr_tracer = hmap_get_abs(&get_tracer_by_pid, current->pid);
-	int buf_len = strlen(buffer);
-	int next_idx = 0;
-	lxc_schedule_elem * curr_elem;
 	struct pid *pid_struct;
 	struct task_struct * task;
-	s64 overshoot_time = 0;
-	s32 rem = 0;
-	s64 quantum_n_insns;
+	int i, pid_to_remove;
+	int wakeup = 0;
 
 	if (!curr_tracer)
 		return FAIL;
 
-	if (experiment_type == EXP_CS) {
-		signal_cpu_worker_resume(curr_tracer);
-		return SUCCESS;
-	}
-
-	get_tracer_struct_write(curr_tracer);
-	while (next_idx < buf_len) {
-		result = atoi(buffer + next_idx);
-		next_idx += get_next_value(buffer + next_idx);
-
-		PDEBUG_V("Handle tracer results: Pid: %d, Tracer ID: %d, "
-		         "Curr Result: %d, All results: %s\n", current->pid,
-		         curr_tracer->tracer_id, result, buffer);
-
-
-		if (result <= 0) {
+	GetTracerStructWrite(curr_tracer);
+	for (i = 0; i < num_args; i++) {
+		pid_to_remove = api_args[i];
+		if (pid_to_remove <= 0)
 			break;
-		}
 
-		if (result) {
-			//result is a pid to be ignored
-			PDEBUG_I("Handle tracer results: Pid: %d, Tracer ID: %d, "
-			         "Ignoring Process: %d\n", current->pid,
-			         curr_tracer->tracer_id, result);
-			struct task_struct * mappedTask = get_task_ns(result, current);
-			if (mappedTask != NULL) {
-				PDEBUG_I("MAPPED TASK PID = %d, Ignoring it.\n", mappedTask->pid);
-				hmap_put_abs(&curr_tracer->ignored_children, mappedTask->pid, current);
+		PDEBUG_I("Handle tracer results: Pid: %d, Tracer ID: %d, "
+			     "Ignoring Process: %d\n", curr_tracer->tracer_task->pid,
+			     curr_tracer->tracer_id, pid_to_remove);
+		struct task_struct * mappedTask = GetTaskNs(pid_to_remove, curr_tracer->tracer_task);
+		if (curr_tracer->tracer_type == TRACER_TYPE_APP_VT) {
+			WARN_ON(mappedTask && mappedTask->pid != current->pid);
+			if (mappedTask && mappedTask->pid == current->pid && current->burst_target > 0) {
+				wakeup = 1;
 			}
 		}
-	}
-	put_tracer_struct_write(curr_tracer);
+		if (mappedTask != NULL) {
+			RemoveFromTracerScheduleQueue(curr_tracer, mappedTask->pid);
+		}
 
-	signal_cpu_worker_resume(curr_tracer);
+		
+	}
+
+	PutTracerStructWrite(curr_tracer);
+
+	if (wakeup) {
+		PDEBUG_V("APPVT Tracer signalling resume. Tracer ID: %d\n",
+	            curr_tracer->tracer_id);
+		curr_tracer->w_queue_wakeup_pid = 1;
+		//wake_up_interruptible(curr_tracer->w_queue);
+		wake_up_process(curr_tracer->vt_exec_task);
+
+	} else {
+		SignalCPUWorkerResume(curr_tracer);
+	}
 	return SUCCESS;
 }
 
+void WaitForInsVTTracerCompletion(tracer * curr_tracer)
+{
+
+	if (!curr_tracer)
+		return;
+	BUG_ON(curr_tracer->tracer_type != TRACER_TYPE_INS_VT);
+	curr_tracer->w_queue_wakeup_pid = curr_tracer->tracer_pid;
+	wake_up_interruptible(curr_tracer->w_queue);
+	wait_event_interruptible(*curr_tracer->w_queue, curr_tracer->w_queue_wakeup_pid == 1);
+	PDEBUG_V("Resuming from Tracer completion for Tracer ID: %d\n", curr_tracer->tracer_id);
+
+}
+
+void WaitForAppVTTracerCompletion(tracer * curr_tracer, struct task_struct * relevant_task)
+{
+	if (!curr_tracer || !relevant_task) {
+		return;
+	}
+	int ret;
+	BUG_ON(curr_tracer->tracer_type != TRACER_TYPE_APP_VT);
+	PDEBUG_V("Waiting for Tracer completion for Tracer ID: %d\n", curr_tracer->tracer_id);
+	curr_tracer->w_queue_wakeup_pid = relevant_task->pid;
+	set_current_state(TASK_INTERRUPTIBLE);
+	wake_up_interruptible(curr_tracer->w_queue);
+	//wait_event_interruptible(*curr_tracer->w_queue, relevant_task->burst_target == 0 || curr_tracer->w_queue_wakeup_pid == 1);
+	
+	/*do {
+		ret = wait_event_interruptible_timeout(
+		          *curr_tracer->w_queue, relevant_task->burst_target == 0 || curr_tracer->w_queue_wakeup_pid == 1, HZ);
+		if (ret == 0)
+			set_current_state(TASK_INTERRUPTIBLE);
+		else
+			set_current_state(TASK_RUNNING);
+
+	} while (ret == 0);*/
+	do {
+		
+		if (relevant_task->burst_target == 0 || curr_tracer->w_queue_wakeup_pid == 1) {
+			set_current_state(TASK_RUNNING);
+			relevant_task->burst_target = 0;
+			curr_tracer->w_queue_wakeup_pid = 1;
+			break;
+		} else {
+			//set_current_state(TASK_INTERRUPTIBLE);
+			schedule();
+			set_current_state(TASK_INTERRUPTIBLE);
+		}
+	} while (1);
+	PDEBUG_V("Resuming from Tracer completion for Tracer ID: %d\n", curr_tracer->tracer_id);
+
+}
+
+void SignalCPUWorkerResume(tracer * curr_tracer) {
+
+	if (!curr_tracer)
+		return;
+
+	if (curr_tracer->tracer_type == TRACER_TYPE_INS_VT) {
+		PDEBUG_V("INSVT Tracer signalling resume. Tracer ID: %d\n",
+	             curr_tracer->tracer_id);
+
+		curr_tracer->w_queue_wakeup_pid = 1;
+		wake_up_interruptible(curr_tracer->w_queue);
+	} else {
+		if (current->burst_target > 0) {
+			PDEBUG_V("APPVT Tracer signalling resume. Tracer ID: %d\n",
+	            curr_tracer->tracer_id);
+			curr_tracer->w_queue_wakeup_pid = 1;
+			//wake_up_interruptible(curr_tracer->w_queue);
+			wake_up_process(curr_tracer->vt_exec_task);
+		}
+	}
+
+}
 
 
-int handle_stop_exp_cmd() {
-	atomic_set(&progress_n_enabled, 0);
-	atomic_set(&progress_n_rounds, 0);
-	atomic_set(&experiment_stopping, 1);
-	wake_up_process(round_task);
-	wake_up_interruptible(&progress_sync_proc_wqueue);
-	wait_event_interruptible(expstop_call_proc_wqueue,
-	                         atomic_read(&experiment_stopping) == 0
-	                         && atomic_read(&n_waiting_tracers) == 0);
+int HandleStopExpCmd() {
+	// Any process can invoke this call.
+	if (initialization_status != INITIALIZED) {
+		PDEBUG_I(
+			"VT_STOP_EXP: Operation cannot be performed when experiment is not "
+			"initialized !");
+		return -EFAULT;
+	}
 
+	if (experiment_status == NOTRUNNING) {
+		PDEBUG_I(
+			"VT_STOP_EXP: Operation cannot be performed when experiment is not "
+			"running!");
+		return -EFAULT;
+	}
 
-	PDEBUG_V("Returning from Stop Cmd\n");
-	return cleanup_experiment_components();
+	experiment_status = STOPPING;
+	InitiateExperimentStopOperation();
+	return CleanUpExperimentComponents();
+}
+
+int HandleInitializeExpCmd(char * buffer) {
+	int num_expected_tracers;
+	int exp_type;
+	int num_timelines;
+	int api_args[MAX_API_ARGUMENT_SIZE];
+	int num_args = ConvertStringToArray(buffer, api_args,
+					  MAX_API_ARGUMENT_SIZE);
+
+	BUG_ON(num_args < 3);
+
+	exp_type = api_args[0];
+	num_timelines = api_args[1];
+	num_expected_tracers = api_args[2];
+
+	if (num_expected_tracers) {
+		return InitializeExperimentComponents(exp_type, num_timelines,
+			num_expected_tracers);
+	}
+
+	return FAIL;
 }
 
 
 /**
-* write_buffer: <tracer_pid>,<network device name>
+* write_buffer: <tracer_id>,<network device name>
 * Can be called after successfull synchronize and freeze command
 **/
-int handle_set_netdevice_owner_cmd(char * write_buffer, int attach_to_any_tracer) {
+int HandleSetNetdeviceOwnerCmd(char * write_buffer) {
 
 
 	char dev_name[IFNAMSIZ];
-	int pid_or_id = 0;
+	int tracer_id;
 	struct pid * pid_struct = NULL;
 	int i = 0;
 	struct net * net;
 	struct task_struct * task;
-	tracer * curr_tracer = NULL;
+	tracer * curr_tracer;
 	int found = 0;
-	int next_idx = 0;
 
 	for (i = 0; i < IFNAMSIZ; i++)
 		dev_name[i] = '\0';
 
-	if (!attach_to_any_tracer) {
-		pid_or_id = atoi(write_buffer);
-		next_idx = get_next_value(write_buffer);
-	}
+	tracer_id = atoi(write_buffer);
+	int next_idx = GetNextValue(write_buffer);
+
 
 	for (i = 0; * (write_buffer + next_idx + i) != '\0'
 	        && *(write_buffer + next_idx + i) != ','  && i < IFNAMSIZ ; i++)
 		dev_name[i] = *(write_buffer + next_idx + i);
 
-
-	if (attach_to_any_tracer) 
-		PDEBUG_A("Set Net Device Owner: Dev Name: %s. Attempting to attach to any tracer..\n",
-	        dev_name);
-	else
-		PDEBUG_A("Set Net Device Owner: Received Pid: %d, Dev Name: %s\n",
-			 pid_or_id, dev_name);
+	PDEBUG_A("Set Net Device Owner: Received tracer id: %d, Dev Name: %s\n",
+	         tracer_id, dev_name);
 
 	struct net_device * dev;
+	curr_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
 
-	if (attach_to_any_tracer) {
-		for (i = 1; i <= tracer_num; i++) {
-			curr_tracer = hmap_get_abs(&get_tracer_by_id, i);
-			if (curr_tracer && curr_tracer->spinner_task)
-				break;
-		}
-	}
-	else
-		curr_tracer = hmap_get_abs(&get_tracer_by_pid, pid_or_id);
-	
-
-	if (!curr_tracer) {
-		PDEBUG_E("No suitable tracer found. Failed to set Net Device Owner for: %s\n", dev_name);
+	if (!curr_tracer)
 		return FAIL;
-	}
 
-	get_tracer_struct_read(curr_tracer);
 	task = curr_tracer->spinner_task;
-	put_tracer_struct_read(curr_tracer);
 	if (!task) {
 		PDEBUG_E("Must have spinner task to "
-		         "be able to set net device owner\n");
+				 "be able to set net device owner\n");
 		return FAIL;
 	}
 
 	pid_struct = get_task_pid(task, PIDTYPE_PID);
 	if (!pid_struct) {
 		PDEBUG_E("Pid Struct of spinner task not found for tracer: %d\n",
-		         curr_tracer->tracer_task->pid);
+					curr_tracer->tracer_task->pid);
 		return FAIL;
 	}
 
@@ -999,30 +808,43 @@ int handle_set_netdevice_owner_cmd(char * write_buffer, int attach_to_any_tracer
 	for_each_net(net) {
 		for_each_netdev(net, dev) {
 			if (dev != NULL) {
-				if (strcmp(dev->name, dev_name) == 0) {
+				if (strcmp(dev->name, dev_name) == 0 && !found) {
 					PDEBUG_A("Set Net Device Owner: "
-					         "Found Specified Net Device: %s\n", dev_name);
+							 "Found Specified Net Device: %s\n", dev_name);
 					dev->owner_pid = pid_struct;
 					found = 1;
+				} else if (found) {
 					break;
 				}
 			}
 		}
-		if (found)
-			break;
+	}
+	write_unlock_bh(&dev_base_lock);
+	return SUCCESS;
+}
+
+
+s64 GetDilatedTime(struct task_struct * task) {
+	struct timeval tv;
+	do_gettimeofday(&tv);
+	s64 now = timeval_to_ns(&tv);
+
+	if (task->virt_start_time != 0) {
+
+		if (task->tracer_clock != NULL) {
+			return *(task->tracer_clock);
+		}
+		return task->curr_virt_time;
 	}
 
-	write_unlock_bh(&dev_base_lock);
+	return now;
 
-	
-
-	return SUCCESS;
 }
 
 /**
 * write_buffer: <pid> of process
 **/
-int handle_gettimepid(char * write_buffer) {
+s64 HandleGettimePID(char * write_buffer) {
 
 	struct pid *pid_struct;
 	struct task_struct * task;
@@ -1032,256 +854,10 @@ int handle_gettimepid(char * write_buffer) {
 
 	PDEBUG_V("Handle gettimepid: Received Pid = %d\n", pid);
 
-	for_each_process(task) {
-		if (task != NULL) {
-			if (task->pid == pid) {
-				return get_dilated_time(task);
-			}
-		}
-	}
-	return FAIL;
+	task = FindTaskByPid(pid);
+	if (!task)
+		return 0;
+	return GetDilatedTime(task);
 }
 
 
-
-/*** Wrappers for performing dialated poll and select system calls ***/
-
-static inline unsigned int do_dialated_pollfd(struct pollfd *pollfd,
-        poll_table *pwait, bool *can_busy_poll, unsigned int busy_flag,
-        struct task_struct * tsk) {
-	unsigned int mask;
-	int fd;
-
-	mask = 0;
-	fd = pollfd->fd;
-	if (fd >= 0) {
-		struct fd f = fdget(fd);
-		mask = POLLNVAL;
-		if (f.file) {
-			mask = DEFAULT_POLLMASK;
-			if (f.file->f_op->poll) {
-				pwait->_key = pollfd->events | POLLERR | POLLHUP;
-				pwait->_key |= busy_flag;
-				mask = f.file->f_op->poll(f.file, pwait);
-				if (mask & busy_flag)
-					*can_busy_poll = true;
-			}
-			/* Mask out unneeded events. */
-			mask &= pollfd->events | POLLERR | POLLHUP;
-			fdput(f);
-		}
-	}
-	pollfd->revents = mask;
-
-	return mask;
-}
-
-int do_dialated_poll(unsigned int nfds,  struct poll_list *list,
-                     struct poll_wqueues *wait, struct task_struct * tsk) {
-	poll_table* pt = &wait->pt;
-	int count = 0;
-	unsigned int busy_flag = 0;
-	unsigned long busy_end = 0;
-
-
-	struct poll_list *walk;
-	bool can_busy_loop = false;
-
-	for (walk = list; walk != NULL; walk = walk->next) {
-		struct pollfd * pfd, * pfd_end;
-		pfd = walk->entries;
-		pfd_end = pfd + walk->len;
-		for (; pfd != pfd_end; pfd++) {
-			/*
-			 * Fish for events. If we found one, record it
-			 * and kill poll_table->_qproc, so we don't
-			 * needlessly register any other waiters after
-			 * this. They'll get immediately deregistered
-			 * when we break out and return.
-			 */
-			if (do_dialated_pollfd(pfd, pt, &can_busy_loop,
-			                       busy_flag, tsk)) {
-				count++;
-				pt->_qproc = NULL;
-				/* found something, stop busy polling */
-				busy_flag = 0;
-				can_busy_loop = false;
-			}
-		}
-	}
-	/*
-	 * All waiters have already been registered, so don't provide
-	 * a poll_table->_qproc to them on the next loop iteration.
-	 */
-	pt->_qproc = NULL;
-
-
-	return count;
-}
-
-
-int max_sel_fd(unsigned long n, fd_set_bits *fds, struct task_struct * tsk) {
-	unsigned long *open_fds;
-	unsigned long set;
-	int max;
-	struct fdtable *fdt;
-
-	/* handle last in-complete long-word first */
-	set = ~(~0UL << (n & (BITS_PER_LONG - 1)));
-	n /= BITS_PER_LONG;
-	fdt = files_fdtable(current->files);
-	open_fds = fdt->open_fds + n;
-
-	max = 0;
-	if (set) {
-		set &= BITS(fds, n);
-		if (set) {
-			if (!(set & ~*open_fds))
-				goto get_max;
-			return -EBADF;
-		}
-	}
-	while (n) {
-		open_fds--;
-		n--;
-		set = BITS(fds, n);
-		if (!set)
-			continue;
-		if (set & ~*open_fds)
-			return -EBADF;
-		if (max)
-			continue;
-get_max:
-		do {
-			max++;
-			set >>= 1;
-		} while (set);
-		max += n * BITS_PER_LONG;
-	}
-
-	return max;
-}
-
-void wait_k_set(poll_table *wait, unsigned long in, unsigned long out,
-                unsigned long bit, unsigned int ll_flag) {
-	wait->_key = POLLEX_SET | ll_flag;
-	if (in & bit)
-		wait->_key |= POLLIN_SET;
-	if (out & bit)
-		wait->_key |= POLLOUT_SET;
-}
-
-
-int do_dialated_select(int n, fd_set_bits *fds, struct task_struct * tsk,
-                       struct poll_wqueues * table) {
-	ktime_t expire, *to = NULL;
-	poll_table *wait;
-	int retval, i, timed_out = 0;
-	unsigned long slack = 0;
-	unsigned int busy_flag = 0;
-	unsigned long busy_end = 0;
-
-	/*
-	rcu_read_lock();
-	retval = max_sel_fd(n, fds, tsk);
-	rcu_read_unlock();
-
-
-	*/
-
-	retval = n;
-
-	if (retval < 0) {
-		PDEBUG_E("Max Sel FD error. Pid: %d\n", current->pid);
-		return retval;
-
-	}
-	if (retval != n ) {
-		PDEBUG_E("retval: %d, n: %d\n", retval, n);
-	}
-
-	n = retval;
-
-
-	wait = &table->pt;
-	retval = 0;
-
-	unsigned long *rinp, *routp, *rexp, *inp, *outp, *exp;
-	bool can_busy_loop = false;
-	inp = fds->in; outp = fds->out; exp = fds->ex;
-	rinp = fds->res_in; routp = fds->res_out; rexp = fds->res_ex;
-	for (i = 0; i < n; ++rinp, ++routp, ++rexp) {
-		unsigned long in, out, ex, all_bits, bit = 1, mask, j;
-		unsigned long res_in = 0, res_out = 0, res_ex = 0;
-
-		in = *inp++; out = *outp++; ex = *exp++;
-		all_bits = in | out | ex;
-		if (all_bits == 0) {
-			i += BITS_PER_LONG;
-			continue;
-		}
-
-		for (j = 0; j < BITS_PER_LONG; ++j, ++i, bit <<= 1) {
-			struct fd f;
-			if (i >= n)
-				break;
-			if (!(bit & all_bits))
-				continue;
-			f = fdget(i);
-			if (f.file) {
-				const struct file_operations *f_op;
-				f_op = f.file->f_op;
-				mask = DEFAULT_POLLMASK;
-				if (f_op->poll) {
-					wait_k_set(wait, in, out,
-					           bit, busy_flag);
-					mask = (*f_op->poll)(f.file, wait);
-				}
-				fdput(f);
-				if ((mask & POLLIN_SET) && (in & bit)) {
-					res_in |= bit;
-					retval++;
-					wait->_qproc = NULL;
-				}
-				if ((mask & POLLOUT_SET) && (out & bit)) {
-					res_out |= bit;
-					retval++;
-					wait->_qproc = NULL;
-				}
-				if ((mask & POLLEX_SET) && (ex & bit)) {
-					res_ex |= bit;
-					retval++;
-					wait->_qproc = NULL;
-				}
-				/* got something, stop busy polling */
-				if (retval) {
-					can_busy_loop = false;
-					busy_flag = 0;
-					/*
-					* only remember a returned
-					* POLL_BUSY_LOOP if we asked for it
-					*/
-				} else if (busy_flag & mask)
-					can_busy_loop = true;
-			}
-		}
-		if (res_in)
-			*rinp = res_in;
-		if (res_out)
-			*routp = res_out;
-		if (res_ex)
-			*rexp = res_ex;
-	}
-	wait->_qproc = NULL;
-
-	if (retval) {
-		PDEBUG_V("Select Return: %d, PID: %d\n", retval, current->pid);
-		return retval;
-
-	}
-
-	if (table->error) {
-		retval = table->error;
-	}
-	return retval;
-}

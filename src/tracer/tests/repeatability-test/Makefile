@@ -1,28 +1,34 @@
-home_dir=$(HOME)
-tracer_dir=${home_dir}/Kronos/src/tracer
-test_dir=${tracer_dir}/tests/repeatability-test
+TEST_DIR=$(HOME)/Kronos/src/tracer/tests/repeatability-test
+TRACER_DIR=$(HOME)/Kronos/src/tracer
+RM:=rm
+ECHO:=echo
+GCC:=gcc
+CHMOD:=chmod
 
+.PHONY: clean
 clean:
 
-	@rm -f ${test_dir}/cmds.txt > /dev/null
-	@rm -f ${test_dir}/insn_tester > /dev/null
-	@rm -f ${test_dir}/test > /dev/null
+	@$(RM) -f ${TEST_DIR}/cmds.txt > /dev/null
+	@$(RM) -f ${TEST_DIR}/insn_tester > /dev/null
+	@$(RM) -f ${TEST_DIR}/test > /dev/null
 
-
+.PHONY: build
 build:
-	@echo "Building Repeatability Test ..."
-	@gcc -w -I/usr/local/include/perf -I/usr/local/lib/perf/include \
-	-I${tracer_dir}/utils ${test_dir}/insn_tester.c ${tracer_dir}/utils/linkedlist.c \
-	${tracer_dir}/utils/hashmap.c -o ${test_dir}/insn_tester -lperf
-	@gcc ${test_dir}/test.c -fno-asynchronous-unwind-tables -fno-dwarf2-cfi-asm -o ${test_dir}/test
-	@echo ${test_dir}/test > cmds.txt
-	@chmod 777 ${test_dir}/test
-	@chmod 777 ${test_dir}/insn_tester
+	@$(ECHO) "Building Repeatability Test ..."
+	@$(GCC) -w -I/usr/local/include/perf -I/usr/local/lib/perf/include \
+	-I${TRACER_DIR}/utils ${TEST_DIR}/insn_tester.c ${TRACER_DIR}/utils/linkedlist.c \
+	${TRACER_DIR}/utils/hashmap.c -o ${TEST_DIR}/insn_tester -lperf
+	@$(GCC) ${TEST_DIR}/test.c -fno-asynchronous-unwind-tables -fno-dwarf2-cfi-asm -o ${TEST_DIR}/test
+	@$(GCC) ${TEST_DIR}/test.c -S -fno-asynchronous-unwind-tables -fno-dwarf2-cfi-asm -o ${TEST_DIR}/test.s
+	@$(ECHO) ${TEST_DIR}/test > cmds.txt
+	@$(CHMOD) 777 ${TEST_DIR}/test
+	@$(CHMOD) 777 ${TEST_DIR}/insn_tester
 
+.PHONY: run
 run:
-	@echo Starting Repeatability Test ...
-	@echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
-	${test_dir}/insn_tester ${test_dir}/cmds.txt
-	@echo 2 | sudo tee /proc/sys/kernel/randomize_va_space
-	@echo Repeatability Test Finished ...
+	@$(ECHO) Starting Repeatability Test ...
+	@$(ECHO) 0 | sudo tee /proc/sys/kernel/randomize_va_space
+	${TEST_DIR}/insn_tester ${TEST_DIR}/cmds.txt
+	@$(ECHO) 2 | sudo tee /proc/sys/kernel/randomize_va_space
+	@$(ECHO) Repeatability Test Finished ...
 

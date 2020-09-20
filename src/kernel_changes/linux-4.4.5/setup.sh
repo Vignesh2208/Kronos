@@ -38,14 +38,16 @@ cd /src
 
 ker_ver=`echo $cur_kernel | cut -d "-" -f2 | cut -d "." -f 1`
 ker_src_dir="https://www.kernel.org/pub/linux/kernel/v$ker_ver.x/$cur_kernel.tar.gz"
-#ker_src_dir="http://127.0.0.1:8000/pub/linux/kernel/v$ker_ver.x/$cur_kernel.tar.gz"
 
 echo "Going to Download Kernel from : $ker_src_dir"
 
-wget $ker_src_dir
+
+if [ ! -f "$cur_kernel.tar.gz" ]; then
+  wget $ker_src_dir
+fi
+
 echo  " Extracting from : $cur_kernel.tar.gz"
 tar -zxvf "$cur_kernel.tar.gz"
-
 
 cd $curr_dir
 DST_DIR=/src

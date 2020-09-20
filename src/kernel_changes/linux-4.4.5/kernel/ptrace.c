@@ -34,7 +34,8 @@
  *
  * Must be called with the tasklist lock write-held.
  */
-void __ptrace_link(struct task_struct *child, struct task_struct *new_parent) {
+void __ptrace_link(struct task_struct *child, struct task_struct *new_parent)
+{
 	BUG_ON(!list_empty(&child->ptrace_entry));
 	list_add(&child->ptrace_entry, &new_parent->ptraced);
 	child->parent = new_parent;
@@ -68,7 +69,8 @@ void __ptrace_link(struct task_struct *child, struct task_struct *new_parent) {
  * CONTEXT:
  * write_lock_irq(tasklist_lock)
  */
-void __ptrace_unlink(struct task_struct *child) {
+void __ptrace_unlink(struct task_struct *child)
+{
 	BUG_ON(!child->ptrace);
 
 	child->ptrace = 0;
@@ -89,8 +91,8 @@ void __ptrace_unlink(struct task_struct *child) {
 	 * @child isn't dead.
 	 */
 	if (!(child->flags & PF_EXITING) &&
-	        (child->signal->flags & SIGNAL_STOP_STOPPED ||
-	         child->signal->group_stop_count)) {
+	    (child->signal->flags & SIGNAL_STOP_STOPPED ||
+	     child->signal->group_stop_count)) {
 		child->jobctl |= JOBCTL_STOP_PENDING;
 
 		/*
@@ -117,7 +119,8 @@ void __ptrace_unlink(struct task_struct *child) {
 }
 
 /* Ensure that nothing can wake it up, even SIGKILL */
-static bool ptrace_freeze_traced(struct task_struct *task) {
+static bool ptrace_freeze_traced(struct task_struct *task)
+{
 	bool ret = false;
 
 	/* Lockless, nobody but us can set this flag */
@@ -134,7 +137,8 @@ static bool ptrace_freeze_traced(struct task_struct *task) {
 	return ret;
 }
 
-static void ptrace_unfreeze_traced(struct task_struct *task) {
+static void ptrace_unfreeze_traced(struct task_struct *task)
+{
 	if (task->state != __TASK_TRACED)
 		return;
 
@@ -165,7 +169,8 @@ static void ptrace_unfreeze_traced(struct task_struct *task) {
  * RETURNS:
  * 0 on success, -ESRCH if %child is not ready.
  */
-static int ptrace_check_attach(struct task_struct *child, bool ignore_state) {
+static int ptrace_check_attach(struct task_struct *child, bool ignore_state)
+{
 	int ret = -ESRCH;
 
 	/*
@@ -202,7 +207,8 @@ static int ptrace_check_attach(struct task_struct *child, bool ignore_state) {
 	return ret;
 }
 
-static int ptrace_has_cap(struct user_namespace *ns, unsigned int mode) {
+static int ptrace_has_cap(struct user_namespace *ns, unsigned int mode)
+{
 	if (mode & PTRACE_MODE_NOAUDIT)
 		return has_ns_capability_noaudit(current, ns, CAP_SYS_PTRACE);
 	else
@@ -210,7 +216,8 @@ static int ptrace_has_cap(struct user_namespace *ns, unsigned int mode) {
 }
 
 /* Returns 0 on success, -errno on denial. */
-static int __ptrace_may_access(struct task_struct *task, unsigned int mode) {
+static int __ptrace_may_access(struct task_struct *task, unsigned int mode)
+{
 	const struct cred *cred = current_cred(), *tcred;
 	int dumpable = 0;
 	kuid_t caller_uid;
@@ -251,11 +258,11 @@ static int __ptrace_may_access(struct task_struct *task, unsigned int mode) {
 	}
 	tcred = __task_cred(task);
 	if (uid_eq(caller_uid, tcred->euid) &&
-	        uid_eq(caller_uid, tcred->suid) &&
-	        uid_eq(caller_uid, tcred->uid)  &&
-	        gid_eq(caller_gid, tcred->egid) &&
-	        gid_eq(caller_gid, tcred->sgid) &&
-	        gid_eq(caller_gid, tcred->gid))
+	    uid_eq(caller_uid, tcred->suid) &&
+	    uid_eq(caller_uid, tcred->uid)  &&
+	    gid_eq(caller_gid, tcred->egid) &&
+	    gid_eq(caller_gid, tcred->sgid) &&
+	    gid_eq(caller_gid, tcred->gid))
 		goto ok;
 	if (ptrace_has_cap(tcred->user_ns, mode))
 		goto ok;
@@ -268,7 +275,7 @@ ok:
 		dumpable = get_dumpable(task->mm);
 	rcu_read_lock();
 	if (dumpable != SUID_DUMP_USER &&
-	        !ptrace_has_cap(__task_cred(task)->user_ns, mode)) {
+	    !ptrace_has_cap(__task_cred(task)->user_ns, mode)) {
 		rcu_read_unlock();
 		return -EPERM;
 	}
@@ -277,7 +284,8 @@ ok:
 	return security_ptrace_access_check(task, mode);
 }
 
-bool ptrace_may_access(struct task_struct *task, unsigned int mode) {
+bool ptrace_may_access(struct task_struct *task, unsigned int mode)
+{
 	int err;
 	task_lock(task);
 	err = __ptrace_may_access(task, mode);
@@ -286,8 +294,9 @@ bool ptrace_may_access(struct task_struct *task, unsigned int mode) {
 }
 
 static int ptrace_attach(struct task_struct *task, long request,
-                         unsigned long addr,
-                         unsigned long flags) {
+			 unsigned long addr,
+			 unsigned long flags)
+{
 	bool seize = (request == PTRACE_SEIZE);
 	int retval;
 
@@ -366,7 +375,7 @@ static int ptrace_attach(struct task_struct *task, long request,
 	 * in and out of STOPPED are protected by siglock.
 	 */
 	if (task_is_stopped(task) &&
-	        task_set_jobctl_pending(task, JOBCTL_TRAP_STOP | JOBCTL_TRAPPING))
+	    task_set_jobctl_pending(task, JOBCTL_TRAP_STOP | JOBCTL_TRAPPING))
 		signal_wake_up_state(task, __TASK_STOPPED);
 
 	spin_unlock(&task->sighand->siglock);
@@ -379,7 +388,7 @@ unlock_creds:
 out:
 	if (!retval) {
 		wait_on_bit(&task->jobctl, JOBCTL_TRAPPING_BIT,
-		            TASK_UNINTERRUPTIBLE);
+			    TASK_UNINTERRUPTIBLE);
 		proc_ptrace_connector(task, PTRACE_ATTACH);
 	}
 
@@ -392,7 +401,8 @@ out:
  * Performs checks and sets PT_PTRACED.
  * Should be used by all ptrace implementations for PTRACE_TRACEME.
  */
-static int ptrace_traceme(void) {
+static int ptrace_traceme(void)
+{
 	int ret = -EPERM;
 
 	write_lock_irq(&tasklist_lock);
@@ -417,11 +427,12 @@ static int ptrace_traceme(void) {
 /*
  * Called with irqs disabled, returns true if childs should reap themselves.
  */
-static int ignoring_children(struct sighand_struct *sigh) {
+static int ignoring_children(struct sighand_struct *sigh)
+{
 	int ret;
 	spin_lock(&sigh->siglock);
-	ret = (sigh->action[SIGCHLD - 1].sa.sa_handler == SIG_IGN) ||
-	      (sigh->action[SIGCHLD - 1].sa.sa_flags & SA_NOCLDWAIT);
+	ret = (sigh->action[SIGCHLD-1].sa.sa_handler == SIG_IGN) ||
+	      (sigh->action[SIGCHLD-1].sa.sa_flags & SA_NOCLDWAIT);
 	spin_unlock(&sigh->siglock);
 	return ret;
 }
@@ -441,7 +452,8 @@ static int ignoring_children(struct sighand_struct *sigh) {
  * reap it now, in that case we must also wake up sub-threads sleeping in
  * do_wait().
  */
-static bool __ptrace_detach(struct task_struct *tracer, struct task_struct *p) {
+static bool __ptrace_detach(struct task_struct *tracer, struct task_struct *p)
+{
 	bool dead;
 
 	__ptrace_unlink(p);
@@ -465,7 +477,8 @@ static bool __ptrace_detach(struct task_struct *tracer, struct task_struct *p) {
 	return dead;
 }
 
-static int ptrace_detach(struct task_struct *child, unsigned int data) {
+static int ptrace_detach(struct task_struct *child, unsigned int data)
+{
 	if (!valid_signal(data))
 		return -EIO;
 
@@ -496,7 +509,8 @@ static int ptrace_detach(struct task_struct *child, unsigned int data) {
  * Detach all tasks we were using ptrace on. Called with tasklist held
  * for writing.
  */
-void exit_ptrace(struct task_struct *tracer, struct list_head *dead) {
+void exit_ptrace(struct task_struct *tracer, struct list_head *dead)
+{
 	struct task_struct *p, *n;
 
 	list_for_each_entry_safe(p, n, &tracer->ptraced, ptrace_entry) {
@@ -508,7 +522,8 @@ void exit_ptrace(struct task_struct *tracer, struct list_head *dead) {
 	}
 }
 
-int ptrace_readdata(struct task_struct *tsk, unsigned long src, char __user *dst, int len) {
+int ptrace_readdata(struct task_struct *tsk, unsigned long src, char __user *dst, int len)
+{
 	int copied = 0;
 
 	while (len > 0) {
@@ -532,7 +547,8 @@ int ptrace_readdata(struct task_struct *tsk, unsigned long src, char __user *dst
 	return copied;
 }
 
-int ptrace_writedata(struct task_struct *tsk, char __user *src, unsigned long dst, int len) {
+int ptrace_writedata(struct task_struct *tsk, char __user *src, unsigned long dst, int len)
+{
 	int copied = 0;
 
 	while (len > 0) {
@@ -556,7 +572,8 @@ int ptrace_writedata(struct task_struct *tsk, char __user *src, unsigned long ds
 	return copied;
 }
 
-static int ptrace_setoptions(struct task_struct *child, unsigned long data) {
+static int ptrace_setoptions(struct task_struct *child, unsigned long data)
+{
 	unsigned flags;
 
 	if (data & ~(unsigned long)PTRACE_O_MASK)
@@ -564,14 +581,14 @@ static int ptrace_setoptions(struct task_struct *child, unsigned long data) {
 
 	if (unlikely(data & PTRACE_O_SUSPEND_SECCOMP)) {
 		if (!config_enabled(CONFIG_CHECKPOINT_RESTORE) ||
-		        !config_enabled(CONFIG_SECCOMP))
+		    !config_enabled(CONFIG_SECCOMP))
 			return -EINVAL;
 
 		if (!capable(CAP_SYS_ADMIN))
 			return -EPERM;
 
 		if (seccomp_mode(&current->seccomp) != SECCOMP_MODE_DISABLED ||
-		        current->ptrace & PT_SUSPEND_SECCOMP)
+		    current->ptrace & PT_SUSPEND_SECCOMP)
 			return -EPERM;
 	}
 
@@ -584,7 +601,8 @@ static int ptrace_setoptions(struct task_struct *child, unsigned long data) {
 	return 0;
 }
 
-static int ptrace_getsiginfo(struct task_struct *child, siginfo_t *info) {
+static int ptrace_getsiginfo(struct task_struct *child, siginfo_t *info)
+{
 	unsigned long flags;
 	int error = -ESRCH;
 
@@ -599,7 +617,8 @@ static int ptrace_getsiginfo(struct task_struct *child, siginfo_t *info) {
 	return error;
 }
 
-static int ptrace_setsiginfo(struct task_struct *child, const siginfo_t *info) {
+static int ptrace_setsiginfo(struct task_struct *child, const siginfo_t *info)
+{
 	unsigned long flags;
 	int error = -ESRCH;
 
@@ -615,15 +634,16 @@ static int ptrace_setsiginfo(struct task_struct *child, const siginfo_t *info) {
 }
 
 static int ptrace_peek_siginfo(struct task_struct *child,
-                               unsigned long addr,
-                               unsigned long data) {
+				unsigned long addr,
+				unsigned long data)
+{
 	struct ptrace_peeksiginfo_args arg;
 	struct sigpending *pending;
 	struct sigqueue *q;
 	int ret, i;
 
 	ret = copy_from_user(&arg, (void __user *) addr,
-	                     sizeof(struct ptrace_peeksiginfo_args));
+				sizeof(struct ptrace_peeksiginfo_args));
 	if (ret)
 		return -EFAULT;
 
@@ -659,7 +679,7 @@ static int ptrace_peek_siginfo(struct task_struct *child,
 			compat_siginfo_t __user *uinfo = compat_ptr(data);
 
 			if (copy_siginfo_to_user32(uinfo, &info) ||
-			        __put_user(info.si_code, &uinfo->si_code)) {
+			    __put_user(info.si_code, &uinfo->si_code)) {
 				ret = -EFAULT;
 				break;
 			}
@@ -670,7 +690,7 @@ static int ptrace_peek_siginfo(struct task_struct *child,
 			siginfo_t __user *uinfo = (siginfo_t __user *) data;
 
 			if (copy_siginfo_to_user(uinfo, &info) ||
-			        __put_user(info.si_code, &uinfo->si_code)) {
+			    __put_user(info.si_code, &uinfo->si_code)) {
 				ret = -EFAULT;
 				break;
 			}
@@ -692,14 +712,12 @@ static int ptrace_peek_siginfo(struct task_struct *child,
 }
 
 #ifdef PTRACE_SINGLESTEP
-#define is_singlestep(request)		((request) == PTRACE_SINGLESTEP)
-#define is_multistep(request)		((request) == PTRACE_MULTISTEP)
+#define is_singlestep(request) ((request) == PTRACE_SINGLESTEP)
+#define is_multistep(request) ((request) == PTRACE_MULTISTEP)
 #else
-#define is_singlestep(request)		0
-#define is_multistep(request)		0
+#define is_singlestep(request) 0
+#define is_multistep(request) 0
 #endif
-
-
 
 #ifdef PTRACE_SINGLEBLOCK
 #define is_singleblock(request)		((request) == PTRACE_SINGLEBLOCK)
@@ -714,7 +732,8 @@ static int ptrace_peek_siginfo(struct task_struct *child,
 #endif
 
 static int ptrace_resume(struct task_struct *child, long request,
-                         unsigned long data) {
+			 unsigned long data)
+{
 	bool need_siglock;
 
 	if (!valid_signal(data))
@@ -732,17 +751,16 @@ static int ptrace_resume(struct task_struct *child, long request,
 		clear_tsk_thread_flag(child, TIF_SYSCALL_EMU);
 #endif
 
-	if (is_singleblock(request)) {
-		if (unlikely(!arch_has_block_step()))
-			return -EIO;
-		user_enable_block_step(child);
-	} else if (is_singlestep(request) || is_multistep(request) || is_sysemu_singlestep(request)) {
-		if (unlikely(!arch_has_single_step()))
-			return -EIO;
-		user_enable_single_step(child);
-	} else {
-		user_disable_single_step(child);
-	}
+  if (is_singleblock(request)) {
+    if (unlikely(!arch_has_block_step())) return -EIO;
+    user_enable_block_step(child);
+  } else if (is_singlestep(request) || is_multistep(request) ||
+             is_sysemu_singlestep(request)) {
+    if (unlikely(!arch_has_single_step())) return -EIO;
+    user_enable_single_step(child);
+  } else {
+    user_disable_single_step(child);
+  }
 
 	/*
 	 * Change ->exit_code and ->state under siglock to avoid the race
@@ -771,7 +789,8 @@ static int ptrace_resume(struct task_struct *child, long request,
 #ifdef CONFIG_HAVE_ARCH_TRACEHOOK
 
 static const struct user_regset *
-find_regset(const struct user_regset_view *view, unsigned int type) {
+find_regset(const struct user_regset_view *view, unsigned int type)
+{
 	const struct user_regset *regset;
 	int n;
 
@@ -785,7 +804,8 @@ find_regset(const struct user_regset_view *view, unsigned int type) {
 }
 
 static int ptrace_regset(struct task_struct *task, int req, unsigned int type,
-                         struct iovec *kiov) {
+			 struct iovec *kiov)
+{
 	const struct user_regset_view *view = task_user_regset_view(task);
 	const struct user_regset *regset = find_regset(view, type);
 	int regset_no;
@@ -795,14 +815,14 @@ static int ptrace_regset(struct task_struct *task, int req, unsigned int type,
 
 	regset_no = regset - view->regsets;
 	kiov->iov_len = min(kiov->iov_len,
-	                    (__kernel_size_t) (regset->n * regset->size));
+			    (__kernel_size_t) (regset->n * regset->size));
 
 	if (req == PTRACE_GETREGSET)
 		return copy_regset_to_user(task, view, regset_no, 0,
-		                           kiov->iov_len, kiov->iov_base);
+					   kiov->iov_len, kiov->iov_base);
 	else
 		return copy_regset_from_user(task, view, regset_no, 0,
-		                             kiov->iov_len, kiov->iov_base);
+					     kiov->iov_len, kiov->iov_base);
 }
 
 /*
@@ -814,7 +834,8 @@ EXPORT_SYMBOL_GPL(task_user_regset_view);
 #endif
 
 int ptrace_request(struct task_struct *child, long request,
-                   unsigned long addr, unsigned long data) {
+		   unsigned long addr, unsigned long data)
+{
 	bool seized = child->ptrace & PT_SEIZED;
 	int ret = -EIO;
 	siginfo_t siginfo, *si;
@@ -822,26 +843,27 @@ int ptrace_request(struct task_struct *child, long request,
 	unsigned long __user *datalp = datavp;
 	unsigned long flags;
 
-	unsigned long n_steps = 0;
+  unsigned long n_steps = 0;
 
-	switch (request) {
-	case PTRACE_PEEKTEXT:
-	case PTRACE_PEEKDATA:
-		return generic_ptrace_peekdata(child, addr, data);
-	case PTRACE_POKETEXT:
-	case PTRACE_POKEDATA:
-		return generic_ptrace_pokedata(child, addr, data);
+  switch (request) {
+    case PTRACE_PEEKTEXT:
+    case PTRACE_PEEKDATA:
+      return generic_ptrace_peekdata(child, addr, data);
+    case PTRACE_POKETEXT:
+    case PTRACE_POKEDATA:
+      return generic_ptrace_pokedata(child, addr, data);
 
 #ifdef PTRACE_OLDSETOPTIONS
 	case PTRACE_OLDSETOPTIONS:
 #endif
-	case PTRACE_SETOPTIONS:
-		ret = ptrace_setoptions(child, data);
-		break;
-	case PTRACE_GETEVENTMSG:
-		trace_printk("Tracer retrieving GETEVENTMSG: Message = %lu\n", child->ptrace_message);
-		ret = put_user(child->ptrace_message, datalp);
-		break;
+    case PTRACE_SETOPTIONS:
+      ret = ptrace_setoptions(child, data);
+      break;
+    case PTRACE_GETEVENTMSG:
+      trace_printk("Tracer retrieving GETEVENTMSG: Message = %lu\n",
+                   child->ptrace_message);
+      ret = put_user(child->ptrace_message, datalp);
+      break;
 
 	case PTRACE_PEEKSIGINFO:
 		ret = ptrace_peek_siginfo(child, addr, data);
@@ -886,7 +908,7 @@ int ptrace_request(struct task_struct *child, long request,
 			break;
 		}
 
-		sigdelsetmask(&new_set, sigmask(SIGKILL) | sigmask(SIGSTOP));
+		sigdelsetmask(&new_set, sigmask(SIGKILL)|sigmask(SIGSTOP));
 
 		/*
 		 * Every thread does recalc_sigpending() after resume, so
@@ -985,8 +1007,8 @@ int ptrace_request(struct task_struct *child, long request,
 #endif
 
 #ifdef PTRACE_SINGLESTEP
-	case PTRACE_SINGLESTEP:
-		child->ptrace_msteps = 1;
+    case PTRACE_SINGLESTEP:
+      child->ptrace_msteps = 1;
 #endif
 #ifdef PTRACE_SINGLEBLOCK
 	case PTRACE_SINGLEBLOCK:
@@ -995,27 +1017,27 @@ int ptrace_request(struct task_struct *child, long request,
 	case PTRACE_SYSEMU:
 	case PTRACE_SYSEMU_SINGLESTEP:
 #endif
-	case PTRACE_SYSCALL:
-	case PTRACE_CONT:
-		child->ptrace_mflags = 0;
-		child->n_ints = 0;
-		return ptrace_resume(child, request, data);
+    case PTRACE_SYSCALL:
+    case PTRACE_CONT:
+      child->ptrace_mflags = 0;
+      child->n_ints = 0;
+      return ptrace_resume(child, request, data);
 
-	case PTRACE_KILL:
-		if (child->exit_state)	/* already dead */
-			return 0;
-		return ptrace_resume(child, request, SIGKILL);
-	case PTRACE_MULTISTEP:
+    case PTRACE_KILL:
+      if (child->exit_state) /* already dead */
+        return 0;
+      return ptrace_resume(child, request, SIGKILL);
+    case PTRACE_MULTISTEP:
 
-		if (__get_user(n_steps, datalp))
-			return -EFAULT;
+      if (__get_user(n_steps, datalp)) return -EFAULT;
 
-		child->ptrace_msteps = n_steps;
-		child->ptrace_mflags = 0;
-		child->n_ints = 0;
-		trace_printk("Ptrace msteps: %lu, Pid: %d\n", child->ptrace_msteps, child->pid);
-		return ptrace_resume(child, PTRACE_SINGLESTEP, 0);
-		break;
+      child->ptrace_msteps = n_steps;
+      child->ptrace_mflags = 0;
+      child->n_ints = 0;
+      trace_printk("Ptrace msteps: %lu, Pid: %d\n", child->ptrace_msteps,
+                   child->pid);
+      return ptrace_resume(child, PTRACE_SINGLESTEP, 0);
+      break;
 
 #ifdef CONFIG_HAVE_ARCH_TRACEHOOK
 	case PTRACE_GETREGSET:
@@ -1027,7 +1049,7 @@ int ptrace_request(struct task_struct *child, long request,
 			return -EFAULT;
 
 		if (__get_user(kiov.iov_base, &uiov->iov_base) ||
-		        __get_user(kiov.iov_len, &uiov->iov_len))
+		    __get_user(kiov.iov_len, &uiov->iov_len))
 			return -EFAULT;
 
 		ret = ptrace_regset(child, request, addr, &kiov);
@@ -1048,7 +1070,8 @@ int ptrace_request(struct task_struct *child, long request,
 	return ret;
 }
 
-static struct task_struct *ptrace_get_task_struct(pid_t pid) {
+static struct task_struct *ptrace_get_task_struct(pid_t pid)
+{
 	struct task_struct *child;
 
 	rcu_read_lock();
@@ -1068,108 +1091,108 @@ static struct task_struct *ptrace_get_task_struct(pid_t pid) {
 
 SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
                 unsigned long, data) {
-	struct task_struct *child;
-	long ret;
-	unsigned long __user * datalp = (void __user *) data;
-	unsigned long n_steps;
-	unsigned long flags;
+  struct task_struct *child;
+  long ret;
+  unsigned long __user *datalp = (void __user *)data;
+  unsigned long n_steps;
+  unsigned long flags;
 
-	if (request == PTRACE_TRACEME) {
-		ret = ptrace_traceme();
-		if (!ret)
-			arch_ptrace_attach(current);
-		goto out;
-	}
+  if (request == PTRACE_TRACEME) {
+    ret = ptrace_traceme();
+    if (!ret) arch_ptrace_attach(current);
+    goto out;
+  }
 
-	child = ptrace_get_task_struct(pid);
-	if (IS_ERR(child)) {
-		trace_printk("Task : %d does not exist. Ptrace error\n", pid);
-		ret = PTR_ERR(child);
-		goto out;
-	}
+  child = ptrace_get_task_struct(pid);
+  if (IS_ERR(child)) {
+    trace_printk("Task : %d does not exist. Ptrace error\n", pid);
+    ret = PTR_ERR(child);
+    goto out;
+  }
 
-	if (request == PTRACE_ATTACH || request == PTRACE_SEIZE) {
-		ret = ptrace_attach(child, request, addr, data);
-		/*
-		 * Some architectures need to do book-keeping after
-		 * a ptrace attach.
-		 */
-		if (!ret)
-			arch_ptrace_attach(child);
-		goto out_put_task_struct;
-	}
+  if (request == PTRACE_ATTACH || request == PTRACE_SEIZE) {
+    ret = ptrace_attach(child, request, addr, data);
+    /*
+     * Some architectures need to do book-keeping after
+     * a ptrace attach.
+     */
+    if (!ret) arch_ptrace_attach(child);
+    goto out_put_task_struct;
+  }
 
-	if (request == PTRACE_GET_REM_MULTISTEP) {
-		unsigned long rem_steps = child->ptrace_msteps;
-		
-		if (copy_to_user(datalp, &rem_steps, sizeof(unsigned long))) {
-			ret = -EFAULT;
-		} else {
-			ret = 0;
-		}
-		goto out_put_task_struct;
+  if (request == PTRACE_GET_REM_MULTISTEP) {
+    unsigned long rem_steps = child->ptrace_msteps;
 
-	} else if (request == PTRACE_SET_REM_MULTISTEP) {
-		if (__get_user(n_steps, datalp)) {
-			ret = -EFAULT;
-		} else {
-			child->ptrace_msteps = n_steps;
-			child->n_ints = 0;
-			trace_printk("Ptrace: Pid: %d, set rem multistep: ptrace_msteps: %lu\n",  child->pid, child->ptrace_msteps);
-			ret = 0;
-		}
-		goto out_put_task_struct;
+    if (copy_to_user(datalp, &rem_steps, sizeof(unsigned long))) {
+      ret = -EFAULT;
+    } else {
+      ret = 0;
+    }
+    goto out_put_task_struct;
 
-	} else if (request == PTRACE_GET_MSTEP_FLAGS) {
-		flags = child->ptrace_mflags;
-		trace_printk("Ptrace: Pid: %d, get ptrace flags: %lX\n",  child->pid, child->ptrace_mflags);
-		if (copy_to_user(datalp, &flags, sizeof(unsigned long))) {
-			ret = -EFAULT;
-		} else{
-			ret = 0;
-		}
-		goto out_put_task_struct;
+  } else if (request == PTRACE_SET_REM_MULTISTEP) {
+    if (__get_user(n_steps, datalp)) {
+      ret = -EFAULT;
+    } else {
+      child->ptrace_msteps = n_steps;
+      child->n_ints = 0;
+      trace_printk("Ptrace: Pid: %d, set rem multistep: ptrace_msteps: %lu\n",
+                   child->pid, child->ptrace_msteps);
+      ret = 0;
+    }
+    goto out_put_task_struct;
 
-	} else if (request == PTRACE_SET_DELTA_BUFFER_WINDOW) {
-		if (__get_user(n_steps, datalp)) {
-			ret = -EFAULT;
-		} else {
-			child->past_physical_time = n_steps;
-			trace_printk("Ptrace: Pid: %d, set rem delta buffer window size: %lu\n",  child->pid, child->past_physical_time);
-			ret = 0;
-		}
-		goto out_put_task_struct;
+  } else if (request == PTRACE_GET_MSTEP_FLAGS) {
+    flags = child->ptrace_mflags;
+    trace_printk("Ptrace: Pid: %d, get ptrace flags: %lX\n", child->pid,
+                 child->ptrace_mflags);
+    if (copy_to_user(datalp, &flags, sizeof(unsigned long))) {
+      ret = -EFAULT;
+    } else {
+      ret = 0;
+    }
+    goto out_put_task_struct;
 
-	} else if (request == PTRACE_GET_OVERSHOOT_ERROR) {
-		unsigned long error = child->past_virtual_time;
-		child->past_virtual_time = 0;
-		if (copy_to_user(datalp, &error, sizeof(unsigned long))) {
-			ret = -EFAULT;
-		} else {
-			trace_printk("Ptrace: Pid: %d, overshoot error: %lu\n",  child->pid, child->past_virtual_time);
-			ret = 0;
-		}
-		goto out_put_task_struct;
-	}
+  } else if (request == PTRACE_SET_DELTA_BUFFER_WINDOW) {
+    if (__get_user(n_steps, datalp)) {
+      ret = -EFAULT;
+    } else {
+      child->buffer_window_len = n_steps;
+      trace_printk("Ptrace: Pid: %d, set rem delta buffer window size: %lu\n",
+                   child->pid, child->buffer_window_len);
+      ret = 0;
+    }
+    goto out_put_task_struct;
 
-	ret = ptrace_check_attach(child, request == PTRACE_KILL ||
-	                          request == PTRACE_INTERRUPT);
-	if (ret < 0)
-		goto out_put_task_struct;
+  } else if (request == PTRACE_GET_OVERSHOOT_ERROR) {
+    unsigned long error = child->buffer_window_len;
+    child->buffer_window_len = 0;
+    if (copy_to_user(datalp, &error, sizeof(unsigned long))) {
+      ret = -EFAULT;
+    } else {
+      trace_printk("Ptrace: Pid: %d, overshoot error: %lu\n", child->pid,
+                   error);
+      ret = 0;
+    }
+    goto out_put_task_struct;
+  }
 
+  ret = ptrace_check_attach(
+      child, request == PTRACE_KILL || request == PTRACE_INTERRUPT);
+  if (ret < 0) goto out_put_task_struct;
 
-	ret = arch_ptrace(child, request, addr, data);
-	if (ret || request != PTRACE_DETACH)
-		ptrace_unfreeze_traced(child);
+  ret = arch_ptrace(child, request, addr, data);
+  if (ret || request != PTRACE_DETACH) ptrace_unfreeze_traced(child);
 
 out_put_task_struct:
-	put_task_struct(child);
+  put_task_struct(child);
 out:
-	return ret;
+  return ret;
 }
 
 int generic_ptrace_peekdata(struct task_struct *tsk, unsigned long addr,
-                            unsigned long data) {
+			    unsigned long data)
+{
 	unsigned long tmp;
 	int copied;
 
@@ -1180,7 +1203,8 @@ int generic_ptrace_peekdata(struct task_struct *tsk, unsigned long addr,
 }
 
 int generic_ptrace_pokedata(struct task_struct *tsk, unsigned long addr,
-                            unsigned long data) {
+			    unsigned long data)
+{
 	int copied;
 
 	copied = access_process_vm(tsk, addr, &data, sizeof(data), 1);
@@ -1190,7 +1214,8 @@ int generic_ptrace_pokedata(struct task_struct *tsk, unsigned long addr,
 #if defined CONFIG_COMPAT
 
 int compat_ptrace_request(struct task_struct *child, compat_long_t request,
-                          compat_ulong_t addr, compat_ulong_t data) {
+			  compat_ulong_t addr, compat_ulong_t data)
+{
 	compat_ulong_t __user *datap = compat_ptr(data);
 	compat_ulong_t word;
 	siginfo_t siginfo;
@@ -1220,24 +1245,25 @@ int compat_ptrace_request(struct task_struct *child, compat_long_t request,
 		ret = ptrace_getsiginfo(child, &siginfo);
 		if (!ret)
 			ret = copy_siginfo_to_user32(
-			          (struct compat_siginfo __user *) datap,
-			          &siginfo);
+				(struct compat_siginfo __user *) datap,
+				&siginfo);
 		break;
 
 	case PTRACE_SETSIGINFO:
 		memset(&siginfo, 0, sizeof siginfo);
 		if (copy_siginfo_from_user32(
-		            &siginfo, (struct compat_siginfo __user *) datap))
+			    &siginfo, (struct compat_siginfo __user *) datap))
 			ret = -EFAULT;
 		else
 			ret = ptrace_setsiginfo(child, &siginfo);
 		break;
 #ifdef CONFIG_HAVE_ARCH_TRACEHOOK
 	case PTRACE_GETREGSET:
-	case PTRACE_SETREGSET: {
+	case PTRACE_SETREGSET:
+	{
 		struct iovec kiov;
 		struct compat_iovec __user *uiov =
-		    (struct compat_iovec __user *) datap;
+			(struct compat_iovec __user *) datap;
 		compat_uptr_t ptr;
 		compat_size_t len;
 
@@ -1245,7 +1271,7 @@ int compat_ptrace_request(struct task_struct *child, compat_long_t request,
 			return -EFAULT;
 
 		if (__get_user(ptr, &uiov->iov_base) ||
-		        __get_user(len, &uiov->iov_len))
+		    __get_user(len, &uiov->iov_len))
 			return -EFAULT;
 
 		kiov.iov_base = compat_ptr(ptr);
@@ -1266,7 +1292,8 @@ int compat_ptrace_request(struct task_struct *child, compat_long_t request,
 }
 
 COMPAT_SYSCALL_DEFINE4(ptrace, compat_long_t, request, compat_long_t, pid,
-                       compat_long_t, addr, compat_long_t, data) {
+		       compat_long_t, addr, compat_long_t, data)
+{
 	struct task_struct *child;
 	long ret;
 
@@ -1293,16 +1320,16 @@ COMPAT_SYSCALL_DEFINE4(ptrace, compat_long_t, request, compat_long_t, pid,
 	}
 
 	ret = ptrace_check_attach(child, request == PTRACE_KILL ||
-	                          request == PTRACE_INTERRUPT);
+				  request == PTRACE_INTERRUPT);
 	if (!ret) {
 		ret = compat_arch_ptrace(child, request, addr, data);
 		if (ret || request != PTRACE_DETACH)
 			ptrace_unfreeze_traced(child);
 	}
 
-out_put_task_struct:
+ out_put_task_struct:
 	put_task_struct(child);
-out:
+ out:
 	return ret;
 }
 #endif	/* CONFIG_COMPAT */

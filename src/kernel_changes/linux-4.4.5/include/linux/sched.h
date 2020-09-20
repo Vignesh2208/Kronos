@@ -1508,6 +1508,20 @@ struct task_struct {
 	struct list_head ptraced;
 	struct list_head ptrace_entry;
 
+	/** fields related to virtual time management **/
+	s64 curr_virt_time;
+	s64 wakeup_time;
+	s64 virt_start_time;
+	s64 burst_target;
+	int associated_tracer_id;
+	int ready;
+	int buffer_window_len;
+	spinlock_t dialation_lock;
+	unsigned long ptrace_mflags;
+	unsigned long ptrace_msteps;
+	unsigned long n_ints;
+	struct task_struct * vt_exec_task;
+	s64 * tracer_clock;
 	/* PID/PID hash table linkage. */
 	struct pid_link pids[PIDTYPE_MAX];
 	struct list_head thread_group;
@@ -1567,17 +1581,6 @@ struct task_struct {
 /* signal handlers */
 	struct signal_struct *signal;
 	struct sighand_struct *sighand;
-
-	s64 freeze_time;
-	s64 wakeup_time;
-	s64 virt_start_time;
-	s64 past_physical_time;
-	s64 past_virtual_time;
-	int dilation_factor;
-	spinlock_t dialation_lock;
-	unsigned long ptrace_mflags;
-	unsigned long ptrace_msteps;
-	unsigned long n_ints;	
 
 	sigset_t blocked, real_blocked;
 	sigset_t saved_sigmask;	/* restored if set_restore_sigmask() was used */

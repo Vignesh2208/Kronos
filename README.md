@@ -1,1 +1,2 @@
-Full documentation can be found [here](https://kronoz.readthedocs.io/en/latest/index.html) 
+# Titan
+Titan: A high precision virtual time system based on binary instrumentation

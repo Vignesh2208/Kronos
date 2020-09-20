@@ -1,24 +1,31 @@
-home_dir=$(HOME)
-tracer_dir=${home_dir}/Kronos/src/tracer
-benchmarking_dir=${tracer_dir}/tests/benchmarking
+TRACER_DIR=$(HOME)/Kronos/src/tracer
+BENCHMARKING_DIR=${TRACER_DIR}/tests/benchmarking
+
+RM:=rm
+ECHO:=echo
+GCC:=gcc
+CHMOD:=chmod
+
+.PHONY: clean
 clean:
 
-	@rm -f ${benchmarking_dir}/cmds.txt > /dev/null
-	@rm -f ${benchmarking_dir}/benchmark > /dev/null
-	@rm -f ${benchmarking_dir}/test > /dev/null
+	@$(RM) -f ${BENCHMARKING_DIR}/cmds.txt > /dev/null
+	@$(RM) -f ${BENCHMARKING_DIR}/benchmark > /dev/null
+	@$(RM) -f ${BENCHMARKING_DIR}/test > /dev/null
 
-
+.PHONY: build
 build:
-	@echo "Building Benchmarking Suite ..."
-	@gcc -w -I/usr/local/include/perf -I/usr/local/lib/perf/include \
-	-I${tracer_dir}/utils ${benchmarking_dir}/benchmark.c \
-	${tracer_dir}/utils/linkedlist.c ${tracer_dir}/utils/hashmap.c \
-	-o ${benchmarking_dir}/benchmark -lperf -lm
-	@gcc ${benchmarking_dir}/test.c -o ${benchmarking_dir}/test
-	@echo ${benchmarking_dir}/test > cmds.txt
-	@chmod 777 ${benchmarking_dir}/test
-	@chmod 777 ${benchmarking_dir}/benchmark
+	@$(ECHO) "Building Benchmarking Suite ..."
+	@$(GCC) -w -I/usr/local/include/perf -I/usr/local/lib/perf/include \
+	-I${TRACER_DIR}/utils ${BENCHMARKING_DIR}/benchmark.c \
+	${TRACER_DIR}/utils/linkedlist.c ${TRACER_DIR}/utils/hashmap.c \
+	-o ${BENCHMARKING_DIR}/benchmark -lperf -lm
+	@$(GCC) ${BENCHMARKING_DIR}/test.c -o ${BENCHMARKING_DIR}/test
+	@$(ECHO) ${BENCHMARKING_DIR}/test > cmds.txt
+	@$(CHMOD) 777 ${BENCHMARKING_DIR}/test
+	@$(CHMOD) 777 ${BENCHMARKING_DIR}/benchmark
 
+.PHONY: run
 run:
-	${benchmarking_dir}/benchmark ${benchmarking_dir}/cmds.txt
+	${BENCHMARKING_DIR}/benchmark ${BENCHMARKING_DIR}/cmds.txt
 

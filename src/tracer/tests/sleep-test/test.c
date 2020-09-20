@@ -32,14 +32,13 @@ void main() {
   fprintf(stderr, "Hello World\n");
   fflush(stdout);
   int i = 0;
-  int delay = 1000;
-  fprintf(stderr, "Sleeping ...\n");
-  usleep(delay * 1000);
-  print_curr_time();
-  while (i < 50000000) {
+  int delay = 10;
+  while (i < 100) {
+    print_curr_time();
+    fprintf(stderr, "Sleeping ...\n");
+    usleep(delay * 1000);
+    print_curr_time();
     i++;
   }
-  print_curr_time();
   fprintf(stderr, "GoodBye World\n");
-
 }

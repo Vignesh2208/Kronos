@@ -1,37 +1,42 @@
-home_dir=$(HOME)
-tracer_dir=${home_dir}/Kronos/src/tracer
-test_dir=${tracer_dir}/tests
+TEST_DIR=$(HOME)/Kronos/src/tracer/tests
+CD:=cd
 
+.PHONY: build
 build:
-	@cd ${test_dir}/repeatability-test && $(MAKE) clean && $(MAKE) build;
-	@cd ${test_dir}/sleep-test && $(MAKE) clean && $(MAKE) build;
-	@cd ${test_dir}/socket-test && $(MAKE) clean && $(MAKE) build;
-	@cd ${test_dir}/vfork-test && $(MAKE) clean && $(MAKE) build;
-	@cd ${test_dir}/thread-test && $(MAKE) clean && $(MAKE) build;
-	@cd ${test_dir}/repeatability-test && $(MAKE) clean && $(MAKE) build;
-	@cd ${test_dir}/benchmarking && $(MAKE) clean && $(MAKE) build;
+	@$(CD) ${TEST_DIR}/repeatability-test && $(MAKE) clean && $(MAKE) build;
+	@$(CD) ${TEST_DIR}/sleep-test && $(MAKE) clean && $(MAKE) build;
+	@$(CD) ${TEST_DIR}/socket-test && $(MAKE) clean && $(MAKE) build;
+	@$(CD) ${TEST_DIR}/vfork-test && $(MAKE) clean && $(MAKE) build;
+	@$(CD) ${TEST_DIR}/thread-test && $(MAKE) clean && $(MAKE) build;
+	@$(CD) ${TEST_DIR}/repeatability-test && $(MAKE) clean && $(MAKE) build;
+	@$(CD) ${TEST_DIR}/benchmarking && $(MAKE) clean && $(MAKE) build;
 
+.PHONY: run_repeatability_test
 run_repeatability_test:
-	@cd ${test_dir}/repeatability-test && $(MAKE) run
+	@$(CD) ${TEST_DIR}/repeatability-test && $(MAKE) run
 
+.PHONY: run_sleep_test
 run_sleep_test:
-	@cd ${test_dir}/sleep-test && $(MAKE) start
+	@$(CD) ${TEST_DIR}/sleep-test && $(MAKE) start
 
+.PHONY: run_socket_test
 run_socket_test:
-	@cd ${test_dir}/socket-test && $(MAKE) start
+	@$(CD) ${TEST_DIR}/socket-test && $(MAKE) start
 
+.PHONY: run_vfork_test
 run_vfork_test:
-	@cd ${test_dir}/vfork-test && $(MAKE) start
+	@$(CD) ${TEST_DIR}/vfork-test && $(MAKE) start
 
+.PHONY: run_thread_test
 run_thread_test:
-	@cd ${test_dir}/thread-test && $(MAKE) start
+	@$(CD) ${TEST_DIR}/thread-test && $(MAKE) start
 
-
+.PHONY: clean
 clean:
-	@cd ${test_dir}/repeatability-test && $(MAKE) clean 
-	@cd ${test_dir}/sleep-test && $(MAKE) clean
-	@cd ${test_dir}/vfork-test && $(MAKE) clean
-	@cd ${test_dir}/thread-test && $(MAKE) clean
-	@cd ${test_dir}/socket-test && $(MAKE) clean
-	@cd ${test_dir}/benchmarking && $(MAKE) clean
+	@$(CD) ${TEST_DIR}/repeatability-test && $(MAKE) clean 
+	@$(CD) ${TEST_DIR}/sleep-test && $(MAKE) clean
+	@$(CD) ${TEST_DIR}/vfork-test && $(MAKE) clean
+	@$(CD) ${TEST_DIR}/thread-test && $(MAKE) clean
+	@$(CD) ${TEST_DIR}/socket-test && $(MAKE) clean
+	@$(CD) ${TEST_DIR}/benchmarking && $(MAKE) clean
 

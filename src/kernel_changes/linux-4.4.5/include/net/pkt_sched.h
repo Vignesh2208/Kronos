@@ -2,22 +2,19 @@
 #define __NET_PKT_SCHED_H
 
 #include <linux/jiffies.h>
-#include <linux/types.h>
 #include <linux/ktime.h>
 #include <linux/if_vlan.h>
 #include <net/sch_generic.h>
+
 #include <linux/fs.h>
 #include <linux/pid.h>
 #include <linux/reciprocal_div.h>
+#include <linux/types.h>
 
+#include <net/inet_ecn.h>
 #include <net/netlink.h>
 #include <net/pkt_sched.h>
-#include <net/inet_ecn.h>
 #include <net/sock.h>
-
-
-
-
 
 struct qdisc_walker {
 	int	stop;
@@ -34,11 +31,11 @@ static inline void *qdisc_priv(struct Qdisc *q)
 	return (char *) q + QDISC_ALIGN(sizeof(struct Qdisc));
 }
 
-struct task_struct * get_task_struct_from_qdisc(struct Qdisc *);
+struct task_struct *get_task_struct_from_qdisc(struct Qdisc *);
 
 s64 get_current_dilated_time(struct task_struct *);
 
-/* 
+/*
    Timer resolution MUST BE < 10% of min_schedulable_packet_size/bandwidth
    
    Normal IP packet size ~ 512byte, hence:
@@ -55,23 +52,20 @@ s64 get_current_dilated_time(struct task_struct *);
    in the most critical places.
  */
 
-typedef u64	psched_time_t;
-typedef long	psched_tdiff_t;
-
-
+typedef u64 psched_time_t;
+typedef long psched_tdiff_t;
 
 struct netem_skb_cb {
-        s64   time_to_send;
-        ktime_t         tstamp_save;
+	s64 time_to_send;
+	ktime_t tstamp_save;
 };
 
 static inline struct netem_skb_cb *netem_skb_cb(struct sk_buff *skb)
 {
-        /* we assume we can use skb next/prev/tstamp as storage for rb_node */
-        qdisc_cb_private_validate(skb, sizeof(struct netem_skb_cb));
-        return (struct netem_skb_cb *)qdisc_skb_cb(skb)->data;
+	/* we assume we can use skb next/prev/tstamp as storage for rb_node */
+	qdisc_cb_private_validate(skb, sizeof(struct netem_skb_cb));
+	return (struct netem_skb_cb *)qdisc_skb_cb(skb)->data;
 }
-
 
 /* Avoid doing 64 bit divide */
 #define PSCHED_SHIFT			6
@@ -93,19 +87,16 @@ psched_tdiff_bounded(psched_time_t tv1, psched_time_t tv2, psched_time_t bound)
 }
 
 struct qdisc_watchdog {
-	struct hrtimer	timer;
-	//struct hrtimer timer_dilated;
-	struct hrtimer_dilated	timer_dilated;
-	struct Qdisc	*qdisc;
-        struct sk_buff  *skb;
-	struct pid * owner_pid;
+	struct hrtimer timer;
+	struct hrtimer_dilated timer_dilated;
+	struct Qdisc *qdisc;
+	struct sk_buff *skb;
+	struct pid *owner_pid;
 };
 
-
-
-
 void qdisc_watchdog_init(struct qdisc_watchdog *wd, struct Qdisc *qdisc);
-void qdisc_watchdog_schedule_ns(struct qdisc_watchdog *wd, u64 expires, bool throttle);
+void qdisc_watchdog_schedule_ns(struct qdisc_watchdog *wd, u64 expires,
+				bool throttle);
 void qdisc_watchdog_schedule_ns_dilated(struct qdisc_watchdog *wd, u64 expires);
 
 static inline void qdisc_watchdog_schedule(struct qdisc_watchdog *wd,
@@ -114,11 +105,10 @@ static inline void qdisc_watchdog_schedule(struct qdisc_watchdog *wd,
 	qdisc_watchdog_schedule_ns(wd, PSCHED_TICKS2NS(expires), true);
 }
 
-
 static inline void qdisc_watchdog_schedule_dilated(struct qdisc_watchdog *wd,
-                                           psched_time_t expires)
+						   psched_time_t expires)
 {
-        qdisc_watchdog_schedule_ns_dilated(wd, PSCHED_TICKS2NS(expires));
+	qdisc_watchdog_schedule_ns_dilated(wd, PSCHED_TICKS2NS(expires));
 }
 
 struct netem_sched_data {
@@ -126,7 +116,7 @@ struct netem_sched_data {
 	struct rb_root t_root;
 
 	/* optional qdisc for classful handling (NULL at netem init) */
-	struct Qdisc	*qdisc;
+	struct Qdisc *qdisc;
 
 	struct qdisc_watchdog watchdog;
 
@@ -153,26 +143,23 @@ struct netem_sched_data {
 	} delay_cor, loss_cor, dup_cor, reorder_cor, corrupt_cor;
 
 	struct disttable {
-		u32  size;
+		u32 size;
 		s16 table[0];
-	} *delay_dist;
+	} * delay_dist;
 
-	enum  {
-		CLG_RANDOM,
-		CLG_4_STATES,
-		CLG_GILB_ELL,
+	enum { CLG_RANDOM,
+	       CLG_4_STATES,
+	       CLG_GILB_ELL,
 	} loss_model;
 
-	enum {
-		TX_IN_GAP_PERIOD = 1,
-		TX_IN_BURST_PERIOD,
-		LOST_IN_GAP_PERIOD,
-		LOST_IN_BURST_PERIOD,
+	enum { TX_IN_GAP_PERIOD = 1,
+	       TX_IN_BURST_PERIOD,
+	       LOST_IN_GAP_PERIOD,
+	       LOST_IN_BURST_PERIOD,
 	} _4_state_model;
 
-	enum {
-		GOOD_STATE = 1,
-		BAD_STATE,
+	enum { GOOD_STATE = 1,
+	       BAD_STATE,
 	} GE_state_model;
 
 	/* Correlated Loss Generation models */
@@ -181,13 +168,12 @@ struct netem_sched_data {
 		u8 state;
 
 		/* 4-states and Gilbert-Elliot models */
-		u32 a1;	/* p13 for 4-states or p for GE */
-		u32 a2;	/* p31 for 4-states or r for GE */
-		u32 a3;	/* p32 for 4-states or h for GE */
-		u32 a4;	/* p14 for 4-states or 1-k for GE */
+		u32 a1; /* p13 for 4-states or p for GE */
+		u32 a2; /* p31 for 4-states or r for GE */
+		u32 a3; /* p32 for 4-states or h for GE */
+		u32 a4; /* p14 for 4-states or 1-k for GE */
 		u32 a5; /* p23 used only in 4-states */
 	} clg;
-
 };
 
 void qdisc_watchdog_cancel(struct qdisc_watchdog *wd);

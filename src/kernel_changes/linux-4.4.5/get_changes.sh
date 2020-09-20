@@ -1,6 +1,11 @@
 #!/bin/bash
 
+echo "Copying modfied Kernel source files"
+
+
+find . -name \* -type f ! -path "*.sh" ! -path "*.txt" -print | cut -d'/' -f2- > differences.txt
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 
 cat differences.txt | while read LINE
 do

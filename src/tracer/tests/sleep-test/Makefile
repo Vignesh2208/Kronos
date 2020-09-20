@@ -1,22 +1,28 @@
-home_dir=$(HOME)
-tracer_dir=${home_dir}/Kronos/src/tracer
-test_dir=${tracer_dir}/tests/sleep-test
 
+TEST_DIR=$(HOME)/Kronos/src/tracer/tests/sleep-test
+RM:=rm
+ECHO:=echo
+GCC:=gcc
+CHMOD:=chmod
+PYTHON:=python
+
+.PHONY: clean
 clean:
-	@rm -f ${test_dir}/cmds.txt > /dev/null
-	@rm -f ${test_dir}/test > /dev/null
+	@$(RM) -f ${TEST_DIR}/cmds.txt > /dev/null
+	@$(RM) -f ${TEST_DIR}/test > /dev/null
 
+.PHONY: build
 build:
-	@echo "Building Sleep Test ..."
-	@gcc -w ${test_dir}/test.c -o ${test_dir}/test 
-	chmod 777 ${test_dir}/test
+	@$(ECHO) "Building Sleep Test ..."
+	@$(GCC) -w ${TEST_DIR}/test.c -o ${TEST_DIR}/test 
+	@$(CHMOD) 777 ${TEST_DIR}/test
 
+.PHONY: run
 run:
-	@echo "Starting Sleep Test ..."
-	@echo ${test_dir}/test > ${test_dir}/cmds.txt
-	tracer_test -f ${test_dir}/cmds.txt
+	@$(ECHO) "Starting Sleep Test ..."
+	@$(ECHO) ${TEST_DIR}/test > ${TEST_DIR}/cmds.txt
+	@$(PYTHON) $(HOME)/Kronos/examples/example_vt_experiment.py --cmds_to_run_file=${TEST_DIR}/cmds.txt
+	@$(ECHO) "Sleep Test Finished ..."
 
-	@echo "Sleep Test Finished ..."
-
-
+.PHONY: start
 start: run

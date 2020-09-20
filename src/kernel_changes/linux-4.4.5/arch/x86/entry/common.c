@@ -31,56 +31,75 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/syscalls.h>
 
-void syscall_enter_mwork(struct pt_regs *regs) {
-
-
+void syscall_enter_mwork(struct pt_regs *regs)
+{
 	unsigned long flags;
 
 	spin_lock_irqsave(&current->dialation_lock, flags);
-	if (current->ptrace_msteps > 0 && regs->orig_ax != __NR_fork && regs->orig_ax != __NR_clone && regs->orig_ax != __NR_vfork && regs->orig_ax != __NR_execve) {
+	if (current->ptrace_msteps > 0 && regs->orig_ax != __NR_fork &&
+	    regs->orig_ax != __NR_clone && regs->orig_ax != __NR_vfork &&
+	    regs->orig_ax != __NR_execve) {
 		set_bit(PTRACE_ENTER_SYSCALL_FLAG, &current->ptrace_mflags);
-		BUG_ON(test_bit(PTRACE_ENTER_FORK_FLAG, &current->ptrace_mflags));
-		BUG_ON(test_bit(PTRACE_BREAK_WAITPID_FLAG, &current->ptrace_mflags));
-		trace_printk("Setting ENTER SYSCALL FLAG bit for Pid: %d. Syscall no: %lu\n", current->pid, regs->orig_ax);
+		BUG_ON(test_bit(PTRACE_ENTER_FORK_FLAG,
+				&current->ptrace_mflags));
+		BUG_ON(test_bit(PTRACE_BREAK_WAITPID_FLAG,
+				&current->ptrace_mflags));
+		trace_printk(
+			"Setting ENTER SYSCALL FLAG bit for Pid: %d. Syscall no: %lu\n",
+			current->pid, regs->orig_ax);
 	} else if (current->ptrace_msteps > 0 && regs->orig_ax != __NR_execve) {
 		set_bit(PTRACE_ENTER_FORK_FLAG, &current->ptrace_mflags);
-		BUG_ON(test_bit(PTRACE_ENTER_SYSCALL_FLAG, &current->ptrace_mflags));
-		BUG_ON(test_bit(PTRACE_BREAK_WAITPID_FLAG, &current->ptrace_mflags));
+		BUG_ON(test_bit(PTRACE_ENTER_SYSCALL_FLAG,
+				&current->ptrace_mflags));
+		BUG_ON(test_bit(PTRACE_BREAK_WAITPID_FLAG,
+				&current->ptrace_mflags));
 
 		current->ptrace_msteps = 1;
-		trace_printk("Setting ENTER FORK FLAG bit for Pid: %d\n", current->pid);
+		trace_printk("Setting ENTER FORK FLAG bit for Pid: %d\n",
+			     current->pid);
+	} else if (current->virt_start_time != 0 && current->ptrace_msteps == 0) {
+		set_bit(PTRACE_ENTER_SYSCALL_FLAG, &current->ptrace_mflags);
+		BUG_ON(test_bit(PTRACE_ENTER_FORK_FLAG,
+				&current->ptrace_mflags));
+		BUG_ON(test_bit(PTRACE_BREAK_WAITPID_FLAG,
+				&current->ptrace_mflags));
+		trace_printk(
+			"Setting ENTER SYSCALL FLAG bit for APP-VT Pid: %d. Syscall no: %lu\n",
+			 current->pid, regs->orig_ax);
 	}
 	spin_unlock_irqrestore(&current->dialation_lock, flags);
-	if (current->virt_start_time != 0) {
-		current->freeze_time ++;
+	if (current->virt_start_time != 0 && current->ptrace_msteps > 0) {
+		current->curr_virt_time++;
 	}
 }
 
-
-static struct thread_info *pt_regs_to_thread_info(struct pt_regs *regs) {
+static struct thread_info *pt_regs_to_thread_info(struct pt_regs *regs)
+{
 	unsigned long top_of_stack =
-	    (unsigned long)(regs + 1) + TOP_OF_KERNEL_STACK_PADDING;
+		(unsigned long)(regs + 1) + TOP_OF_KERNEL_STACK_PADDING;
 	return (struct thread_info *)(top_of_stack - THREAD_SIZE);
 }
 
 #ifdef CONFIG_CONTEXT_TRACKING
 /* Called on entry from user mode with IRQs off. */
-__visible void enter_from_user_mode(void) {
+__visible void enter_from_user_mode(void)
+{
 	CT_WARN_ON(ct_state() != CONTEXT_USER);
 	user_exit();
 }
 #endif
 
-static void do_audit_syscall_entry(struct pt_regs *regs, u32 arch) {
+static void do_audit_syscall_entry(struct pt_regs *regs, u32 arch)
+{
 #ifdef CONFIG_X86_64
 	if (arch == AUDIT_ARCH_X86_64) {
 		audit_syscall_entry(regs->orig_ax, regs->di,
-		                    regs->si, regs->dx, regs->r10);
+				    regs->si, regs->dx, regs->r10);
 	} else
 #endif
 	{
 		audit_syscall_entry(regs->orig_ax, regs->bx,
-		                    regs->cx, regs->dx, regs->si);
+				    regs->cx, regs->dx, regs->si);
 	}
 }
 
@@ -97,7 +116,8 @@ static void do_audit_syscall_entry(struct pt_regs *regs, u32 arch) {
  * 1:			go to phase 2; no seccomp phase 2 needed
  * anything else:	go to phase 2; pass return value to seccomp
  */
-unsigned long syscall_trace_enter_phase1(struct pt_regs *regs, u32 arch) {
+unsigned long syscall_trace_enter_phase1(struct pt_regs *regs, u32 arch)
+{
 	struct thread_info *ti = pt_regs_to_thread_info(regs);
 	unsigned long ret = 0;
 	u32 work;
@@ -187,7 +207,8 @@ unsigned long syscall_trace_enter_phase1(struct pt_regs *regs, u32 arch) {
 
 /* Returns the syscall nr to run (which should match regs->orig_ax). */
 long syscall_trace_enter_phase2(struct pt_regs *regs, u32 arch,
-                                unsigned long phase1_result) {
+				unsigned long phase1_result)
+{
 	struct thread_info *ti = pt_regs_to_thread_info(regs);
 	long ret = 0;
 	u32 work = ACCESS_ONCE(ti->flags) & _TIF_WORK_SYSCALL_ENTRY;
@@ -202,11 +223,8 @@ long syscall_trace_enter_phase2(struct pt_regs *regs, u32 arch,
 	 * do_debug() and we need to set it again to restore the user
 	 * state.  If we entered on the slow path, TF was already set.
 	 */
-	if (work & _TIF_SINGLESTEP) {
+	if (work & _TIF_SINGLESTEP)
 		regs->flags |= X86_EFLAGS_TF;
-	}
-
-
 
 #ifdef CONFIG_SECCOMP
 	/*
@@ -223,7 +241,7 @@ long syscall_trace_enter_phase2(struct pt_regs *regs, u32 arch,
 		ret = -1L;
 
 	if ((ret || test_thread_flag(TIF_SYSCALL_TRACE)) &&
-	        tracehook_report_syscall_entry(regs))
+	    tracehook_report_syscall_entry(regs))
 		ret = -1L;
 
 	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
@@ -231,10 +249,11 @@ long syscall_trace_enter_phase2(struct pt_regs *regs, u32 arch,
 
 	do_audit_syscall_entry(regs, arch);
 
-	return ret ? : regs->orig_ax;
+	return ret ?: regs->orig_ax;
 }
 
-long syscall_trace_enter(struct pt_regs *regs) {
+long syscall_trace_enter(struct pt_regs *regs)
+{
 	u32 arch = is_ia32_task() ? AUDIT_ARCH_I386 : AUDIT_ARCH_X86_64;
 	unsigned long phase1_result = syscall_trace_enter_phase1(regs, arch);
 
@@ -248,7 +267,8 @@ long syscall_trace_enter(struct pt_regs *regs) {
 	(_TIF_SIGPENDING | _TIF_NOTIFY_RESUME | _TIF_UPROBE |	\
 	 _TIF_NEED_RESCHED | _TIF_USER_RETURN_NOTIFY)
 
-static void exit_to_usermode_loop(struct pt_regs *regs, u32 cached_flags) {
+static void exit_to_usermode_loop(struct pt_regs *regs, u32 cached_flags)
+{
 	/*
 	 * In order to return to user mode, we need to have IRQs off with
 	 * none of _TIF_SIGPENDING, _TIF_NOTIFY_RESUME, _TIF_USER_RETURN_NOTIFY,
@@ -257,16 +277,17 @@ static void exit_to_usermode_loop(struct pt_regs *regs, u32 cached_flags) {
 	 * so we need to loop.  Disabling preemption wouldn't help: doing the
 	 * work to clear some of the flags can sleep.
 	 */
+
 	unsigned long syscall_no = regs->orig_ax;
-
-
 	while (true) {
 		/* We have work to do. */
 
 		local_irq_enable();
 
 		if (cached_flags & _TIF_NEED_RESCHED) {
-			if (current->pid != init_task.pid && current->freeze_time > 0 && current->virt_start_time == 0) {
+			if (current->pid != init_task.pid &&
+			    current->curr_virt_time > 0 &&
+			    current->virt_start_time == 0) {
 				set_current_state(TASK_RUNNING);
 				schedule();
 			} else {
@@ -274,23 +295,20 @@ static void exit_to_usermode_loop(struct pt_regs *regs, u32 cached_flags) {
 			}
 		}
 
-		if (cached_flags & _TIF_UPROBE) {
+		if (cached_flags & _TIF_UPROBE)
 			uprobe_notify_resume(regs);
-		}
 
 		/* deal with pending signal delivery */
-		if (cached_flags & _TIF_SIGPENDING) {
+		if (cached_flags & _TIF_SIGPENDING)
 			do_signal(regs);
-		}
 
 		if (cached_flags & _TIF_NOTIFY_RESUME) {
 			clear_thread_flag(TIF_NOTIFY_RESUME);
 			tracehook_notify_resume(regs);
 		}
 
-		if (cached_flags & _TIF_USER_RETURN_NOTIFY) {
+		if (cached_flags & _TIF_USER_RETURN_NOTIFY)
 			fire_user_return_notifiers();
-		}
 
 		/* Disable IRQs and retry */
 		local_irq_disable();
@@ -304,17 +322,16 @@ static void exit_to_usermode_loop(struct pt_regs *regs, u32 cached_flags) {
 }
 
 /* Called with IRQs disabled. */
-__visible inline void prepare_exit_to_usermode(struct pt_regs *regs) {
+__visible inline void prepare_exit_to_usermode(struct pt_regs *regs)
+{
 	u32 cached_flags;
-
 
 	if (IS_ENABLED(CONFIG_PROVE_LOCKING) && WARN_ON(!irqs_disabled()))
 		local_irq_disable();
 
 	lockdep_sys_exit();
 
-	cached_flags =
-	    READ_ONCE(pt_regs_to_thread_info(regs)->flags);
+	cached_flags = READ_ONCE(pt_regs_to_thread_info(regs)->flags);
 
 	BUG_ON(regs != task_pt_regs(current));
 
@@ -322,15 +339,14 @@ __visible inline void prepare_exit_to_usermode(struct pt_regs *regs) {
 	if (unlikely(cached_flags & EXIT_TO_USERMODE_LOOP_FLAGS))
 		exit_to_usermode_loop(regs, cached_flags);
 
-	if (test_and_clear_bit(PTRACE_PERF_FINISH_FLAG, &current->ptrace_mflags) && current->ptrace_msteps) {
-		
+	if (test_and_clear_bit(PTRACE_PERF_FINISH_FLAG,
+			       &current->ptrace_mflags) &&
+	    current->ptrace_msteps) {
 		user_enable_single_step(current);
 	}
 
 	current->ptrace_mflags = 0;
-
-
-
+	
 	user_enter();
 }
 
@@ -338,10 +354,11 @@ __visible inline void prepare_exit_to_usermode(struct pt_regs *regs) {
 	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT |	\
 	 _TIF_SINGLESTEP | _TIF_SYSCALL_TRACEPOINT)
 
-// called when TIF_SINGLESTEP is set. If not set, syscall_exit_mwork is called instead
-static void syscall_slow_exit_work(struct pt_regs *regs, u32 cached_flags) {
+// called when TIF_SINGLESTEP is set. If not set, syscall_exit_mwork is called
+// instead
+static void syscall_slow_exit_work(struct pt_regs *regs, u32 cached_flags)
+{
 	bool step;
-	
 
 	audit_syscall_exit(regs);
 
@@ -354,11 +371,11 @@ static void syscall_slow_exit_work(struct pt_regs *regs, u32 cached_flags) {
 	 * We already reported this syscall instruction in
 	 * syscall_trace_enter().
 	 */
-	step = unlikely(
-	           (cached_flags & (_TIF_SINGLESTEP | _TIF_SYSCALL_EMU))
-	           == _TIF_SINGLESTEP);
+	step = unlikely((cached_flags & (_TIF_SINGLESTEP | _TIF_SYSCALL_EMU)) ==
+			_TIF_SINGLESTEP);
 
-	if (step && (cached_flags & _TIF_SYSCALL_TRACE) && current->ptrace_msteps == 0) {
+	if (step && (cached_flags & _TIF_SYSCALL_TRACE) &&
+	    current->ptrace_msteps == 0) {
 		tracehook_report_syscall_exit(regs, step);
 	} else if (step && current->ptrace_msteps) {
 		set_bit(PTRACE_PERF_FINISH_FLAG, &current->ptrace_mflags);
@@ -369,17 +386,16 @@ static void syscall_slow_exit_work(struct pt_regs *regs, u32 cached_flags) {
  * Called with IRQs on and fully valid regs.  Returns with IRQs off in a
  * state such that we can immediately switch to user mode.
  */
-__visible inline void syscall_return_slowpath(struct pt_regs *regs) {
+__visible inline void syscall_return_slowpath(struct pt_regs *regs)
+{
 	struct thread_info *ti = pt_regs_to_thread_info(regs);
 	u32 cached_flags = READ_ONCE(ti->flags);
 
 	CT_WARN_ON(ct_state() != CONTEXT_KERNEL);
 
 	if (IS_ENABLED(CONFIG_PROVE_LOCKING) &&
-	        WARN(irqs_disabled(), "syscall %ld left IRQs disabled", regs->orig_ax))
+	    WARN(irqs_disabled(), "syscall %ld left IRQs disabled", regs->orig_ax))
 		local_irq_enable();
-
-
 
 	/*
 	 * First do one-time work.  If these work items are enabled, we
@@ -387,7 +403,6 @@ __visible inline void syscall_return_slowpath(struct pt_regs *regs) {
 	 */
 	if (unlikely(cached_flags & SYSCALL_EXIT_WORK_FLAGS))
 		syscall_slow_exit_work(regs, cached_flags);
-
 
 #ifdef CONFIG_COMPAT
 	/*
@@ -415,7 +430,8 @@ __visible
 /* 64-bit kernels use do_syscall_32_irqs_off() instead. */
 static
 #endif
-__always_inline void do_syscall_32_irqs_on(struct pt_regs *regs) {
+__always_inline void do_syscall_32_irqs_on(struct pt_regs *regs)
+{
 	struct thread_info *ti = pt_regs_to_thread_info(regs);
 	unsigned int nr = (unsigned int)regs->orig_ax;
 
@@ -441,9 +457,9 @@ __always_inline void do_syscall_32_irqs_on(struct pt_regs *regs) {
 		 * of the args.
 		 */
 		regs->ax = ia32_sys_call_table[nr](
-		               (unsigned int)regs->bx, (unsigned int)regs->cx,
-		               (unsigned int)regs->dx, (unsigned int)regs->si,
-		               (unsigned int)regs->di, (unsigned int)regs->bp);
+			(unsigned int)regs->bx, (unsigned int)regs->cx,
+			(unsigned int)regs->dx, (unsigned int)regs->si,
+			(unsigned int)regs->di, (unsigned int)regs->bp);
 	}
 
 	syscall_return_slowpath(regs);
@@ -451,21 +467,23 @@ __always_inline void do_syscall_32_irqs_on(struct pt_regs *regs) {
 
 #ifdef CONFIG_X86_64
 /* Handles INT80 on 64-bit kernels */
-__visible void do_syscall_32_irqs_off(struct pt_regs *regs) {
+__visible void do_syscall_32_irqs_off(struct pt_regs *regs)
+{
 	local_irq_enable();
 	do_syscall_32_irqs_on(regs);
 }
 #endif
 
 /* Returns 0 to return using IRET or 1 to return using SYSEXIT/SYSRETL. */
-__visible long do_fast_syscall_32(struct pt_regs *regs) {
+__visible long do_fast_syscall_32(struct pt_regs *regs)
+{
 	/*
 	 * Called using the internal vDSO SYSENTER/SYSCALL32 calling
 	 * convention.  Adjust regs so it looks like we entered using int80.
 	 */
 
 	unsigned long landing_pad = (unsigned long)current->mm->context.vdso +
-	                            vdso_image_32.sym_int80_landing_pad;
+		vdso_image_32.sym_int80_landing_pad;
 
 	/*
 	 * SYSENTER loses EIP, and even SYSCALL32 needs us to skip forward
@@ -482,17 +500,17 @@ __visible long do_fast_syscall_32(struct pt_regs *regs) {
 	local_irq_enable();
 	if (
 #ifdef CONFIG_X86_64
-	    /*
-	     * Micro-optimization: the pointer we're following is explicitly
-	     * 32 bits, so it can't be out of range.
-	     */
-	    __get_user(*(u32 *)&regs->bp,
-	               (u32 __user __force *)(unsigned long)(u32)regs->sp)
+		/*
+		 * Micro-optimization: the pointer we're following is explicitly
+		 * 32 bits, so it can't be out of range.
+		 */
+		__get_user(*(u32 *)&regs->bp,
+			    (u32 __user __force *)(unsigned long)(u32)regs->sp)
 #else
-	    get_user(*(u32 *)&regs->bp,
-	             (u32 __user __force *)(unsigned long)(u32)regs->sp)
+		get_user(*(u32 *)&regs->bp,
+			 (u32 __user __force *)(unsigned long)(u32)regs->sp)
 #endif
-	) {
+		) {
 
 		/* User code screwed up. */
 		local_irq_disable();
@@ -518,8 +536,8 @@ __visible long do_fast_syscall_32(struct pt_regs *regs) {
 	 * never the case.
 	 */
 	return regs->cs == __USER32_CS && regs->ss == __USER_DS &&
-	       regs->ip == landing_pad &&
-	       (regs->flags & (X86_EFLAGS_RF | X86_EFLAGS_TF)) == 0;
+		regs->ip == landing_pad &&
+		(regs->flags & (X86_EFLAGS_RF | X86_EFLAGS_TF)) == 0;
 #else
 	/*
 	 * Opportunistic SYSEXIT: if possible, try to return using SYSEXIT.
@@ -532,9 +550,9 @@ __visible long do_fast_syscall_32(struct pt_regs *regs) {
 	 * need to check VM, because we might be returning from sys_vm86.
 	 */
 	return static_cpu_has(X86_FEATURE_SEP) &&
-	       regs->cs == __USER_CS && regs->ss == __USER_DS &&
-	       regs->ip == landing_pad &&
-	       (regs->flags & (X86_EFLAGS_RF | X86_EFLAGS_TF | X86_EFLAGS_VM)) == 0;
+		regs->cs == __USER_CS && regs->ss == __USER_DS &&
+		regs->ip == landing_pad &&
+		(regs->flags & (X86_EFLAGS_RF | X86_EFLAGS_TF | X86_EFLAGS_VM)) == 0;
 #endif
 }
 #endif

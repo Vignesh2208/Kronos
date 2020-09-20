@@ -1,30 +1,36 @@
-home_dir=$(HOME)
-tracer_dir=${home_dir}/Kronos/src/tracer
-test_dir=${tracer_dir}/tests/thread-test
+TEST_DIR=$(HOME)/Kronos/src/tracer/tests/thread-test
+RM:=rm
+ECHO:=echo
+GCC:=gcc
+CHMOD:=chmod
+PYTHON:=python
 
+.PHONY: clean
 clean:
-	@rm -f ${test_dir}/cmds.txt > /dev/null
-	@rm -f ${test_dir}/thread_test > /dev/null
+	@$(RM) -f ${TEST_DIR}/cmds.txt > /dev/null
+	@$(RM) -f ${TEST_DIR}/thread_test > /dev/null
 
-
+.PHONY: build
 build:
-	@echo "Building Thread Test ..."
-	@gcc -w ${test_dir}/thread_test.c -o ${test_dir}/thread_test -lpthread
-	@echo ${test_dir}/thread_test > ${test_dir}/cmds.txt
-	chmod 777 ${test_dir}/thread_test
+	@$(ECHO) "Building Thread Test ..."
+	@$(GCC) -w ${TEST_DIR}/thread_test.c -o ${TEST_DIR}/thread_test -lpthread
+	@$(ECHO) ${TEST_DIR}/thread_test > ${TEST_DIR}/cmds.txt
+	@$(CHMOD) 777 ${TEST_DIR}/thread_test
 
+.PHONY: run
 run:
-	@echo "Starting Thread Test ..."
-	tracer_test -f ${test_dir}/cmds.txt
-	@echo "Thread Test Finished ..."
+	@$(ECHO) "Starting Thread Test ..."
+	@$(PYTHON) $(HOME)/Kronos/examples/example_vt_experiment.py --cmds_to_run_file=${TEST_DIR}/cmds.txt
+	@$(ECHO) "Thread Test Finished ..."
 
+.PHONY: run_python
 run_python:
-	@echo "Starting Thread Test ..."
-	@echo "python thread.py" > ${test_dir}/cmds.txt
-	tracer_test -f ${test_dir}/cmds.txt
-	@echo "Thread Test Finished ..."
+	@$(ECHO) "Starting Thread Test ..."
+	@$(ECHO) "python ${TEST_DIR}/thread.py" > ${TEST_DIR}/cmds.txt
+	@$(PYTHON) $(HOME)/Kronos/examples/example_vt_experiment.py --cmds_to_run_file=${TEST_DIR}/cmds.txt
+	@$(ECHO) "Thread Test Finished ..."
 
-
+.PHONY: start
 start: run
 
 start_python: run_python

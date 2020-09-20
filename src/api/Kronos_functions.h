@@ -1,61 +1,102 @@
-#ifndef __KRONOS_FUNCTIONS
-#define __KRONOS_FUNCTIONS
-#include <sys/time.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
+#ifndef __VT_FUNCTIONS
+#define __VT_FUNCTIONS
+#include <errno.h>
+#include <fcntl.h>
+#include <linux/netlink.h>
 #include <signal.h>
-#include <sys/syscall.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/select.h>
+#include <sys/socket.h>
+#include <sys/syscall.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <sys/socket.h>
-#include <linux/netlink.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <sys/select.h>
+#include <unistd.h>
 #include "utility_functions.h"
-
-#define MAX_PAYLOAD 1000
-#define NETLINK_USER 31
-#define IFNAMESIZ 16
-#define MAX_BUF_SIZ 1000
-
-#define SMALLEST_PROCESS_QUANTA_INSNS 100000
-
-
-
-// General Functions **********************
 
 
 typedef unsigned long u32;
 
-// Synchronization Functions **********************
+//! Registers the calling process as a new tracer
+/*!
+    \param tracer_id ID of the tracer
+    \param tracer_type INS-VT or APP-VT
+    \param registration_type Specifies if an optional PID is present and
+        if the optional process is a spinner
+    \param optional_pid PID of any additional task which needs to be grouped
+        with this tracer
+    \param optional_timeline_id If exp_type is EXP_CS, this parameter specified
+        the timeline associated with this tracer.
+*/
+s64 registerTracer(int tracer_id, int tracer_type, int registration_type,
+                   int optional_pid, int optional_timeline_id);
 
-int addToExp(float relative_cpu_speed, u32 n_round_instructions);
-int addToExp_sp(float relative_cpu_speed, u32 n_round_instructions, pid_t pid);
-int addToExp_child(float relative_cpu_speed, u32 n_round_instructions,
-                pid_t pid);
-int synchronizeAndFreeze(int n_expected_tracers);
-int update_tracer_params(int tracer_pid, float relative_cpu_speed,
-                         u32 n_round_instructions);
-int write_tracer_results(char * result);
-int set_netdevice_owner(int tracer_pid, char * intf_name);
-int add_netdevice_to_vt_control(char * intf_name);
-int gettimepid(int pid);
+//! Increments a tracer's virtual clock
+/*!
+    \param tracer_id ID of the tracer
+    \param increment The clock is incremented by this value
+*/
+int updateTracerClock(int tracer_id, s64 increment);
 
-int startExp();
-int stopExp();
-int initializeExp(int exp_type);
+//! Invoked by a tracer to signal to the virtual time module about processes which
+//  should no longer be managed.
+/*!
+    \param tracer_id ID of the tracer
+    \param pids Refers to list of process-ids which need to be ignored
+    \param num_pids Number of process-ids
+*/
+s64 writeTracerResults(int tracer_id, int* pids, int num_pids);
+
+//! Adds a list of pids to a tracer's schedule queue
+/*!
+    \param tracer_id ID of the tracer
+    \param pids Refers to list of process-ids which need to be added
+    \param num_pids Number of process-ids
+*/
+int addProcessesToTracerSq(int tracer_id, int* pids, int num_pids);
+
+//! Returns the current virtual time of a tracer with id = 1
+s64 getCurrentVirtualTime(void);
+
+//! Returns the current virtual time of a process with specified pid
+s64 getCurrentTimePid(int pid);
+
+//! Initializes a virtual time managed experiment
+/*!
+    \param exp_type EXP_CS or EXP_CBE
+    \param num_timelines Number of timelines (in case of EXP_CS). Set to 0 for EXP_CBE 
+    \param num_expected_tracers Number of tracers which would be spawned
+*/
+int initializeVtExp(int exp_type, int num_timelines,
+                    int num_expected_tracers);
 
 
-int progress_n_rounds(int n_rounds);
-int progress();
-int hello();
-int get_experiment_stats(ioctl_args * args);
-int fire_timers();
+//! Initializes a EXP_CBE experiment with specified number of expected tracers
+int initializeExp(int num_expected_tracers);
 
+//! Synchronizes and Freezes all started tracers
+int synchronizeAndFreeze(void);
+
+//! Initiates Stoppage of the experiment
+int stopExp(void);
+
+//! Only to be used for EXP_CBE type experiment. Instructs the experiment to
+//  be run for the specific number of rounds where each round signals advancement
+//  of virtual time by the specified duration
+int progressBy(s64 duration, int num_rounds);
+
+//! Advance a EXP_CS timeline by the specified duration. May be used by a network
+//  simulator like S3FNet using composite synchronization mechanism
+int progressTimelineBy(int timeline_id, s64 duration);
+
+//! Associates a network interface with a tracer
+int setNetDeviceOwner(int tracer_id, char* intf_name);
+
+//! Invoked by the tracer to wait until completion of the virtual time
+//  experiment
+int waitForExit(int tracer_id);
 
 #endif

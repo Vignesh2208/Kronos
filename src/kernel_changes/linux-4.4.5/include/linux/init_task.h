@@ -216,16 +216,19 @@ extern struct task_group root_task_group;
 	INIT_CGROUP_SCHED(tsk)						\
 	.ptraced	= LIST_HEAD_INIT(tsk.ptraced),			\
 	.ptrace_entry	= LIST_HEAD_INIT(tsk.ptrace_entry),		\
-	.dilation_factor	= 0,					\
-	.virt_start_time	= 0,					\
-	.freeze_time		= 0,					\
-	.past_physical_time	= 0,					\
-	.past_virtual_time 	= 0,					\
-	.wakeup_time	= 0,						\
-	.dialation_lock	= __SPIN_LOCK_UNLOCKED(tsk.dialation_lock),		\
+	.virt_start_time = 0,						\
+	.curr_virt_time = 0,   					\
+	.burst_target = 0,						\
+	.associated_tracer_id = 0,					\
+	.ready = 0,       						\
+	.wakeup_time = 0,                                               \
+	.buffer_window_len = 0,						\
+	.dialation_lock = __SPIN_LOCK_UNLOCKED(tsk.dialation_lock),     \
 	.ptrace_mflags = 0,						\
 	.ptrace_msteps = 0,						\
-	.n_ints = 0,							\
+	.n_ints = 0,            					\
+	.vt_exec_task = NULL,					\
+	.tracer_clock = NULL,						\
 	.real_parent	= &tsk,						\
 	.parent		= &tsk,						\
 	.children	= LIST_HEAD_INIT(tsk.children),			\
