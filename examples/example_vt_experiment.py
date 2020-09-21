@@ -1,7 +1,7 @@
 import sys
 import os
 import time
-import vt_functions as kf
+import kronos_functions as kf
 import sys
 import argparse
 
@@ -46,11 +46,11 @@ def main():
 
     parser.add_argument('--num_insns_per_round', dest='num_insns_per_round',
                         help='Number of insns per round', type=int,
-                        default=1000)
+                        default=1000000)
 
     parser.add_argument('--num_progress_rounds', dest='num_progress_rounds',
                         help='Number of rounds to run', type=int,
-                        default=50000)
+                        default=1000)
 
     args = parser.parse_args()
     

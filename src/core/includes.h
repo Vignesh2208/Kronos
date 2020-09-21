@@ -83,16 +83,17 @@
 #define EXP_CS 2
 #define NOT_SET 0
 
-
+#define KRONOS_DEBUG_INFO
+#define KRONOS_DEBUG_VERBOSE
 
 #ifdef KRONOS_DEBUG_INFO
 #define PDEBUG_I(fmt, args...) \
- 	do {                                \
+     do {                                \
         printk(KERN_DEBUG "Kronos: <INFO> [Process: %d] (%s:%d): %s: ",    \
                current->pid, __FILE__, __LINE__, __func__);          \
         printk(KERN_INFO fmt, ## args);	\
     } while (0)
-	
+    
 #else
 #define PDEBUG_I(fmt,args...)
 #endif
@@ -101,7 +102,7 @@
 
 #ifdef KRONOS_DEBUG_VERBOSE
 #define PDEBUG_V(fmt, args...) \
- 	do {                                \
+     do {                                \
         printk(KERN_DEBUG "Kronos: <VERBOSE> [Process: %d] (%s:%d): %s: ",    \
                current->pid, __FILE__, __LINE__, __func__);          \
         printk(KERN_INFO fmt, ## args);	\
@@ -112,7 +113,7 @@
 
 
 #define PDEBUG_A(fmt, args...) \
- 	do {                                \
+     do {                                \
         printk(KERN_DEBUG "Kronos: <NOTICE> [Process: %d] (%s:%d): %s: ",    \
                current->pid, __FILE__, __LINE__, __func__);          \
         printk(KERN_INFO fmt, ## args);	\
@@ -120,7 +121,7 @@
 
 
 #define PDEBUG_E(fmt, args...) \
- 	do {                                \
+     do {                                \
         printk(KERN_DEBUG "Kronos: <ERROR> [Process: %d] (%s:%d): %s: ",    \
                current->pid, __FILE__, __LINE__, __func__);          \
         printk(KERN_INFO fmt, ## args);	\
@@ -130,41 +131,41 @@
 #ifdef ENABLE_IRQ_LOCKING
 
 #define acquire_irq_lock(lock,flags) \
-	do {															 \
-		spin_lock_irqsave(lock,flags);								 \
-	} while(0)
+    do {															 \
+        spin_lock_irqsave(lock,flags);								 \
+    } while(0)
 
 
 #define release_irq_lock(lock, flags) \
-	do {															 \
-		spin_unlock_irqrestore(lock,flags);								 \
-	} while(0)
+    do {															 \
+        spin_unlock_irqrestore(lock,flags);								 \
+    } while(0)
 
 #else
 
 #ifdef ENABLE_LOCKING
 
 #define acquire_irq_lock(lock,flags) \
-		do {							\
-			spin_lock(lock);				\
-		} while(0)
+        do {							\
+            spin_lock(lock);				\
+        } while(0)
 
 
 #define release_irq_lock(lock, flags) \
-		do {															 \
-		spin_unlock(lock);				\
-		} while(0)
+        do {															 \
+        spin_unlock(lock);				\
+        } while(0)
 
 #else
 
 #define acquire_irq_lock(lock,flags) \
-		do {							\
-		} while(0)
+        do {							\
+        } while(0)
 
 
 #define release_irq_lock(lock, flags) \
-		do {															 \
-		} while(0)
+        do {															 \
+        } while(0)
 
 
 #endif

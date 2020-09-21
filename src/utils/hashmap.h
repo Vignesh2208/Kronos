@@ -10,19 +10,19 @@ typedef int (*hashFn)(void * item);
 typedef int (*equality_checker_fn)(void * key1, void * key2);
 
 typedef struct hashmap_elem_struct {
-	void * key;
-	int key_val;
-	void * value;
-	equality_checker_fn equals;
+    void * key;
+    int key_val;
+    void * value;
+    equality_checker_fn equals;
 
 } hashmap_elem;
 
 typedef struct hashmap_struct {
-	llist ** head;
-	int size;
-	hashFn hash;
-	equality_checker_fn key_comparer;
-	spinlock_t hmap_lock;
+    llist ** head;
+    int size;
+    hashFn hash;
+    equality_checker_fn key_comparer;
+    spinlock_t hmap_lock;
 } hashmap;
 
 void hmap_init(hashmap * h, char * type , int m_size);

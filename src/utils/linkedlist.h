@@ -8,17 +8,17 @@
 typedef int (*equal_Fn)(void * elem1, void * elem2);
 
 typedef struct llist_elem_struct {
-	void * item;
-	struct llist_elem_struct * next;
-	struct llist_elem_struct * prev;
+    void * item;
+    struct llist_elem_struct * next;
+    struct llist_elem_struct * prev;
 
 } llist_elem;
 
 typedef struct llist_struct {
-	int size;
-	llist_elem * head;
-	llist_elem * tail;
-	equal_Fn equals;
+    int size;
+    llist_elem * head;
+    llist_elem * tail;
+    equal_Fn equals;
 } llist;
 
 typedef void (*transformFn)(void * p, void * args);

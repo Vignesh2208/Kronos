@@ -223,6 +223,7 @@ extern struct task_group root_task_group;
 	.ready = 0,       						\
 	.wakeup_time = 0,                                               \
 	.buffer_window_len = 0,						\
+	.assigned_timeline = -1,					\
 	.dialation_lock = __SPIN_LOCK_UNLOCKED(tsk.dialation_lock),     \
 	.ptrace_mflags = 0,						\
 	.ptrace_msteps = 0,						\

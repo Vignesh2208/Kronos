@@ -72,13 +72,13 @@ int createSpinnerTask(pid_t *child_pid) {
 //! Envelop orig command to be started under the control of intel-pin
 void envelopeCommandUnderPin(char * enveloped_cmd_str, char * orig_command_str,
                              int total_num_tracers, int tracer_id) {
-	char * pin_binary_path = "/home/titan/pin/pin";
-	char * pintool_path = "/home/titan/Titan/src/tracer/pintool/obj-intel64/inscount_tls.so";
-	memset(enveloped_cmd_str, 0, MAX_COMMAND_LENGTH);
-	sprintf(enveloped_cmd_str, "%s -t %s -n %d -i %d -- %s", pin_binary_path,
+  char * pin_binary_path = "/home/titan/pin/pin";
+  char * pintool_path = "/home/titan/Titan/src/tracer/pintool/obj-intel64/inscount_tls.so";
+  memset(enveloped_cmd_str, 0, MAX_COMMAND_LENGTH);
+  sprintf(enveloped_cmd_str, "%s -t %s -n %d -i %d -- %s", pin_binary_path,
           pintool_path, total_num_tracers, tracer_id, orig_command_str);
-	printf("Full Enveloped Command: %s", enveloped_cmd_str);
-	
+  printf("Full Enveloped Command: %s", enveloped_cmd_str);
+  
 } 
 
 
@@ -189,130 +189,130 @@ int runCommandUnderPin(char *orig_command_str, pid_t *child_pid,
 }
 
 void printUsage(int argc, char* argv[]) {
-	fprintf(stderr, "\n");
-	fprintf(stderr, "Usage: %s [ -h | --help ]\n", argv[0]);
-	fprintf(stderr,	"		%s -i TRACER_ID -n TOTAL_NUM_TRACERS"
-	        "[-f CMDS_FILE_PATH or -c \"CMD with args\"] [-t TimelineID]"
-	        "-s CREATE_SPINNER\n", argv[0]);
-	fprintf(stderr, "\n");
-	fprintf(stderr, "This program executes all COMMANDs specified in the "
-	        "CMD file path or the specified CMD with arguments in trace mode "
-	        "under the control of VT-Module\n");
-	fprintf(stderr, "\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "Usage: %s [ -h | --help ]\n", argv[0]);
+  fprintf(stderr,	"		%s -i TRACER_ID -n TOTAL_NUM_TRACERS"
+          "[-f CMDS_FILE_PATH or -c \"CMD with args\"] [-t TimelineID]"
+          "-s CREATE_SPINNER\n", argv[0]);
+  fprintf(stderr, "\n");
+  fprintf(stderr, "This program executes all COMMANDs specified in the "
+          "CMD file path or the specified CMD with arguments in trace mode "
+          "under the control of VT-Module\n");
+  fprintf(stderr, "\n");
 }
 
 
 int main(int argc, char * argv[]) {
 
-	char * cmd_file_path = NULL;
-	char * line;
-	size_t line_read;
-	size_t len = 0;
-	pid_t new_cmd_pid;
-	int tracer_id = 0;
-	char command[MAX_BUF_SIZ];
-	int cpu_assigned;
-	int n_cpus = get_nprocs();
-	int create_spinner = 0;
-	pid_t spinned_pid;
-	FILE* fp;
-	int option = 0;
-	int read_from_file = 1;
-	int i, status;
-	int total_num_tracers, num_controlled_processes;
+  char * cmd_file_path = NULL;
+  char * line;
+  size_t line_read;
+  size_t len = 0;
+  pid_t new_cmd_pid;
+  int tracer_id = 0;
+  char command[MAX_BUF_SIZ];
+  int cpu_assigned;
+  int n_cpus = get_nprocs();
+  int create_spinner = 0;
+  pid_t spinned_pid;
+  FILE* fp;
+  int option = 0;
+  int read_from_file = 1;
+  int i, status;
+  int total_num_tracers, num_controlled_processes;
   pid_t controlled_pids[MAX_CONTROLLABLE_PROCESSES];
-	num_controlled_processes = 0;
+  num_controlled_processes = 0;
   int timeline_id = 0;
 
-	if (argc < 4 || !strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
-		printUsage(argc, argv);
-		exit(FAIL);
-	}
+  if (argc < 4 || !strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
+    printUsage(argc, argv);
+    exit(FAIL);
+  }
 
 
-	while ((option = getopt(argc, argv, "i:f:n:st:c:h")) != -1) {
-		switch (option) {
-		case 'i' : tracer_id = atoi(optarg);
-			break;
-		case 'n' : total_num_tracers = atoi(optarg);
-			break;
-		case 'f' : cmd_file_path = optarg;
-			break;
-		case 's' : create_spinner = 1;
-			break;
+  while ((option = getopt(argc, argv, "i:f:n:st:c:h")) != -1) {
+    switch (option) {
+    case 'i' : tracer_id = atoi(optarg);
+      break;
+    case 'n' : total_num_tracers = atoi(optarg);
+      break;
+    case 'f' : cmd_file_path = optarg;
+      break;
+    case 's' : create_spinner = 1;
+      break;
     case 't' : timeline_id = atoi(optarg);
       break;
-		case 'c' : memset(command, 0, sizeof(char)*MAX_BUF_SIZ);
-			sprintf(command, "%s\n", optarg);
-			read_from_file = 0;
-			break;
-		case 'h' :
-		default: printUsage(argc, argv);
-			exit(FAIL);
-		}
-	}
+    case 'c' : memset(command, 0, sizeof(char)*MAX_BUF_SIZ);
+      sprintf(command, "%s\n", optarg);
+      read_from_file = 0;
+      break;
+    case 'h' :
+    default: printUsage(argc, argv);
+      exit(FAIL);
+    }
+  }
 
-	
-	printf("Tracer PID: %d\n", (pid_t)getpid());
-	printf("Tracer ID: %d\n", tracer_id);
+  
+  printf("Tracer PID: %d\n", (pid_t)getpid());
+  printf("Tracer ID: %d\n", tracer_id);
 
 
-	if (read_from_file)
-		printf("CMDS_FILE_PATH: %s\n", cmd_file_path);
-	else
-		printf("CMD TO RUN: %s\n", command);
+  if (read_from_file)
+    printf("CMDS_FILE_PATH: %s\n", cmd_file_path);
+  else
+    printf("CMD TO RUN: %s\n", command);
 
-	
-	if (create_spinner) {
-		createSpinnerTask(&spinned_pid);
-		cpu_assigned = registerTracer(tracer_id, TRACER_TYPE_APP_VT,
+  
+  if (create_spinner) {
+    createSpinnerTask(&spinned_pid);
+    cpu_assigned = registerTracer(tracer_id, TRACER_TYPE_APP_VT,
                                   REGISTRATION_W_SPINNER, spinned_pid,
                                   timeline_id);
-	} else
-		cpu_assigned = registerTracer(tracer_id, TRACER_TYPE_APP_VT,
+  } else
+    cpu_assigned = registerTracer(tracer_id, TRACER_TYPE_APP_VT,
                                   SIMPLE_REGISTRATION, 0, timeline_id);
 
-	if (cpu_assigned < 0) {
-		printf("TracerID: %d, Registration Error. Errno: %d\n", tracer_id, errno);
-		exit(FAIL);
-	}
+  if (cpu_assigned < 0) {
+    printf("TracerID: %d, Registration Error. Errno: %d\n", tracer_id, errno);
+    exit(FAIL);
+  }
 
-	if (read_from_file) {
-		fp = fopen(cmd_file_path, "r");
-		if (fp == NULL) {
-			printf("ERROR Opening Cmds File\n");
-			exit(FAIL);
-		}
-		while ((line_read = getline(&line, &len, fp)) != -1) {
-			num_controlled_processes ++;
-			runCommandUnderPin(line, &new_cmd_pid, total_num_tracers, tracer_id);
-			controlled_pids[num_controlled_processes - 1] = new_cmd_pid;
-			printf("TracerID: %d, Started Command: %s", tracer_id, line);
-		}
-		fclose(fp);
-	} else {
-		
-		num_controlled_processes ++;
-		runCommandUnderPin(command, &new_cmd_pid, total_num_tracers, tracer_id);
-		controlled_pids[num_controlled_processes - 1] = new_cmd_pid;
-		printf("TracerID: %d, Started Command: %s", tracer_id, command);
-	}
+  if (read_from_file) {
+    fp = fopen(cmd_file_path, "r");
+    if (fp == NULL) {
+      printf("ERROR Opening Cmds File\n");
+      exit(FAIL);
+    }
+    while ((line_read = getline(&line, &len, fp)) != -1) {
+      num_controlled_processes ++;
+      runCommandUnderPin(line, &new_cmd_pid, total_num_tracers, tracer_id);
+      controlled_pids[num_controlled_processes - 1] = new_cmd_pid;
+      printf("TracerID: %d, Started Command: %s", tracer_id, line);
+    }
+    fclose(fp);
+  } else {
+    
+    num_controlled_processes ++;
+    runCommandUnderPin(command, &new_cmd_pid, total_num_tracers, tracer_id);
+    controlled_pids[num_controlled_processes - 1] = new_cmd_pid;
+    printf("TracerID: %d, Started Command: %s", tracer_id, command);
+  }
 
-	
-	// Block here with a call to VT-Module
-	printf("Waiting for Exit !\n");
-	fflush(stdout);
-	if (waitForExit(tracer_id) < 0) {
-		printf("ERROR: Wait for Exit. Thats not good !\n");
-	}
-	// Resume from Block. Send KILL Signal to each child. TODO: Think of a more gracefull way to do this.
-	printf("Resumed from Wait for Exit! Waiting for processes to finish !\n");
-	fflush(stdout);
-	for(i = 0; i < num_controlled_processes; i++) {
-		kill(controlled_pids[i], SIGKILL);
-		waitpid(controlled_pids[i], &status, 0);
-	} 
+  
+  // Block here with a call to VT-Module
+  printf("Waiting for Exit !\n");
+  fflush(stdout);
+  if (waitForExit(tracer_id) < 0) {
+    printf("ERROR: Wait for Exit. Thats not good !\n");
+  }
+  // Resume from Block. Send KILL Signal to each child. TODO: Think of a more gracefull way to do this.
+  printf("Resumed from Wait for Exit! Waiting for processes to finish !\n");
+  fflush(stdout);
+  for(i = 0; i < num_controlled_processes; i++) {
+    kill(controlled_pids[i], SIGKILL);
+    waitpid(controlled_pids[i], &status, 0);
+  } 
 
   printf("Exiting Tracer ...\n");
-	return 0;
+  return 0;
 }

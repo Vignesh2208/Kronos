@@ -1,5 +1,5 @@
-sysbench --test=cpu --cpu-max-prime=10000 --num-threads=1 run
-sysbench --test=cpu --cpu-max-prime=10000 --num-threads=1 run
-sysbench --test=cpu --cpu-max-prime=10000 --num-threads=1 run
-sysbench --test=cpu --cpu-max-prime=10000 --num-threads=1 run
-sysbench --test=cpu --cpu-max-prime=10000 --num-threads=1 run
+/home/kronos/Kronos/src/tracer/tests/sleep-test/test
+/home/kronos/Kronos/src/tracer/tests/sleep-test/test
+/home/kronos/Kronos/src/tracer/tests/sleep-test/test
+/home/kronos/Kronos/src/tracer/tests/sleep-test/test
+/home/kronos/Kronos/src/tracer/tests/sleep-test/test

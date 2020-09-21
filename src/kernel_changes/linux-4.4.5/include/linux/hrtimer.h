@@ -117,6 +117,7 @@ struct hrtimer_dilated {
 	ktime_t _softexpires;
 	enum hrtimer_restart (*function)(struct hrtimer_dilated *);
 	struct hrtimer_dilated_clock_base *base;
+	struct task_struct * start_dilated_task;
 	u8 active;
 	u8 is_rel;
 	u8 state;
@@ -179,6 +180,7 @@ struct hrtimer_dilated_clock_base {
 		// init should fail and existing hrtimer callbacks should
 		// end.
 	struct timerqueue_head active;
+	struct timerqueue_head temp;
 	ktime_t (*get_time)(void);
 } __attribute__((__aligned__(HRTIMER_CLOCK_BASE_ALIGN)));
 

@@ -59,9 +59,9 @@
 
 ktime_t get_curr_dilated_time(void);
 
-/** TK specific code begin **/
+/** Kronos specific code begin **/
 // From init task curr_virtual_time which is expected to be updated by
-// TK after every round
+// Kronos after every round.  This is only used in a EXP_CBE experiment.
 ktime_t get_curr_dilated_time(void) {
   struct timeval ktv;
   ktime_t tmp;
@@ -124,7 +124,10 @@ int __dilated_hrtimer_init(struct hrtimer_dilated *timer, int cpu,
   memset(timer, 0, sizeof(struct hrtimer_dilated));
   timer->base = &cpu_base->dilated_clock_base;
   timerqueue_init(&timer->node);
+  timer->start_dilated_task = NULL;
   timer->state = HRTIMER_STATE_INACTIVE;
+  if (current->virt_start_time != 0)
+	timer->start_dilated_task = current;
 
   return 1;
 }
@@ -215,7 +218,10 @@ void dilated_hrtimer_start_range_ns(struct hrtimer_dilated *timer,
   remove_dilated_hrtimer(timer, base, true);
 
   if (mode & HRTIMER_MODE_REL) {
-    expiry_time.tv64 = expiry_time.tv64 + init_task.curr_virt_time;
+	if (!timer->start_dilated_task)
+    	expiry_time.tv64 = expiry_time.tv64 + init_task.curr_virt_time;
+	else
+		expiry_time.tv64 = expiry_time.tv64 + timer->start_dilated_task->curr_virt_time;
   }
 
   timer->_softexpires.tv64 = expiry_time.tv64;
@@ -332,6 +338,45 @@ void a_dilated_hrtimer_run_queues(struct hrtimer_cpu_base *cpu_base,
   }
 }
 
+// For an EXP_CS experiment
+void a_dilated_hrtimer_run_queues_timeline(
+	struct hrtimer_cpu_base *cpu_base, ktime_t now, int timeline_id) {
+		
+  struct hrtimer_dilated_clock_base *base = &cpu_base->dilated_clock_base;
+  struct hrtimer_dilated *timer;
+  int active = base->clock_active;
+
+  struct timerqueue_node *next;
+  while ((next = timerqueue_getnext(&base->active))) {
+    if (!next) break;
+
+    timer = container_of(next, struct hrtimer_dilated, node);
+
+    if (!timer) break;
+
+    if (now.tv64 < timer->_softexpires.tv64) break;
+
+	if (!timer->start_dilated_task ||
+		timer->start_dilated_task->assigned_timeline == timeline_id) {
+    	a_run_dilated_hrtimer(cpu_base, base, timer);
+	} else {
+		timerqueue_del(&base->active, &timer->node);
+		timerqueue_add(&base->temp, &timer->node);
+	}
+  }
+
+  while ((next = timerqueue_getnext(&base->temp))) {
+    if (!next) break;
+
+    timer = container_of(next, struct hrtimer_dilated, node);
+
+    if (!timer) break;
+	timerqueue_del(&base->temp, &timer->node);
+	timerqueue_add(&base->active, &timer->node);
+
+  }
+}
+
 void dilated_hrtimer_run_queues_flush(int cpu) {
   struct hrtimer_cpu_base *cpu_base = get_cpu_base(cpu);
   struct hrtimer_dilated_clock_base *base = &cpu_base->dilated_clock_base;
@@ -353,7 +398,7 @@ void dilated_hrtimer_run_queues_flush(int cpu) {
 EXPORT_SYMBOL_GPL(dilated_hrtimer_run_queues_flush);
 
 /*
- * Called from Kronos with interrupts disabled
+ * Called from Kronos with interrupts disabled in an EXP_CBE experiment
  */
 void dilated_hrtimer_run_queues(int cpu) {
   struct hrtimer_cpu_base *cpu_base = get_cpu_base(cpu);
@@ -380,6 +425,43 @@ skip:
   raw_spin_unlock(&cpu_base->lock);
   return;
 }
+
+EXPORT_SYMBOL_GPL(dilated_hrtimer_run_queues);
+
+
+/*
+ * Called from Kronos with interrupts disabled for an EXP_CS experiment
+ */
+void dilated_hrtimer_run_queues_timeline(int cpu, ktime_t curr_virt_time,
+										 int timeline_id) {
+  struct hrtimer_cpu_base *cpu_base = get_cpu_base(cpu);
+  ktime_t expires_next;
+
+  if (!cpu_base || cpu_base->dilated_clock_base.clock_active == 0) return;
+
+  if (timeline_id == -1) {
+	  dilated_hrtimer_run_queues(cpu);
+	  return;
+  }
+
+  raw_spin_lock(&cpu_base->lock);
+
+  /* Reevaluate the clock bases for the next expiry */
+  expires_next = __dilated_hrtimer_get_next_event(cpu_base);
+  cpu_base->nxt_dilated_expiry.tv64 = expires_next.tv64;
+
+  if (cpu_base->nxt_dilated_expiry.tv64 != 0 &&
+      cpu_base->nxt_dilated_expiry.tv64 > curr_virt_time.tv64)
+    goto skip;
+
+  a_dilated_hrtimer_run_queues_timeline(cpu_base, curr_virt_time, timeline_id);
+
+skip:
+  raw_spin_unlock(&cpu_base->lock);
+  return;
+}
+
+EXPORT_SYMBOL_GPL(dilated_hrtimer_run_queues_timeline);
 
 
 static enum hrtimer_restart dilated_sleep_wakeup(struct hrtimer_dilated *timer) {
@@ -423,7 +505,7 @@ int dilated_hrtimer_sleep(ktime_t duration) {
 	return 0;
 } 
 
-EXPORT_SYMBOL_GPL(dilated_hrtimer_run_queues);
+
 
 /** TK specific code end **/
 

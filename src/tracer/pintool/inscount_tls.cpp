@@ -316,7 +316,7 @@ VOID Trace(TRACE trace, VOID *v)
     for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl))
     {
         // Insert a call to docount for every bbl, passing the number of instructions.
-	      BBL_InsertCall(bbl, IPOINT_ANYWHERE, (AFUNPTR)docount, IARG_FAST_ANALYSIS_CALL,
+        BBL_InsertCall(bbl, IPOINT_ANYWHERE, (AFUNPTR)docount, IARG_FAST_ANALYSIS_CALL,
                        IARG_UINT32, BBL_NumIns(bbl), IARG_THREAD_ID, IARG_END);
     }
 }

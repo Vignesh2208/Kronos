@@ -34,7 +34,7 @@ s64 * my_clock = NULL;
 
 void thread_exit() {
     printf("Alternate exit for thread !\n");
-	exit(0);
+    exit(0);
 }
 
 int fibonacci(int max, int thread_id, s64 * thread_target_clock, s64 * thread_increment) {
@@ -46,12 +46,12 @@ int fibonacci(int max, int thread_id, s64 * thread_target_clock, s64 * thread_in
    int sum = 0, i = 0;
 
    for (i = 1; i < max; i++) {
-	    sum = sum + r1 + r0;
+        sum = sum + r1 + r0;
         r0 = r1;
         r1 = i + 1;
 
-	    #ifdef APP_VT_TEST
-	    if (*thread_increment <= 0 || *my_clock >= *thread_target_clock) {
+        #ifdef APP_VT_TEST
+        if (*thread_increment <= 0 || *my_clock >= *thread_target_clock) {
             *thread_increment = writeTracerResults(my_tracer_id, NULL, 0);
             if (*thread_increment <= 0)
                 thread_exit();
@@ -60,7 +60,7 @@ int fibonacci(int max, int thread_id, s64 * thread_target_clock, s64 * thread_in
                 *my_clock += 100;
                 *thread_increment -= 100;
         }
-	    printf("Thread_id = %d, My clock = %llu, Increment = %llu\n",
+        printf("Thread_id = %d, My clock = %llu, Increment = %llu\n",
                thread_id, *my_clock, *thread_increment);
         #endif
    }
@@ -79,7 +79,7 @@ void *myThreadFun(void *vargp) {
     #ifdef APP_VT_TEST
     ret = addProcessesToTracerSq(my_tracer_id, &x, 1);
     if (ret < 0) {
-	    printf("Thread: %d Add to TRACER SQ failed !\n", *myid);
+        printf("Thread: %d Add to TRACER SQ failed !\n", *myid);
         return NULL;
     }
     printf("Thread: %d, added to  sq\n", *myid);
@@ -89,7 +89,7 @@ void *myThreadFun(void *vargp) {
     #ifdef APP_VT_TEST
     thread_increment = writeTracerResults(my_tracer_id, NULL, 0);
     if (thread_increment <= 0)
-	    thread_exit();
+        thread_exit();
     thread_target_clock = *my_clock + thread_increment;
     #endif
 
@@ -123,7 +123,7 @@ void ProcessFn(int id) {
     #ifdef APP_VT_TEST
     ret = addProcessesToTracerSq(my_tracer_id, &x, 1);
     if (ret < 0) {
-	    printf("Process: %d Add to TRACER SQ failed !\n", *myid);
+        printf("Process: %d Add to TRACER SQ failed !\n", *myid);
         return NULL;
     }
     printf("Process: %d, added to  sq\n", *myid);
@@ -133,7 +133,7 @@ void ProcessFn(int id) {
     #ifdef APP_VT_TEST
     thread_increment = writeTracerResults(my_tracer_id, NULL, 0);
     if (thread_increment <= 0)
-	    thread_exit();
+        thread_exit();
     thread_target_clock = *my_clock + thread_increment;
     #endif
 
@@ -179,8 +179,8 @@ int main(int argc, char **argv) {
     my_tracer_id = atoi(argv[2]);
 
     if (my_tracer_id <= 0 || my_tracer_id > total_number_of_tracers) {
-	    printf("Incorrect arguments to APP-VT tracer\n");
-	    exit(-1);
+        printf("Incorrect arguments to APP-VT tracer\n");
+        exit(-1);
     }
 
     #ifdef APP_VT_TEST
@@ -192,10 +192,10 @@ int main(int argc, char **argv) {
     ret = registerTracer(my_tracer_id, TRACER_TYPE_APP_VT, SIMPLE_REGISTRATION,
         0, 0);
     if (ret < 0) {
-	    printf("TracerID: %d, Registration Error. Errno: %d\n", my_tracer_id, errno);
-	    exit(-1);
+        printf("TracerID: %d, Registration Error. Errno: %d\n", my_tracer_id, errno);
+        exit(-1);
     } else {
-	    printf("TracerID: %d, Assigned CPU: %d\n", my_tracer_id, ret);
+        printf("TracerID: %d, Assigned CPU: %d\n", my_tracer_id, ret);
     }
 
 
@@ -221,23 +221,23 @@ int main(int argc, char **argv) {
     }
 
     for (i = 0; i < NUM_THREADS - 1; i++) {
-    	pthread_join(thread_id[i], NULL);
+        pthread_join(thread_id[i], NULL);
     } 
 
     for(i = 0; i < NUM_PROCESSES -1; i++) {
-	pid_t pid = fork();
-	if (pid > 0) {
-	    pids[i] = pid;
-	} else {
-	    printf("Starting Process: %d\n", i);
-	    ProcessFn(i);
+    pid_t pid = fork();
+    if (pid > 0) {
+        pids[i] = pid;
+    } else {
+        printf("Starting Process: %d\n", i);
+        ProcessFn(i);
         exit(0);
-	}
+    }
     }
 
     printf("Waiting for processes to finish !\n");
     for(i = 0; i < NUM_PROCESSES - 1; i++) {
-  	    waitpid(pids[i], &status, 0);
+          waitpid(pids[i], &status, 0);
     } 
     close(fd);
     exit(0); 

@@ -25,9 +25,9 @@ void CleanUpAllIrrelevantProcesses(tracer * curr_tracer);
 
 //! Searches all children recursively of a tracer to find a process
 /*!
-	\param aTask Represents the parent process. Initially set to point to the tracer
-		process
-	\param pid Process to search for among its children
+    \param aTask Represents the parent process. Initially set to point to the tracer
+        process
+    \param pid Process to search for among its children
 */
 struct task_struct * SearchTracer(struct task_struct * aTask, int pid);
 
@@ -40,11 +40,11 @@ int CleanUpExperimentComponents();
 
 //! Allocates memory and initializes timeline workers and clocks
 /*!
-	\param exp_type Type of the experiment: EXP_CS or EXP_CBE
-	\param num_timelines Number of timelines (in EXP_CS) or number of cpu
-		workers (in EXP_CBE)
-	\param num_expected_tracers Number of tracers which need to finish
-		registration before the experiment can proceed further
+    \param exp_type Type of the experiment: EXP_CS or EXP_CBE
+    \param num_timelines Number of timelines (in EXP_CS) or number of cpu
+        workers (in EXP_CBE)
+    \param num_expected_tracers Number of tracers which need to finish
+        registration before the experiment can proceed further
 */
 int InitializeExperimentComponents(int exp_type, int num_timelines, int num_expected_tracers);
 
@@ -59,15 +59,15 @@ void InitiateExperimentStopOperation();
 
 //! Invoked for a EXP_CBE experiment to run it for the specified number of rounds
 /*!
-	\param progress_duration Duration to advance by in each round
-	\param num_rounds Number of rounds to run for
+    \param progress_duration Duration to advance by in each round
+    \param num_rounds Number of rounds to run for
 */
 int ProgressBy(s64 progress_duration, int num_rounds);
 
 //! Invoked for a EXP_CS experiment to run a specific timeline for the specified duration
 /*!
-	\param timeline_id Represents the timeline in question
-	\param progress_duration Duration to run the timeline for
+    \param timeline_id Represents the timeline in question
+    \param progress_duration Duration to run the timeline for
 */
 int ProgressTimelineBy(int timeline_id, s64 progress_duration);
 

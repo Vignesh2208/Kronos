@@ -1516,6 +1516,7 @@ struct task_struct {
 	int associated_tracer_id;
 	int ready;
 	int buffer_window_len;
+	int assigned_timeline;
 	spinlock_t dialation_lock;
 	unsigned long ptrace_mflags;
 	unsigned long ptrace_msteps;
