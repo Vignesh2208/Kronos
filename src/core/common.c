@@ -187,7 +187,7 @@ Assumes tracer write lock is acquired prior to call. Must return with lock still
 acquired.
 */
 void AddToTracerScheduleQueue(tracer * tracer_entry,
-                                  int tracee_pid) {
+                              int tracee_pid) {
 
     lxc_schedule_elem * new_elem;
     //represents base time allotted to each process by the Kronos scheduler
@@ -396,7 +396,13 @@ int RegisterTracerProcess(char * write_buffer) {
         }
     }
 
-
+    mutex_lock(&exp_lock);
+    ++tracer_num;
+    if (tracer_id == -1) {
+        tracer_id = tracer_num;
+    }
+    mutex_unlock(&exp_lock);
+    
     PDEBUG_I("Register Tracer: Starting for tracer: %d\n", tracer_id);
 
     new_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
@@ -451,7 +457,7 @@ int RegisterTracerProcess(char * write_buffer) {
     current->vt_exec_task = NULL;
     current->assigned_timeline = assigned_timeline_id;
 
-    ++tracer_num;
+    
     llist_append(&per_timeline_tracer_list[assigned_timeline_id], new_tracer);
     mutex_unlock(&exp_lock);
 
@@ -781,26 +787,44 @@ int HandleSetNetdeviceOwnerCmd(char * write_buffer) {
     struct task_struct * task;
     tracer * curr_tracer;
     int found = 0;
+    int next_idx = 0;
 
     for (i = 0; i < IFNAMSIZ; i++)
-        dev_name[i] = '\0';
+	dev_name[i] = '\0';
+
 
     tracer_id = atoi(write_buffer);
-    int next_idx = GetNextValue(write_buffer);
-
+    next_idx = GetNextValue(write_buffer);
+    
 
     for (i = 0; * (write_buffer + next_idx + i) != '\0'
-            && *(write_buffer + next_idx + i) != ','  && i < IFNAMSIZ ; i++)
-        dev_name[i] = *(write_buffer + next_idx + i);
+	&& *(write_buffer + next_idx + i) != ','  && i < IFNAMSIZ ; i++)
+	dev_name[i] = *(write_buffer + next_idx + i);
 
-    PDEBUG_A("Set Net Device Owner: Received tracer id: %d, Dev Name: %s\n",
-             tracer_id, dev_name);
+
+    if (!tracer_id) 
+	PDEBUG_A("Set Net Device Owner: Network Interface Name: %s. Attempting to attach to any tracer..\n",
+	        dev_name);
+    else
+	PDEBUG_A("Set Net Device Owner: Network Interface Name:: %s. Attempting to attach to tracer: %d\n",
+		 dev_name, tracer_id);
 
     struct net_device * dev;
-    curr_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
 
-    if (!curr_tracer)
-        return FAIL;
+    if (!tracer_id) {
+	for (i = 1; i <= tracer_num; i++) {
+	     curr_tracer = hmap_get_abs(&get_tracer_by_id, i);
+	     if (curr_tracer && curr_tracer->spinner_task)
+		break;
+	}
+    } else
+	curr_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
+	
+
+    if (!curr_tracer) {
+	PDEBUG_E("No suitable tracer found. Failed to set Net Device Owner for: %s\n", dev_name);
+	return FAIL;
+    }
 
     task = curr_tracer->spinner_task;
     if (!task) {
@@ -812,7 +836,7 @@ int HandleSetNetdeviceOwnerCmd(char * write_buffer) {
     pid_struct = get_task_pid(task, PIDTYPE_PID);
     if (!pid_struct) {
         PDEBUG_E("Pid Struct of spinner task not found for tracer: %d\n",
-                    curr_tracer->tracer_task->pid);
+                  curr_tracer->tracer_task->pid);
         return FAIL;
     }
 
@@ -822,7 +846,7 @@ int HandleSetNetdeviceOwnerCmd(char * write_buffer) {
             if (dev != NULL) {
                 if (strcmp(dev->name, dev_name) == 0 && !found) {
                     PDEBUG_A("Set Net Device Owner: "
-                             "Found Specified Net Device: %s\n", dev_name);
+                             "Configured Specified Net Device: %s\n", dev_name);
                     dev->owner_pid = pid_struct;
                     found = 1;
                 } else if (found) {

@@ -13,8 +13,6 @@ In any Kronos controlled execution, a central orchestrator script is written by 
 
 * **Synchronize and Freeze**: After all **tracers** have been launched, the next stage involves waiting for all of them to finish initialization. An API call is provided for this purpose. After the completing of this stage, all dilated processes have been added to Kronos's control and their execution and clock has been frozen.
 
-* **Start Experiment**: This stage tells Kronos that the experiment is ready to start. It triggers some internal book-keeping tasks. An API call is provided for this purpose.
-
 * **Experiment Progress**: This stage involves progressing/running the experiment. The experiment proceeds in rounds. During each round, all dilated processes are advanced by a timestep. At the end of each round, the clocks of all dilated processes are synchronized to the same value and all dilated processes are frozen. APIs are provided to specify number of rounds to run.
 
 * **Stop Experiment**: The final stage involves invoking a Stop Experiment API call after the desired number of rounds have been run. This cleans up all allocated resources and stops all tracers.

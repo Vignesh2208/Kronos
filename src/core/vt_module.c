@@ -158,7 +158,10 @@ ssize_t vtWrite(struct file *file, const char __user *buffer, size_t count,
     }
 
     tracer_id = api_integer_args[0];
-    curr_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
+    if (tracer_id != -1)
+        curr_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
+    else
+        curr_tracer = hmap_get_abs(&get_tracer_by_pid, current->pid);
     if (!curr_tracer) {
       PDEBUG_I("VT_ADD_PROCESS_TO_SQ: Tracer : %d, not registered\n", tracer_id);
       return -EINVAL;
@@ -193,7 +196,10 @@ ssize_t vtWrite(struct file *file, const char __user *buffer, size_t count,
     }
 
     tracer_id = api_integer_args[0];
-    curr_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
+    if (tracer_id != -1)
+        curr_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
+    else
+        curr_tracer = hmap_get_abs(&get_tracer_by_pid, current->pid);
     if (!curr_tracer) {
       PDEBUG_I("VT_WRITE_RES: Tracer : %d, not registered\n", current->pid);
       return -EINVAL;
@@ -319,7 +325,10 @@ long vtIoctl(struct file *filp, unsigned int cmd, unsigned long arg) {
       }
 
       tracer_id = api_integer_args[0];
-      curr_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
+      if (tracer_id != -1)
+          curr_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
+      else
+          curr_tracer = hmap_get_abs(&get_tracer_by_pid, current->pid);
       if (!curr_tracer) {
         PDEBUG_I("VT-IO: Tracer : %d, not registered\n", tracer_id);
         return -EINVAL;
@@ -367,7 +376,10 @@ long vtIoctl(struct file *filp, unsigned int cmd, unsigned long arg) {
       }
 
       tracer_id = api_integer_args[0];
-      curr_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
+      if (tracer_id != -1)
+          curr_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
+      else
+          curr_tracer = hmap_get_abs(&get_tracer_by_pid, current->pid);
       if (!curr_tracer) {
         PDEBUG_I("VT-IO: Tracer : %d, not registered\n", current->pid);
         return -EINVAL;
@@ -515,7 +527,10 @@ long vtIoctl(struct file *filp, unsigned int cmd, unsigned long arg) {
       }
 
       tracer_id = api_integer_args[0];
-      curr_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
+      if (tracer_id != -1)
+          curr_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
+      else
+          curr_tracer = hmap_get_abs(&get_tracer_by_pid, current->pid);
       if (!curr_tracer) {
         PDEBUG_I("VT_ADD_PROCESS_TO_SQ: Tracer : %d, not registered\n", tracer_id);
         return -EINVAL;
@@ -748,6 +763,16 @@ long vtIoctl(struct file *filp, unsigned int cmd, unsigned long arg) {
           "resuming from wait for exit\n",
           tracer_id, current->pid);
       return 0;
+
+    case VT_GET_ASSIGNED_TRACER_ID:
+
+      if (initialization_status != INITIALIZED) {
+        PDEBUG_E(
+            "VT_GET_ASSIGNED_TRACER_ID: Operation cannot be performed when experiment "
+            "is not initialized !");
+        return -EINVAL;
+      }
+      return current->associated_tracer_id;
 
     default:
       return -ENOTTY;

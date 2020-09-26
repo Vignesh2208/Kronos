@@ -4,13 +4,13 @@ Tracers
 Tracers are helper binaries that ship with Kronos installation. They are added to the system path and can be invoked with the following arguments::
 
 	tracer [-f <Path to file containg commands to dilate> or -c <Command to dilate with args> ] \
-		-r <Relative CPU Speed> -n <Num insns per round>
+		-r <Relative CPU Speed> [-i <Optional Tracer-ID> ]
 
 A brief description of each option is given below:
 
 * **-r** : Relative CPU speed is equivalent to a time dilation factor or (TDF). It represents the number of instructions that need to be executed for 1ns of virtual time.
 
-* **-n** : Specifies the number of instructions to execute in one round. When divided by the relative cpu speed, the resultant quantity denotes amount of time the experiment would advance in one-round. If num instructions to run in one round is 1000000 and relative cpu speed is 2, then for each round, the experiment's clock would advance by 500000 ns or 500us. This quantity is called **timestep size.** 
+* **-i** : Represents an optional ID assigned to a tracer. If absent the ID will be auto assigned. Note: Either ignore this for all tracers or specify a unique value (starting from 1) for each tracer. Do not partially assign values form some tracers. 
 
 * **-f** : Specifies a path to file containg commands to dilate. If more than one dilated process needs to be monitored by this tracer, then the commands to dilate are put in a file and passed as an argument. 
 
@@ -18,7 +18,7 @@ A brief description of each option is given below:
 
 For example, a tracer which wants to dilate the bash command **ls -al** can be launched as follows::
 
-	tracer -c "ls -al" -r 1.0 -n 1000000
+	tracer -c "/bin/ls -al" -r 1.0
  
 A tracer will launch all dilated processes and register itself with Kronos. It will then wait for trigger commands from Kronos. At the start of each round, Kronos would send a trigger to each registered tracer instructing it to run one round.
 

@@ -1,17 +1,17 @@
 
 #include "Kronos_functions.h"
 #include <sys/ioctl.h>
-#include "utility_functions.h"
+#include "kronos_utility_functions.h"
 
 s64 registerTracer(int tracer_id, int tracer_type, int registration_type,
                    int optional_pid, int optional_timeline_id) {
   ioctl_args arg;
-  if (tracer_id < 0 || optional_pid < 0 ||
+  if (optional_pid < 0 ||
       (tracer_type != TRACER_TYPE_INS_VT &&
        tracer_type != TRACER_TYPE_APP_VT) ||
       (registration_type < SIMPLE_REGISTRATION ||
        registration_type > REGISTRATION_W_CONTROL_THREAD)) {
-    printf("Tracer registration: incorrect parameters for tracer: %d\n",
+    printf("Tracer registration: incorrect parameters for tracer registration: %d\n",
           tracer_id);
     return -1;
   }
@@ -21,10 +21,20 @@ s64 registerTracer(int tracer_id, int tracer_type, int registration_type,
             SIMPLE_REGISTRATION, optional_timeline_id);
   } else {
     sprintf(arg.cmd_buf, "%d,%d,%d,%d,%d", tracer_id, tracer_type,
-            registration_type, optional_pid);
+            registration_type, optional_timeline_id, optional_pid);
   }
   return SendToVtModule(VT_REGISTER_TRACER, &arg);
 }
+
+
+int getAssignedTracerID() {
+  ioctl_args arg;
+  InitIoctlArg(&arg);
+  return (int)SendToVtModule(VT_GET_ASSIGNED_TRACER_ID, &arg);
+
+}
+
+
 int updateTracerClock(int tracer_id, s64 increment) {
   if (tracer_id < 0 || increment < 0) {
     printf("Update tracer clock: incorrect parameters for tracer: %d\n",
@@ -38,6 +48,7 @@ int updateTracerClock(int tracer_id, s64 increment) {
   return SendToVtModule(VT_UPDATE_TRACER_CLOCK, &arg);
 }
 
+
 int waitForExit(int tracer_id) {
   if (tracer_id < 0) {
     printf("Update tracer clock: incorrect parameters for tracer: %d\n",
@@ -50,6 +61,8 @@ int waitForExit(int tracer_id) {
   arg.cmd_value = 0;
   return SendToVtModule(VT_WAIT_FOR_EXIT, &arg);
 }
+
+
 s64 writeTracerResults(int tracer_id, int* results, int num_results) {
   if (tracer_id < 0 || num_results < 0) {
     printf("Write tracer results: incorrect parameters for tracer: %d\n",
@@ -69,9 +82,11 @@ s64 writeTracerResults(int tracer_id, int* results, int num_results) {
   return SendToVtModule(VT_WRITE_RESULTS, &arg);
 }
 
+
 s64 getCurrentVirtualTime() {
   return SendToVtModule(VT_GET_CURRENT_VIRTUAL_TIME, NULL);
 }
+
 
 s64 getCurrentTimePid(int pid) {
   ioctl_args arg;
@@ -82,6 +97,7 @@ s64 getCurrentTimePid(int pid) {
   sprintf(arg.cmd_buf, "%d", pid);
   return SendToVtModule(VT_GETTIME_PID, &arg);
 }
+
 
 int addProcessesToTracerSq(int tracer_id, int* pids, int num_pids) {
   if (tracer_id < 0 || num_pids <= 0) {
@@ -96,6 +112,7 @@ int addProcessesToTracerSq(int tracer_id, int* pids, int num_pids) {
 
   return SendToVtModule(VT_ADD_PROCESSES_TO_SQ, &arg);
 }
+
 
 int initializeExp(int num_expected_tracers) {
   ioctl_args arg;
@@ -136,17 +153,20 @@ int initializeVtExp(int exp_type, int num_timelines,
   return SendToVtModule(VT_INITIALIZE_EXP, &arg);
 }
 
+
 int synchronizeAndFreeze() {
   ioctl_args arg;
   InitIoctlArg(&arg);
   return SendToVtModule(VT_SYNC_AND_FREEZE, &arg);
 }
 
+
 int stopExp() {
   ioctl_args arg;
   InitIoctlArg(&arg);
   return SendToVtModule(VT_STOP_EXP, &arg);
 }
+
 
 int progressBy(s64 duration, int num_rounds) {
   if (num_rounds <= 0)
@@ -157,6 +177,7 @@ int progressBy(s64 duration, int num_rounds) {
   arg.cmd_value = duration;
   return SendToVtModule(VT_PROGRESS_BY, &arg);
 }
+
 
 int progressTimelineBy(int timeline_id, s64 duration) {
   if (timeline_id < 0 || duration <= 0) {
@@ -170,6 +191,7 @@ int progressTimelineBy(int timeline_id, s64 duration) {
   return SendToVtModule(VT_PROGRESS_TIMELINE_BY, &arg);
 
 }
+
 
 int setNetDeviceOwner(int tracer_id, char* intf_name) {
   ioctl_args arg;

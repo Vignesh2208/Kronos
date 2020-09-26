@@ -17,7 +17,7 @@ libs:
 
 .PHONY: build_tracer
 build_tracer:
-	@$(GCC) -w -I/usr/local/include/perf -I/usr/local/lib/perf/include -I${TRACER_DIR}/utils \
+	@$(GCC) -w -Wno-incompatible-pointer-types -I/usr/local/include/perf -I/usr/local/lib/perf/include -I${TRACER_DIR}/utils \
 	 ${TRACER_DIR}/tracer.c ${TRACER_DIR}/utils.c ${TRACER_DIR}/utils/linkedlist.c \
 	 ${TRACER_DIR}/utils/hashmap.c -o tracer -lperf -lkronosapi
 	@$(CHMOD) 777 tracer
@@ -31,7 +31,7 @@ build_tracer:
 
 .PHONY: build_tracer_debug
 build_tracer_debug:
-	@$(GCC) -w -I/usr/local/include/perf -I/usr/local/lib/perf/include -I${TRACER_DIR}/utils \
+	@$(GCC) -w -Wno-incompatible-pointer-types -I/usr/local/include/perf -I/usr/local/lib/perf/include -I${TRACER_DIR}/utils \
 	-D DEBUG ${TRACER_DIR}/tracer.c ${TRACER_DIR}/utils.c ${TRACER_DIR}/utils/linkedlist.c \
 	${TRACER_DIR}/utils/hashmap.c -o tracer -lperf -lkronosapi
 	@$(GCC) ${TRACER_DIR}/app_vt_test_tracer.c -o app_vt_test_tracer -lpthread -lkronosapi

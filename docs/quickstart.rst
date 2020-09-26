@@ -7,11 +7,11 @@ Commands/processes which need to be dilated can be added with arguments to the `
 
 The example can be started as follows::
 
-	python example_kronos_experiment.py --cmds_to_run_file=$HOME/Kronos/examples/cmds_to_run_file.txt \
-					    --run_in_one_tracer=False \
-					    --rel_cpu_speed=1.0 \
-					    --num_insns_per_round=1000000 \
-					    --num_progress_rounds=1000
+	python example_vt_experiment.py --cmds_to_run_file=$HOME/Kronos/examples/cmds_to_run_file.txt \
+					--run_in_one_tracer=False \
+					--rel_cpu_speed=1.0 \
+					--num_insns_per_round=1000000 \
+					--num_progress_rounds=1000
 
 .. note:: The run_in_one_tracer argument specifies if all commands in the cmd file need to launched under just one tracer. If specified to False, a new tracer is launched for each command.
 

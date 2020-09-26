@@ -124,7 +124,7 @@ void ProcessFn(int id) {
     ret = addProcessesToTracerSq(my_tracer_id, &x, 1);
     if (ret < 0) {
         printf("Process: %d Add to TRACER SQ failed !\n", *myid);
-        return NULL;
+        return;
     }
     printf("Process: %d, added to  sq\n", *myid);
     fflush(stdout);
@@ -157,7 +157,6 @@ void ProcessFn(int id) {
     thread_increment = writeTracerResults(my_tracer_id, &x, 1);
     assert(thread_increment <= 0);
     #endif
-    return NULL; 
 }
    
 int main(int argc, char **argv) { 

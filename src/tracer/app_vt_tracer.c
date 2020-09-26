@@ -1,3 +1,5 @@
+// APP-VT is an experimental feature which is not fully developed yet. It would use Intel-PIN-TOOL
+
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <unistd.h>
@@ -136,7 +138,7 @@ int runCommandUnderPin(char *orig_command_str, pid_t *child_pid,
     }
     i++;
   }
-  full_command_str[i] = NULL;
+  full_command_str[i] = '\0';
 
   child = fork();
   if (child == (pid_t)-1) {
@@ -209,10 +211,9 @@ int main(int argc, char * argv[]) {
   size_t line_read;
   size_t len = 0;
   pid_t new_cmd_pid;
-  int tracer_id = 0;
+  int tracer_id = -1;
   char command[MAX_BUF_SIZ];
   int cpu_assigned;
-  int n_cpus = get_nprocs();
   int create_spinner = 0;
   pid_t spinned_pid;
   FILE* fp;
@@ -233,6 +234,7 @@ int main(int argc, char * argv[]) {
   while ((option = getopt(argc, argv, "i:f:n:st:c:h")) != -1) {
     switch (option) {
     case 'i' : tracer_id = atoi(optarg);
+      if (tracer_id <= 0) {fprintf(stderr, "Explicitly assigned tracer-id must be positive\n"); exit(FAIL); }
       break;
     case 'n' : total_num_tracers = atoi(optarg);
       break;
@@ -253,10 +255,6 @@ int main(int argc, char * argv[]) {
   }
 
   
-  printf("Tracer PID: %d\n", (pid_t)getpid());
-  printf("Tracer ID: %d\n", tracer_id);
-
-
   if (read_from_file)
     printf("CMDS_FILE_PATH: %s\n", cmd_file_path);
   else
@@ -276,6 +274,16 @@ int main(int argc, char * argv[]) {
     printf("TracerID: %d, Registration Error. Errno: %d\n", tracer_id, errno);
     exit(FAIL);
   }
+  if (tracer_id == -1) {
+       tracer_id = getAssignedTracerID();
+       if (tracer_id <= 0) {
+           fprintf(stderr, "This shouldn't happen. Auto assigned tracer-id is negative ! Make sure experiment is initialized before starting a tracer.");
+           exit(FAIL);
+       }
+  }
+  printf("Tracer PID: %d\n", (pid_t)getpid());
+  printf("Tracer ID: %d\n", tracer_id);
+
 
   if (read_from_file) {
     fp = fopen(cmd_file_path, "r");

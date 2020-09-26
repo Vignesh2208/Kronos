@@ -1,6 +1,6 @@
 #include <Python.h>
 #include "Kronos_functions.h"
-#include "utility_functions.h"
+#include "kronos_utility_functions.h"
 
 static PyObject *py_getCurrentVirtualTime(PyObject *self, PyObject *args) {
   s64 ret;

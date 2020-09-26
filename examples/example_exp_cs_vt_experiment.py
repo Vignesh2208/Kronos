@@ -10,14 +10,14 @@ import logging
 EXP_CBE = 1
 EXP_CS = 2
 
-def start_new_dilated_process(tracer_id, timeline_id, cmd_to_run, log_file_fd,
+def start_new_dilated_process(timeline_id, cmd_to_run, log_file_fd,
     exp_type):
     
     newpid = os.fork()
     if newpid == 0:
         os.dup2(log_file_fd, sys.stdout.fileno())
         os.dup2(log_file_fd, sys.stderr.fileno())
-        args = ["tracer", "-t", str(timeline_id), "-i", str(tracer_id),
+        args = ["tracer", "-t", str(timeline_id),
                 "-c", cmd_to_run]
         os.execvp(args[0], args)
     else:
@@ -109,7 +109,7 @@ def main():
     
     for i in range(0, num_tracers):
         logging.info("Starting tracer: %d", i + 1)
-        start_new_dilated_process(i + 1, i % num_timelines,
+        start_new_dilated_process(i % num_timelines,
                                   cmds_to_run[i], log_fds[i], args.exp_type)
     input('Press any key to continue !')
     

@@ -1,4 +1,4 @@
-#include "utility_functions.h"
+#include "kronos_utility_functions.h"
 #include <fcntl.h>  // for open
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <unistd.h>  // for close
 
-const char *FILENAME = "/proc/status";
+const char *FILENAME = "/proc/kronos";
 /*
 Sends a specific command to the Kronos Module.
 To communicate with the TLKM, you send messages to the location

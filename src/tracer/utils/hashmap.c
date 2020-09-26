@@ -44,7 +44,7 @@ int str_hash(char * s) {
 	int hash = 0;
 	char * ptr = s;
 	int i = 0;
-	while (*ptr != NULL) {
+	while (*ptr != '\0') {
 		hash += *ptr;
 		hash += (hash << 10);
 		hash ^= (hash >> 6);

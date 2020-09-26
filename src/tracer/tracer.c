@@ -662,19 +662,18 @@ int main(int argc, char * argv[]) {
     tracee_entry * new_entry;
 
     pid_t new_cmd_pid;
-    int tracer_id = 0;
+    int tracer_id = -1; // set to -1 by default for automatic allotment
     float rel_cpu_speed = 1.0;
     u32 n_round_insns;
     int cpu_assigned;
     char command[MAX_BUF_SIZ];
     int exited_pids[MAX_CHANGED_PROCESSES_PER_ROUND];
     int created_pids[MAX_CHANGED_PROCESSES_PER_ROUND];
-    int n_cpus = get_nprocs();
     int create_spinner = 0;
     pid_t spinned_pid;
     FILE* fp;
     int option = 0;
-    int read_from_file = 1;
+    int read_from_file = -1;
     int timeline_id=0;
     int i, n_tracees, num_created, num_exited, round_no;
 
@@ -687,7 +686,7 @@ int main(int argc, char * argv[]) {
     llist_set_equality_checker(&run_queue, llist_elem_comparer);
     llist_set_equality_checker(&blocked_tracees, llist_elem_comparer);
 
-    if (argc < 5 || !strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
+    if (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
         printUsage(argc, argv);
         exit(FAIL);
     }
@@ -696,10 +695,14 @@ int main(int argc, char * argv[]) {
     while ((option = getopt(argc, argv, "i:f:r:st:c:h")) != -1) {
         switch (option) {
         case 'i' : tracer_id = atoi(optarg);
+            if (tracer_id <= 0) { 
+                fprintf(stderr, "Explicitly specified tracer=id must be > 0"); exit(FAIL);
+            }
             break;
         case 'r' : rel_cpu_speed = atof(optarg);
             break;
         case 'f' : cmd_file_path = optarg;
+            read_from_file = 1;
             break;
         case 's' : create_spinner = 1;
             break;
@@ -715,11 +718,13 @@ int main(int argc, char * argv[]) {
         }
     }
 
+    if (read_from_file == -1) {
+        fprintf(stderr, "Missing command or command file path. Atleast one of them must be specified.\n");
+        printUsage(argc, argv);
+        exit(FAIL);
+    }
 
-    LOG("Tracer PID: %d\n", (pid_t)getpid());
-    LOG("Tracer	ID: %d\n", tracer_id);
-    LOG("REL_CPU_SPEED: %f\n", rel_cpu_speed);
-    LOG("N_EXP_CPUS: %d\n", n_cpus);
+    
 
     if (read_from_file)
         LOG("CMDS_FILE_PATH: %s\n", cmd_file_path);
@@ -731,11 +736,11 @@ int main(int argc, char * argv[]) {
     if (read_from_file) {
         fp = fopen(cmd_file_path, "r");
         if (fp == NULL) {
-            LOG("ERROR opening cmds file\n");
+            LOG("ERROR opening cmds file path\n");
             exit(FAIL);
         }
         while ((line_read = getline(&line, &len, fp)) != -1) {
-            LOG("TracerID: %d, Starting Command: %s", tracer_id, line);
+            LOG("Starting Command: %s", line);
             runCommand(line, &new_cmd_pid);
             new_entry = allocNewTracee(new_cmd_pid);
             llist_append(&tracee_list, new_entry);
@@ -744,7 +749,7 @@ int main(int argc, char * argv[]) {
         }
         fclose(fp);
     } else {
-        LOG("TracerID: %d, Starting Command: %s", tracer_id, command);
+        LOG("Starting Command: %s", command);
         runCommand(command, &new_cmd_pid);
         new_entry = allocNewTracee(new_cmd_pid);
         llist_append(&tracee_list, new_entry);
@@ -761,6 +766,19 @@ int main(int argc, char * argv[]) {
     } else
         cpu_assigned = registerTracer(tracer_id, TRACER_TYPE_INS_VT, SIMPLE_REGISTRATION, 0,
             timeline_id);
+
+    if (tracer_id == -1) {
+       tracer_id = getAssignedTracerID();
+       if (tracer_id <= 0) {
+           fprintf(stderr, "This shouldn't happen. Auto assigned tracer-id is negative ! Make sure experiment is initialized before starting a tracer.");
+           exit(FAIL);
+       }
+    }
+
+    printf("Tracer PID: %d\n", (pid_t)getpid());
+    printf("ASSIGNED Tracer ID: %d\n", tracer_id);
+    printf("REL_CPU_SPEED: %f\n", rel_cpu_speed);
+    fflush(stdout);
 
     if (cpu_assigned < 0) {
             LOG("TracerID: %d, Registration Error. Errno: %d\n", tracer_id,
@@ -851,5 +869,6 @@ int main(int argc, char * argv[]) {
     llist_destroy(&run_queue);
     llist_destroy(&tracee_list);
     hmap_destroy(&tracees);
+    fflush(stdout);
     return 0;
 }

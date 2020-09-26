@@ -15,14 +15,48 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include "utility_functions.h"
+#include "kronos_utility_functions.h"
 
 
 typedef unsigned long u32;
 
+/**** GENERAL API *****/
+
+//! Returns the current virtual time of a tracer with id = 1
+s64 getCurrentVirtualTime(void);
+
+//! Returns the current virtual time of a process with specified pid
+s64 getCurrentTimePid(int pid);
+
+
+//! Initializes a EXP_CBE experiment with specified number of expected tracers
+int initializeExp(int num_expected_tracers);
+
+//! Synchronizes and Freezes all started tracers
+int synchronizeAndFreeze(void);
+
+//! Initiates Stoppage of the experiment
+int stopExp(void);
+
+//! Only to be used for EXP_CBE type experiment. Instructs the experiment to
+//  be run for the specific number of rounds where each round signals advancement
+//  of virtual time by the specified duration in nanoseconds.
+int progressBy(s64 duration, int num_rounds);
+
+//! Associates a network interface with a tracer. Set tracer_id to 0 to attach to any
+//  tracer that spawned a spinner task.
+int setNetDeviceOwner(int tracer_id, char* intf_name);
+
+/**** GENERAL API *****/
+
+
+
+
+/**** THESE FUNCTIONS ARE FOR INTERNAL USE BY TRACER BINARIES *****/
+
 //! Registers the calling process as a new tracer
 /*!
-    \param tracer_id ID of the tracer
+    \param tracer_id ID of the tracer. Maybe specified as -1 for auto assignment
     \param tracer_type INS-VT or APP-VT
     \param registration_type Specifies if an optional PID is present and
         if the optional process is a spinner
@@ -33,6 +67,10 @@ typedef unsigned long u32;
 */
 s64 registerTracer(int tracer_id, int tracer_type, int registration_type,
                    int optional_pid, int optional_timeline_id);
+
+//! If the invoking process is a tracer or associated with a tracer, this returns the
+//  assigned ID to that tracer.
+int getAssignedTracerID();
 
 //! Increments a tracer's virtual clock
 /*!
@@ -58,11 +96,16 @@ s64 writeTracerResults(int tracer_id, int* pids, int num_pids);
 */
 int addProcessesToTracerSq(int tracer_id, int* pids, int num_pids);
 
-//! Returns the current virtual time of a tracer with id = 1
-s64 getCurrentVirtualTime(void);
 
-//! Returns the current virtual time of a process with specified pid
-s64 getCurrentTimePid(int pid);
+//! Invoked by the tracer to wait until completion of the virtual time
+//  experiment
+int waitForExit(int tracer_id);
+
+
+/**** THESE FUNCTIONS ARE FOR INTERNAL USE BY TRACER BINARIES *****/
+
+
+/******** THESE FUNCTIONS ARE USED IN A EXP-CS EXPERIMENT CONTROLLED BY S3FNET SIMULATOR ***********/
 
 //! Initializes a virtual time managed experiment
 /*!
@@ -74,29 +117,11 @@ int initializeVtExp(int exp_type, int num_timelines,
                     int num_expected_tracers);
 
 
-//! Initializes a EXP_CBE experiment with specified number of expected tracers
-int initializeExp(int num_expected_tracers);
-
-//! Synchronizes and Freezes all started tracers
-int synchronizeAndFreeze(void);
-
-//! Initiates Stoppage of the experiment
-int stopExp(void);
-
-//! Only to be used for EXP_CBE type experiment. Instructs the experiment to
-//  be run for the specific number of rounds where each round signals advancement
-//  of virtual time by the specified duration
-int progressBy(s64 duration, int num_rounds);
-
 //! Advance a EXP_CS timeline by the specified duration. May be used by a network
 //  simulator like S3FNet using composite synchronization mechanism
 int progressTimelineBy(int timeline_id, s64 duration);
 
-//! Associates a network interface with a tracer
-int setNetDeviceOwner(int tracer_id, char* intf_name);
+/******** THESE FUNCTIONS ARE USED IN A EXP-CS EXPERIMENT CONTROLLED BY S3FNET SIMULATOR ***********/
 
-//! Invoked by the tracer to wait until completion of the virtual time
-//  experiment
-int waitForExit(int tracer_id);
 
 #endif

@@ -1,3 +1,6 @@
+# APP-VT is an experimental feature which is not fully developed yet. It would use Intel-PIN-TOOL
+# Stay tuned for more updates
+
 import sys
 import os
 import time

@@ -76,7 +76,7 @@ using std::endl;
 #include <unistd.h>
 #include <unistd.h>  // for close
 
-const char *FILENAME = "/proc/status";
+const char *FILENAME = "/proc/kronos";
 
 void flushBuffer(char *buf, int size) {
   if (size) memset(buf, 0, size * sizeof(char));
@@ -433,7 +433,7 @@ int main(int argc, char * argv[])
     num_pages = (totalNumTracers * sizeof(s64))/page_size;
     num_pages ++;
     
-    fd = open("/proc/status", O_RDWR | O_SYNC);
+    fd = open("/proc/kronos", O_RDWR | O_SYNC);
     if (fd < 0) {
         perror("open");
         return 1;

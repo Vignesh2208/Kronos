@@ -11,7 +11,7 @@
 #define NOT_INITIALIZED 0
 #define INITIALIZED 1
 #define DILATION_DIR "dilation"
-#define DILATION_FILE "status"
+#define DILATION_FILE "kronos"
 
 #define MAX_API_ARGUMENT_SIZE 100
 #define BUF_MAX_SIZE MAX_API_ARGUMENT_SIZE

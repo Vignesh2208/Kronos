@@ -13,6 +13,8 @@ Kronos has been tested on Ubuntu 16.04.5 LTS. It uses a modified linux kernel v4
   
   Virtualization Settings required for virtual machine in VMware.
 
+Python version 3.6 or higher should be the default on your system.
+
 Installing Kronos
 ^^^^^^^^^^^^^^^^^
 
@@ -104,7 +106,7 @@ Inorder to use Kronos, it must be loaded after each VM/machine reboot. It can be
 
   cd ~/Kronos
   sudo make load
-<<<<<<< HEAD
+
 
 Patching Kronos kernel after an update
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -113,13 +115,3 @@ If a previously installed Kronos kernel needs to be updated with new changes in 
 
   cd ~/Kronos && git pull origin master
   sudo make patch_kernel # Follow same installation steps when prompted in menuconfig
-=======
-  
-Patching Kronos Kernel
-^^^^^^^^^^^^^^^^^^^^^^
-
-To patch an already installed Kronos kernel with the latest changes in git repository, perform the following operations::
-
-  cd ~/Kronos && git pull origin master
-  sudo make patch_kernel  # Follow the same installation steps when kernel menuconfig appears
->>>>>>> d4cf3ce64327113f73a7d3008092c50ed757ed4c

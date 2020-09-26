@@ -113,7 +113,7 @@ int runCommand(char *full_command_str, pid_t *child_pid) {
     }
     i++;
   }
-  full_command_str[i] = NULL;
+  full_command_str[i] = '\0';
 
   child = fork();
   if (child == (pid_t)-1) {

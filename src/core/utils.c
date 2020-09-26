@@ -335,19 +335,33 @@ int ConvertStringToArray(char * str, int * arr, int arr_size)
 { 
     // get length of string str 
     int str_length = strlen(str); 
-    int i = 0, j = 0;
+    int i = 0, j = 0, is_neg = 0;
     memset(arr, 0, sizeof(int)*arr_size);
 
+    if (str[0] != '\0' && str[0] == '-')
+        is_neg = 1;
   
     // Traverse the string 
-    for (i = 0; str[i] != '\0'; i++) { 
+    while (str[i] != '\0') { 
+
+        if (str[i] == '-') {
+            i++;
+            continue;
+        }
   
         // if str[i] is ',' then split 
-        if (str[i] == ',') { 
-  
+        if (str[i] == ',') {
+            if (is_neg)
+               arr[j] = -1*arr[j];
+
             // Increment j to point to next 
             // array location 
-            j++; 
+            j++;
+            if (str[i+1] != '\0' && str[i+1] == '-')
+               is_neg = 1;
+            else
+               is_neg = 0;
+
         } 
         else if (j < arr_size) { 
   
@@ -355,7 +369,10 @@ int ConvertStringToArray(char * str, int * arr, int arr_size)
             // Generate number by multiplying 10 and adding 
             // (int)(str[i]) 
             arr[j] = arr[j] * 10 + (str[i] - 48); 
-        } 
-    } 
+        }
+	i++;
+    }
+    if (is_neg)
+        arr[j] = -1*arr[j];
     return j + 1;
 } 

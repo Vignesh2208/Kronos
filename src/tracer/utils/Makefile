@@ -3,8 +3,8 @@ RM:=rm
 
 .PHONY: build
 build:
-	@$(GCC) linked_list_test.c linkedlist.c -o linked_list_test
-	@$(GCC) hashmap_test.c hashmap.c linkedlist.c -o hmap_test
+	@$(GCC) -Wno-incompatible-pointer-types linked_list_test.c linkedlist.c -o linked_list_test
+	@$(GCC) -Wno-incompatible-pointer-types hashmap_test.c hashmap.c linkedlist.c -o hmap_test
 
 .PHONY: clean
 clean:
