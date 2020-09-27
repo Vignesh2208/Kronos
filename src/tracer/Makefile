@@ -22,8 +22,6 @@ build_tracer:
 	 ${TRACER_DIR}/utils/hashmap.c -o tracer -lperf -lkronosapi
 	@$(CHMOD) 777 tracer
 	@$(MV) tracer /usr/bin
-	@$(GCC) ${TRACER_DIR}/app_vt_test_tracer.c -o app_vt_test_tracer -lpthread -lkronosapi
-	@$(MV) app_vt_test_tracer /usr/bin
 	@$(GCC) ${TRACER_DIR}/app_vt_tracer.c -o app_vt_tracer -lpthread -lkronosapi
 	@$(MV) app_vt_tracer /usr/bin
 	@$(CP) /usr/local/lib/libperf.so.0 /usr/lib/
@@ -34,8 +32,6 @@ build_tracer_debug:
 	@$(GCC) -w -Wno-incompatible-pointer-types -I/usr/local/include/perf -I/usr/local/lib/perf/include -I${TRACER_DIR}/utils \
 	-D DEBUG ${TRACER_DIR}/tracer.c ${TRACER_DIR}/utils.c ${TRACER_DIR}/utils/linkedlist.c \
 	${TRACER_DIR}/utils/hashmap.c -o tracer -lperf -lkronosapi
-	@$(GCC) ${TRACER_DIR}/app_vt_test_tracer.c -o app_vt_test_tracer -lpthread -lkronosapi
-	@$(MV) app_vt_test_tracer /usr/bin
 	@$(GCC) ${TRACER_DIR}/app_vt_tracer.c -o app_vt_tracer -lpthread -lkronosapi
 	@$(MV) app_vt_tracer /usr/bin
 	@$(CHMOD) 777 tracer
@@ -50,7 +46,6 @@ clean:
 	@$(RM) -f *.o > /dev/null
 	@$(RM) -f /usr/bin/tracer > /dev/null
 	@$(RM) -f /usr/bin/tracer_test > /dev/null
-	@$(RM) -f /usr/bin/app_vt_test_tracer > /dev/null
 	@$(RM) -f /usr/bin/app_vt_tracer > /dev/null
 	@$(CD) ${TRACER_DIR}/utils && $(MAKE) clean
 

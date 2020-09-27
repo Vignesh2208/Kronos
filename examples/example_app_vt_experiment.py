@@ -1,5 +1,6 @@
-# APP-VT is an experimental feature which is not fully developed yet. It would use Intel-PIN-TOOL
-# Stay tuned for more updates
+# APP-VT is an experimental feature which would use Intel-PIN-TOOL for instruction counting.
+# This example script shows how such an experiment can be started. NOTE how /usr/bin/app_vt_tracer
+# is used to start the binaries instead of /usr/bin/tracer. This is the only difference.
 
 import sys
 import os
