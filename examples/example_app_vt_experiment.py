@@ -4,17 +4,17 @@
 import sys
 import os
 import time
-import vt_functions as kf
+import kronos_functions as kf
 import sys
 import argparse
 
 
-def start_new_dilated_process(tracer_id, total_num_tracers, cmd_to_run, log_file_fd):
+def start_new_dilated_process(total_num_tracers, cmd_to_run, log_file_fd):
     newpid = os.fork()
     if newpid == 0:
         os.dup2(log_file_fd, sys.stdout.fileno())
         os.dup2(log_file_fd, sys.stderr.fileno())
-        args = ["app_vt_tracer", "-n", str(total_num_tracers), "-i", str(tracer_id), "-c", cmd_to_run]
+        args = ["/usr/bin/app_vt_tracer", "-n", str(total_num_tracers), "-c", cmd_to_run]
         os.execvp(args[0], args)
     else:
         return newpid
@@ -33,11 +33,11 @@ def main():
 
     parser.add_argument('--num_insns_per_round', dest='num_insns_per_round',
                         help='Number of insns per round', type=int,
-                        default=100000)
+                        default=1000000)
 
     parser.add_argument('--num_progress_rounds', dest='num_progress_rounds',
                         help='Number of rounds to run', type=int,
-                        default=200)
+                        default=2000)
 
     args = parser.parse_args()
     log_fds = []
@@ -67,8 +67,8 @@ def main():
 
     print ("Initializing VT Module !" )    
     if kf.initializeExp(num_tracers) < 0 :
-        print "VT module initialization failed ! Make sure you are running\
-            the dilated kernel and kronos module is loaded !"
+        print ("VT module initialization failed ! Make sure you are running "
+               "the dilated kernel and kronos module is loaded !")
         sys.exit(0)
 
     input('Press any key to continue !')
@@ -76,29 +76,27 @@ def main():
     print ("Starting all commands to run !")
     
     for i in range(0, num_tracers):
-        print "Starting tracer: %d" %(i + 1)
-        start_new_dilated_process(i + 1, num_tracers, cmds_to_run[i], log_fds[i])
+        print ("Starting tracer: %d" %(i + 1))
+        start_new_dilated_process(num_tracers, cmds_to_run[i], log_fds[i])
     
     print ("Synchronizing anf freezing tracers ...")
     while kf.synchronizeAndFreeze() <= 0:
-        print "VT Module >> Synchronize and Freeze failed. Retrying in 1 sec"
+        print ("VT Module >> Synchronize and Freeze failed. Retrying in 1 sec")
         time.sleep(1)
 
     input('Press any key to continue !')
     print ("Starting Synchronized Experiment !")
-
     start_time = float(time.time())
     if args.num_progress_rounds > 0 :
         print ("Running for %d rounds ... " %(args.num_progress_rounds))
         num_finised_rounds = 0
-        step_size = min(1, args.num_progress_rounds)
+        step_size = min(10, args.num_progress_rounds)
         while num_finised_rounds < args.num_progress_rounds:
             kf.progressBy(args.num_insns_per_round, step_size)
             num_finised_rounds += step_size
+            #input("Press Enter to continue...")
             print ("Ran %d rounds ..." %(num_finised_rounds),
                    " elapsed time ...", float(time.time()) - start_time)
-            #time.sleep(0.1)
-            #input("Press Enter to continue...")
 
     elapsed_time = float(time.time()) - start_time
     print ("Total time elapsed (secs) = ", elapsed_time)

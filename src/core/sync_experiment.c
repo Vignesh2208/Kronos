@@ -486,10 +486,10 @@ int InitializeExperimentComponents(int exp_type, int num_timelines,
         chaintask[i] = kthread_create(&PerTimelineWorker, &values[i],
                                       "PerTimelineWorker");
         if (!IS_ERR(chaintask[i])) {
-            kthread_bind(chaintask[i], i % EXP_CPUS);
+            kthread_bind(chaintask[i], EXP_CPUS +  i % (TOTAL_CPUS - EXP_CPUS));
             wake_up_process(chaintask[i]);
             PDEBUG_A("Timeline Worker %d: Pid = %d\n", i,
-                        chaintask[i]->pid);
+                     chaintask[i]->pid);
         }
     }
 
@@ -831,6 +831,21 @@ int UpdateAllRunnableTaskTimeslices(tracer * curr_tracer) {
     PutTracerStructRead(curr_tracer);
     GetTracerStructWrite(curr_tracer);
 
+    if (curr_tracer->last_run != NULL && curr_tracer->last_run->quanta_left_from_prev_round) {
+
+        last_run = curr_tracer->last_run;
+        if (alotted_quanta + last_run->quanta_left_from_prev_round > total_quanta) {
+            last_run->quanta_curr_round = total_quanta - alotted_quanta;
+            last_run->quanta_left_from_prev_round =
+                last_run->quanta_left_from_prev_round - last_run->quanta_curr_round;
+            alotted_quanta = total_quanta;
+            curr_tracer->last_run = last_run;
+            PutTracerStructWrite(curr_tracer);
+            GetTracerStructRead(curr_tracer);
+            return 1;
+        } 
+        
+    }
 
     while (head != NULL) {
         curr_elem = (lxc_schedule_elem *)head->item;
@@ -894,24 +909,8 @@ int UpdateAllRunnableTaskTimeslices(tracer * curr_tracer) {
         return alteast_one_task_runnable;
     }
 
-
     head = run_queue->head;
 
-    if (curr_tracer->last_run != NULL && curr_tracer->last_run->quanta_left_from_prev_round) {
-
-        last_run = curr_tracer->last_run;
-        if (alotted_quanta + last_run->quanta_left_from_prev_round > total_quanta) {
-            last_run->quanta_curr_round = total_quanta - alotted_quanta;
-            last_run->quanta_left_from_prev_round =
-                last_run->quanta_left_from_prev_round - last_run->quanta_curr_round;
-            alotted_quanta = total_quanta;
-            curr_tracer->last_run = last_run;
-            PutTracerStructWrite(curr_tracer);
-            GetTracerStructRead(curr_tracer);
-            return 1;
-        } 
-        
-    }
 
     while (head != NULL && alotted_quanta < total_quanta) {
         curr_elem = (lxc_schedule_elem *)head->item;
@@ -984,6 +983,8 @@ int UpdateAllRunnableTaskTimeslices(tracer * curr_tracer) {
 
             curr_elem = (lxc_schedule_elem *)head->item;
             if (!curr_elem) {
+		PutTracerStructWrite(curr_tracer);
+    		GetTracerStructRead(curr_tracer);
                 return alteast_one_task_runnable;
             }
 
@@ -998,7 +999,7 @@ int UpdateAllRunnableTaskTimeslices(tracer * curr_tracer) {
 
             
             if (alotted_quanta + curr_elem->base_quanta >= total_quanta) {
-                curr_elem->quanta_curr_round = total_quanta - alotted_quanta;
+                curr_elem->quanta_curr_round += total_quanta - alotted_quanta;
                 curr_elem->quanta_left_from_prev_round =
                     curr_elem->base_quanta - (total_quanta - alotted_quanta);
                 alotted_quanta = total_quanta;
@@ -1101,6 +1102,7 @@ int UnfreezeProcExpSingleCoreMode(tracer * curr_tracer) {
     }
 
     total_quanta = curr_tracer->nxt_round_burst_length;
+    PDEBUG_V("Tracer: %d, TOTAL QUANTA = %lld\n", curr_tracer->tracer_id, total_quanta);
     if (curr_tracer->last_run)
         PDEBUG_V("Tracer: %d, LAST RUN = %d\n", curr_tracer->tracer_id,
                  curr_tracer->last_run->pid);

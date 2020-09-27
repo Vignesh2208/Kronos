@@ -126,6 +126,8 @@ ssize_t vtWrite(struct file *file, const char __user *buffer, size_t count,
   int tracer_id;
   tracer *curr_tracer;
 
+   memset(api_integer_args, 0, sizeof(int) * MAX_API_ARGUMENT_SIZE);
+
    if(count > MAX_API_ARGUMENT_SIZE) {
     buffer_size = MAX_API_ARGUMENT_SIZE;
   } else {
@@ -170,8 +172,6 @@ ssize_t vtWrite(struct file *file, const char __user *buffer, size_t count,
     GetTracerStructWrite(curr_tracer);
     for (i = 1; i < num_integer_args; i++) {
       AddToTracerScheduleQueue(curr_tracer, api_integer_args[i]);
-      PDEBUG_E("VT_ADD_PROCESS_TO_SQ: Tracer : %d, process: %d\n",
-                tracer_id, api_integer_args[i]);
     }
     PutTracerStructWrite(curr_tracer);
     return 0;
@@ -207,9 +207,8 @@ ssize_t vtWrite(struct file *file, const char __user *buffer, size_t count,
 
     current->ready = 1;
 
-
-    HandleTracerResults(curr_tracer, &api_integer_args[1], 
-                          num_integer_args - 1);
+    HandleTracerResults(curr_tracer, &api_integer_args[1],
+                        num_integer_args - 1);
 
     wait_event_interruptible(
       *curr_tracer->w_queue,
@@ -371,7 +370,7 @@ long vtIoctl(struct file *filp, unsigned int cmd, unsigned long arg) {
           api_info_tmp.api_argument, api_integer_args, MAX_API_ARGUMENT_SIZE);
 
       if (num_integer_args < 1) {
-        PDEBUG_E("VT_RM_PROCESS_FROM_SQ: Not enough arguments !");
+        PDEBUG_E("VT_WRITE_RESULTS: Not enough arguments !");
         return -EINVAL;
       }
 

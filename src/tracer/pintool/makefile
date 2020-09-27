@@ -4,15 +4,15 @@
 #
 ##############################################################
 
-# If the tool is built out of the kit, PIN_ROOT must be specified in the make invocation and point to the kit root.
-ifdef PIN_ROOT
+PINTOOL_ROOT=$(HOME)/Kronos/src/tracer/pintool
+PIN_ROOT=$(HOME)/Kronos/src/tracer/pintool/pin-3.13
+TOOLS_ROOT=$(HOME)/Kronos/src/tracer/pintool/pin-3.13/source/tools
 CONFIG_ROOT := $(PIN_ROOT)/source/tools/Config
-else
-CONFIG_ROOT := ../Config
-endif
+
 include $(CONFIG_ROOT)/makefile.config
-include makefile.rules
+include $(PINTOOL_ROOT)/makefile.rules
 include $(TOOLS_ROOT)/Config/makefile.default.rules
+
 
 ##############################################################
 #

@@ -1,5 +1,5 @@
-/home/kronos/Kronos/src/tracer/tests/sleep-test/test
-/home/kronos/Kronos/src/tracer/tests/sleep-test/test
-/home/kronos/Kronos/src/tracer/tests/sleep-test/test
-/home/kronos/Kronos/src/tracer/tests/sleep-test/test
-/home/kronos/Kronos/src/tracer/tests/sleep-test/test
+/usr/bin/sysbench --test=cpu --cpu-max-prime=1000 run
+/usr/bin/sysbench --test=cpu --cpu-max-prime=1000 run
+/usr/bin/sysbench --test=cpu --cpu-max-prime=1000 run
+/usr/bin/sysbench --test=cpu --cpu-max-prime=1000 run
+/usr/bin/sysbench --test=cpu --cpu-max-prime=1000 run

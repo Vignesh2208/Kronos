@@ -42,7 +42,7 @@
 
 #include "pin.H"
 
-#define MAX_API_ARGUMENT_SIZE 100
+#define MAX_API_ARGUMENT_SIZE 1000
 #define BUF_MAX_SIZE MAX_API_ARGUMENT_SIZE
 #define VT_ADD_TO_SQ 'a'
 #define VT_WRITE_RESULTS 'b'
@@ -256,21 +256,16 @@ VOID PIN_FAST_ANALYSIS_CALL docount(UINT32 c, THREADID threadid)
         
         if (tdata->_increment <= 0) {
           tdata->_vt_enabled = 0;
-          cout << "Trigerring Application Exit !" << endl;
+          cout << "Trigerring Application Exit: TID:" << PIN_GetTid() << endl;
           PIN_ExitApplication(0);
         } else {
           tdata->_curr_clock = *myClock;
           tdata->_target_clock = tdata->_curr_clock + tdata->_increment;
-          
         }
 
-      } else {
-
-        tdata->_curr_clock = 0;
-        tdata->_target_clock = ULLONG_MAX;
       }
   } 
-    tdata->_curr_clock += c;
+  tdata->_curr_clock += c;
     
 }
 
@@ -286,7 +281,7 @@ VOID ThreadStart(THREADID threadid, CONTEXT *ctxt, INT32 flags, VOID *v)
     }
 
     cout << "Calling ThreadStart for thread: "
-         << threadid << ", PID: " << PIN_GetPid() << endl;
+         << threadid << ", TID: " << PIN_GetTid() << endl;
     myPid = PIN_GetTid();
     if (addProcessesToTracerSq(monitorTracerId, &myPid, 1) < 0) {
       tdata->_vt_enabled = 0;
@@ -295,6 +290,7 @@ VOID ThreadStart(THREADID threadid, CONTEXT *ctxt, INT32 flags, VOID *v)
       tdata->_fp = -1;
       memset((char *)tdata->_buf, 0, 10);
       cout << "Thread: "<< myPid << "  Add to TRACER SQ failed !" << endl;
+      PIN_ExitProcess(1);
     } else {
       tdata->_vt_enabled = 1;
       tdata->_curr_clock = *myClock;
@@ -302,8 +298,8 @@ VOID ThreadStart(THREADID threadid, CONTEXT *ctxt, INT32 flags, VOID *v)
       tdata->_fp = -1;
       memset(tdata->_buf, 0, 10);
     }
-    cout << "Calling ThreadStart for thread: " << threadid << ", PID: "
-         << PIN_GetPid() << " Successfull !" << " FP = " << tdata->_fp << endl;
+    cout << "Calling ThreadStart for thread: " << threadid << ", TID: "
+         << PIN_GetTid() << " Successfull !" << " FP = " << tdata->_fp << endl;
 }
 
 
@@ -336,6 +332,7 @@ VOID AfterForkInChild(THREADID threadid, const CONTEXT* ctxt, VOID * arg)
       tdata->_fp = -1;
       memset((char *)tdata->_buf, 0, 10);
       cout << "Process: "<< myPid << "  Add to TRACER SQ failed !" << endl;
+      PIN_ExitProcess(1);
     } else {
       tdata->_vt_enabled = 1;
       tdata->_curr_clock = *myClock;
@@ -439,7 +436,7 @@ int main(int argc, char * argv[])
         return 1;
     }
     cout << "fd = " << fd << " attempting to MMAP: " << num_pages << " pages" << endl;
-    puts("mmaping /proc/dilation/status");
+    puts("mmaping /proc/kronos");
     tracerClockArray = (s64 *)mmap(NULL, page_size*num_pages,
                                    PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (tracerClockArray == MAP_FAILED) {

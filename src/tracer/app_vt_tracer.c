@@ -16,10 +16,16 @@
 #include <sys/syscall.h>
 #include <sys/ptrace.h>
 #include <signal.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+
+const char *homedir;
+
 
 #define MAX_COMMAND_LENGTH 1000
 #define MAX_CONTROLLABLE_PROCESSES 100
-#define MAX_BUF_SIZ 100
+#define MAX_BUF_SIZ 1000
 #define FAIL -1
 
 #include "Kronos_functions.h"
@@ -74,8 +80,13 @@ int createSpinnerTask(pid_t *child_pid) {
 //! Envelop orig command to be started under the control of intel-pin
 void envelopeCommandUnderPin(char * enveloped_cmd_str, char * orig_command_str,
                              int total_num_tracers, int tracer_id) {
-  char * pin_binary_path = "/home/titan/pin/pin";
-  char * pintool_path = "/home/titan/Titan/src/tracer/pintool/obj-intel64/inscount_tls.so";
+  if ((homedir = getenv("HOME")) == NULL) {
+    homedir = getpwuid(getuid())->pw_dir;
+  }
+  char pin_binary_path[MAX_COMMAND_LENGTH];
+  memset(pin_binary_path, 0, MAX_COMMAND_LENGTH);
+  sprintf(pin_binary_path, "%s/Kronos/src/tracer/pintool/pin-3.13/pin", homedir);
+  char * pintool_path = "/usr/lib/inscount_tls.so";
   memset(enveloped_cmd_str, 0, MAX_COMMAND_LENGTH);
   sprintf(enveloped_cmd_str, "%s -t %s -n %d -i %d -- %s", pin_binary_path,
           pintool_path, total_num_tracers, tracer_id, orig_command_str);
@@ -234,7 +245,10 @@ int main(int argc, char * argv[]) {
   while ((option = getopt(argc, argv, "i:f:n:st:c:h")) != -1) {
     switch (option) {
     case 'i' : tracer_id = atoi(optarg);
-      if (tracer_id <= 0) {fprintf(stderr, "Explicitly assigned tracer-id must be positive\n"); exit(FAIL); }
+      if (tracer_id <= 0) {
+        fprintf(stderr, "Explicitly assigned tracer-id must be positive > 0\n");
+        exit(FAIL);
+      }
       break;
     case 'n' : total_num_tracers = atoi(optarg);
       break;

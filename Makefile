@@ -4,17 +4,19 @@ SUBDIR= $(shell pwd)
 GCC:=gcc
 RM:=rm
 CD:=cd
+CP:=cp
 ECHO:=echo
+CHMOD:=chmod
 
 nCpus=$(shell nproc --all)
 
 all: clean build
 
 .PHONY : clean
-clean: clean_core clean_utils clean_api clean_tracer clean_scripts
+clean: clean_core clean_utils clean_api clean_tracer clean_scripts clean_pintool
 
 .PHONY : build
-build: build_core build_api build_tracer build_scripts
+build: build_core build_api build_tracer build_scripts build_pintool
 
 .PHONY : setup_kernel
 setup_kernel: download_4_4_kernel compile_4_4_kernel
@@ -45,6 +47,15 @@ build_api:
 .PHONY : build_tracer
 build_tracer:
 	@$(CD) src/tracer; $(MAKE) build;
+
+.PHONY : build_pintool
+build_pintool:
+	@$(ECHO) "Building pintool ..."
+	@$(CD) src/tracer/pintool; $(MAKE) obj-intel64/inscount_tls.so TARGET=intel64
+	@$(CP) src/tracer/pintool/pin-3.13/pin /usr/bin
+	@$(CHMOD) 0777 /usr/bin/pin
+	@$(CP) src/tracer/pintool/obj-intel64/inscount_tls.so /usr/lib/inscount_tls.so
+	@$(CHMOD) 0777 /usr/lib/inscount_tls.so
 
 .PHONY : build_scripts
 build_scripts:
@@ -78,6 +89,13 @@ clean_api:
 	@$(ECHO) "Cleaning old api files ..."
 	@$(RM) -f src/api/*.o 	
 	@$(CD) src/api && $(MAKE) clean
+
+.PHONY : clean_pintool
+clean_pintool:
+	@$(ECHO) "Cleaning pintool ..."
+	$(RM) -rf src/tracer/pintool/obj-intel64 > /dev/null
+	$(RM) -f /usr/bin/pin > /dev/null 
+	$(RM) -f /usr/lib/inscount_tls.so > /dev/null
 
 .PHONY : clean_tracer
 clean_tracer:

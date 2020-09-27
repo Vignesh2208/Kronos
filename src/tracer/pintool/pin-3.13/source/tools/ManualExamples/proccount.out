@@ -1,0 +1,911 @@
+              Procedure           Image            Address        Calls Instructions
+                  .fini       libm.so.6       7fa3deb8ad0c            1            3
+                  .text       libm.so.6       7fa3deb19600            1           38
+               .plt.got       libm.so.6       7fa3deb195f0            0            1
+                  _init       libm.so.6       7fa3deb19428            1            6
+_dl_mcount_wrapper_check       libc.so.6       7fa3def60530          128          512
+               _dl_addr       libc.so.6       7fa3def601d0            1        56470
+               wctype_l       libc.so.6       7fa3def28460           10         1026
+                 __sbrk       libc.so.6       7fa3def19e80            2           49
+                    brk       libc.so.6       7fa3def19e10            2           24
+                  write       libc.so.6       7fa3def142b0            1            7
+                   read       libc.so.6       7fa3def14250            1            7
+                   open       libc.so.6       7fa3def14030            1            7
+               __fxstat       libc.so.6       7fa3def13c20            1           10
+                  _Exit       libc.so.6       7fa3deee9710            1            8
+                   fork       libc.so.6       7fa3deee9340            1           71
+                waitpid       libc.so.6       7fa3deee9060            1           11
+                  wctob       libc.so.6       7fa3deec9c10          128          768
+                  btowc       libc.so.6       7fa3deec9a90          256         6400
+                 memchr       libc.so.6       7fa3deeab860            1           42
+                 rindex       libc.so.6       7fa3deeaa400            1           54
+                 strlen       libc.so.6       7fa3deea8720           73         1204
+     __default_morecore       libc.so.6       7fa3deea48c0            2           14
+                  cfree       libc.so.6       7fa3deea14f0            1           26
+          __libc_malloc       libc.so.6       7fa3deea1130            9          380
+     _IO_default_xsputn       libc.so.6       7fa3dee98630            1          314
+         _IO_doallocbuf       libc.so.6       7fa3dee98560            1           18
+               _IO_setb       libc.so.6       7fa3dee98500            1           18
+             __overflow       libc.so.6       7fa3dee98220            1            6
+            _IO_link_in       libc.so.6       7fa3dee97cb0            2           85
+      _IO_file_overflow       libc.so.6       7fa3dee97730           20          684
+           _IO_do_write       libc.so.6       7fa3dee97390            2           54
+         _IO_file_fopen       libc.so.6       7fa3dee96b30            1           52
+          _IO_file_open       libc.so.6       7fa3dee96a40            1           34
+          _IO_file_init       libc.so.6       7fa3dee96810            1           13
+        _IO_file_xsputn       libc.so.6       7fa3dee961e0            2          282
+         _IO_file_write       libc.so.6       7fa3dee95b70            1           37
+          _IO_file_stat       libc.so.6       7fa3dee95b60            1            4
+        _IO_file_setbuf       libc.so.6       7fa3dee95430            1           15
+          _IO_file_sync       libc.so.6       7fa3dee95370            8          104
+                   putc       libc.so.6       7fa3dee93450            1           39
+        fileno_unlocked       libc.so.6       7fa3dee92ad0            1            6
+                 fwrite       libc.so.6       7fa3dee8b6e0            2          125
+                  fopen       libc.so.6       7fa3dee8ad70            1            2
+              _IO_fgets       libc.so.6       7fa3dee8aad0            0            4
+             _IO_fflush       libc.so.6       7fa3dee8a7a0            7          280
+    _IO_file_doallocate       libc.so.6       7fa3dee8a180            1           48
+                 system       libc.so.6       7fa3dee62390            1            3
+       __call_tls_dtors       libc.so.6       7fa3dee575c0            1           11
+         __cxa_finalize       libc.so.6       7fa3dee572d0            3          376
+           __cxa_atexit       libc.so.6       7fa3dee57280           10          220
+                   exit       libc.so.6       7fa3dee57030            1            4
+            sigprocmask       libc.so.6       7fa3dee52720            2           14
+            __sigaction       libc.so.6       7fa3dee526f0            4           16
+                _setjmp       libc.so.6       7fa3dee52250            1            2
+            __sigsetjmp       libc.so.6       7fa3dee521b0            1           28
+           __ctype_init       libc.so.6       7fa3dee4b150            1           16
+              uselocale       libc.so.6       7fa3dee4a8b0            2           42
+            __newlocale       libc.so.6       7fa3dee49b80            1           37
+      __libc_start_main       libc.so.6       7fa3dee3d740            1           56
+                  _init       libc.so.6       7fa3dee3d5a0            1          100
+                  .text       libc.so.6       7fa3dee3c8b0            0          163
+               .plt.got       libc.so.6       7fa3dee3c8a0            2            2
+_dl_find_dso_for_object@plt       libc.so.6       7fa3dee3c850            1            3
+                   .plt       libc.so.6       7fa3dee3c7c0            1            2
+                  .fini   libgcc_s.so.1       7fa3df1f9d20            1            3
+   __cpu_indicator_init   libgcc_s.so.1       7fa3df1e9eb0            1           61
+                  .text   libgcc_s.so.1       7fa3df1e9b60            0          104
+               .plt.got   libgcc_s.so.1       7fa3df1e9b50            0            1
+                  _init   libgcc_s.so.1       7fa3df1e9848            1            6
+                  .fini  libstdc++.so.6       7fa3df5bde3c            1            3
+_ZSt9has_facetISt7num_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEEEbRKSt6locale  libstdc++.so.6       7fa3df57eb60            4           84
+_ZSt9has_facetISt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEEEbRKSt6locale  libstdc++.so.6       7fa3df57eb10            4           84
+_ZSt9has_facetISt5ctypeIwEEbRKSt6locale  libstdc++.so.6       7fa3df57e9d0            4           84
+_ZSt9use_facetISt7num_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEEERKT_RKSt6locale  libstdc++.so.6       7fa3df57d410            4           76
+_ZSt9use_facetISt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEEERKT_RKSt6locale  libstdc++.so.6       7fa3df57d3c0            4           76
+_ZSt9use_facetISt5ctypeIwEERKT_RKSt6locale  libstdc++.so.6       7fa3df57bc00            4           76
+  _ZNSt8messagesIwEC2Em  libstdc++.so.6       7fa3df57b550            1           19
+_ZNSt11__timepunctIwEC2EPSt17__timepunct_cacheIwEm  libstdc++.so.6       7fa3df57ae60            1           22
+_ZSt7getlineIcSt11char_traitsIcESaIcEERSt13basic_istreamIT_T0_ES7_RNSt7__cxx1112basic_stringIS4_S5_T1_EE  libstdc++.so.6       7fa3df578ac0            1           25
+_ZStlsIcSt11char_traitsIcESaIcEERSt13basic_ostreamIT_T0_ES7_RKNSt7__cxx1112basic_stringIS4_S5_T1_EE  libstdc++.so.6       7fa3df578ab0            1            3
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1EPKcRKS3_  libstdc++.so.6       7fa3df578a00            4           76
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPKcEEvT_S8_St20forward_iterator_tag  libstdc++.so.6       7fa3df578850            4          162
+_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE4dataEv  libstdc++.so.6       7fa3df577af0            4            8
+_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE5c_strEv  libstdc++.so.6       7fa3df577ae0            1            2
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_appendEPKcm  libstdc++.so.6       7fa3df577740            1           29
+_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE4sizeEv  libstdc++.so.6       7fa3df5765a0            6           12
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEaSERKS4_  libstdc++.so.6       7fa3df576410            1            6
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEED2Ev  libstdc++.so.6       7fa3df5763f0            5           25
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC2EOS4_  libstdc++.so.6       7fa3df576340            3           45
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1Ev  libstdc++.so.6       7fa3df5762f0            2           10
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_mutateEmmPKcm  libstdc++.so.6       7fa3df576120            1           65
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_assignERKS4_  libstdc++.so.6       7fa3df576020            1           56
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_createERmm  libstdc++.so.6       7fa3df575d30            3           33
+_ZNSt13basic_ostreamIwSt11char_traitsIwEE5flushEv  libstdc++.so.6       7fa3df5652f0            3           42
+_ZStlsISt11char_traitsIcEERSt13basic_ostreamIcT_ES5_PKc  libstdc++.so.6       7fa3df564030            1           18
+_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l  libstdc++.so.6       7fa3df563b70            2          102
+_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_  libstdc++.so.6       7fa3df563980            1           19
+            _ZNSo3putEc  libstdc++.so.6       7fa3df563720            1           37
+       _ZNSo6sentryD1Ev  libstdc++.so.6       7fa3df563550            3           18
+     _ZNSo6sentryC2ERSo  libstdc++.so.6       7fa3df5634e0            3           63
+          _ZNSo5flushEv  libstdc++.so.6       7fa3df562d10            4           56
+       _ZNSolsEPFRSoS_E  libstdc++.so.6       7fa3df562c70            1            1
+_ZSt9has_facetISt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEEEbRKSt6locale  libstdc++.so.6       7fa3df554170            6          126
+_ZSt9has_facetISt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEEEbRKSt6locale  libstdc++.so.6       7fa3df554120            6          126
+_ZSt9has_facetISt7codecvtIcc11__mbstate_tEEbRKSt6locale  libstdc++.so.6       7fa3df554030            1           21
+_ZSt9has_facetISt5ctypeIcEEbRKSt6locale  libstdc++.so.6       7fa3df553fe0            6          126
+_ZSt9use_facetISt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEEERKT_RKSt6locale  libstdc++.so.6       7fa3df5529f0            6          114
+_ZSt9use_facetISt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEEERKT_RKSt6locale  libstdc++.so.6       7fa3df5529a0            6          114
+_ZSt9use_facetISt7codecvtIcc11__mbstate_tEERKT_RKSt6locale  libstdc++.so.6       7fa3df552370            1           19
+_ZSt9use_facetISt5ctypeIcEERKT_RKSt6locale  libstdc++.so.6       7fa3df550e90            6          114
+  _ZNSt8messagesIcEC1Em  libstdc++.so.6       7fa3df5507e0            1           19
+_ZNSt11__timepunctIcEC2EPSt17__timepunct_cacheIcEm  libstdc++.so.6       7fa3df5500e0            1           22
+    _ZNSi6sentryC1ERSib  libstdc++.so.6       7fa3df547c60            1           27
+_ZNSt9basic_iosIwSt11char_traitsIwEE4initEPSt15basic_streambufIwS1_E  libstdc++.so.6       7fa3df546060            4           88
+_ZNSt9basic_iosIwSt11char_traitsIwEE15_M_cache_localeERKSt6locale  libstdc++.so.6       7fa3df545c40            4          120
+_ZNSt9basic_iosIcSt11char_traitsIcEE4initEPSt15basic_streambufIcS1_E  libstdc++.so.6       7fa3df545740            6          132
+_ZNSt9basic_iosIcSt11char_traitsIcEE15_M_cache_localeERKSt6locale  libstdc++.so.6       7fa3df5452c0            6          180
+_ZNSt9basic_iosIcSt11char_traitsIcEE5clearESt12_Ios_Iostate  libstdc++.so.6       7fa3df544f70            1            6
+_ZNKSt9basic_iosIcSt11char_traitsIcEEcvbEv  libstdc++.so.6       7fa3df544f40            1            3
+_ZNSt14basic_ifstreamIcSt11char_traitsIcEE4openERKNSt7__cxx1112basic_stringIcS1_SaIcEEESt13_Ios_Openmode  libstdc++.so.6       7fa3df5407a0            1           14
+_ZNSt13basic_filebufIcSt11char_traitsIcEE4openEPKcSt13_Ios_Openmode  libstdc++.so.6       7fa3df540680            1           53
+_ZNSt14basic_ifstreamIcSt11char_traitsIcEEC1Ev  libstdc++.so.6       7fa3df53fed0            1           41
+_ZNSt14basic_ifstreamIcSt11char_traitsIcEE7is_openEv  libstdc++.so.6       7fa3df53d570            1            2
+_ZNSt13basic_filebufIcSt11char_traitsIcEE27_M_allocate_internal_bufferEv  libstdc++.so.6       7fa3df53c550            1           12
+_ZNSt13basic_filebufIcSt11char_traitsIcEEC2Ev  libstdc++.so.6       7fa3df53bf30            1           57
+_ZNSt13basic_filebufIcSt11char_traitsIcEE9underflowEv  libstdc++.so.6       7fa3df53ac00            1           64
+_ZN9__gnu_cxx18stdio_sync_filebufIcSt11char_traitsIcEE6xsputnEPKcl  libstdc++.so.6       7fa3df539fd0            2           10
+_ZN9__gnu_cxx18stdio_sync_filebufIcSt11char_traitsIcEE8overflowEi  libstdc++.so.6       7fa3df539d30            1            6
+_ZN9__gnu_cxx18stdio_sync_filebufIwSt11char_traitsIwEE4syncEv  libstdc++.so.6       7fa3df539d20            3            6
+_ZN9__gnu_cxx18stdio_sync_filebufIcSt11char_traitsIcEE4syncEv  libstdc++.so.6       7fa3df539d10            4            8
+_ZNSt7__cxx118messagesIwEC2Em  libstdc++.so.6       7fa3df539110            1           19
+_ZNSt7__cxx118messagesIcEC2Em  libstdc++.so.6       7fa3df52ef80            1           19
+_ZNSt5ctypeIwE19_M_initialize_ctypeEv  libstdc++.so.6       7fa3df513080            1         2733
+_ZNKSt5ctypeIwE19_M_convert_to_wmaskEt  libstdc++.so.6       7fa3df512a40           12          179
+ _ZNSt5ctypeIcEC1EPKtbm  libstdc++.so.6       7fa3df512800            1          113
+_ZNSt3_V214error_categoryD2Ev  libstdc++.so.6       7fa3df508080            3            3
+     _ZNSt8ios_baseC2Ev  libstdc++.so.6       7fa3df506d50            9          522
+ _ZSt15future_categoryv  libstdc++.so.6       7fa3df5064c0            1           17
+     _ZNSt5ctypeIwEC1Em  libstdc++.so.6       7fa3df504070            1           19
+_ZNKSt5ctypeIcE13_M_widen_initEv  libstdc++.so.6       7fa3df503ef0            1         1086
+           _ZNSaIcED2Ev  libstdc++.so.6       7fa3df4ff360            4            4
+           _ZNSaIcEC2Ev  libstdc++.so.6       7fa3df4ff340            4            4
+_ZNSt6locale5facet18_S_create_c_localeERP15__locale_structPKcS2_  libstdc++.so.6       7fa3df4fed20            1            9
+_ZNSt12__basic_fileIcE6xsgetnEPcl  libstdc++.so.6       7fa3df4fe7d0            1           25
+_ZNSt12__basic_fileIcE2fdEv  libstdc++.so.6       7fa3df4fe750            1            2
+_ZNSt12__basic_fileIcE4openEPKcSt13_Ios_Openmodei  libstdc++.so.6       7fa3df4fe700            1           26
+_ZNKSt12__basic_fileIcE7is_openEv  libstdc++.so.6       7fa3df4fe5f0            4           12
+_ZNSt12__basic_fileIcEC1EP15pthread_mutex_t  libstdc++.so.6       7fa3df4fe5e0            1            3
+_ZNSt11__timepunctIwE23_M_initialize_timepunctEP15__locale_struct  libstdc++.so.6       7fa3df4fdb50            1          103
+_ZNSt11__timepunctIcE23_M_initialize_timepunctEP15__locale_struct  libstdc++.so.6       7fa3df4fd1c0            1          105
+_ZNSt7__cxx118numpunctIwE22_M_initialize_numpunctEP15__locale_struct  libstdc++.so.6       7fa3df4fcf00            1          349
+_ZNSt7__cxx118numpunctIcE22_M_initialize_numpunctEP15__locale_struct  libstdc++.so.6       7fa3df4fcc30            1          413
+_ZNSt7__cxx1110moneypunctIwLb0EE24_M_initialize_moneypunctEP15__locale_structPKc  libstdc++.so.6       7fa3df4fc4a0            1          108
+_ZNSt7__cxx1110moneypunctIwLb1EE24_M_initialize_moneypunctEP15__locale_structPKc  libstdc++.so.6       7fa3df4fbf10            1          108
+_ZNSt7__cxx1110moneypunctIcLb0EE24_M_initialize_moneypunctEP15__locale_structPKc  libstdc++.so.6       7fa3df4fb830            1          112
+_ZNSt7__cxx1110moneypunctIcLb1EE24_M_initialize_moneypunctEP15__locale_structPKc  libstdc++.so.6       7fa3df4fb330            1          112
+_ZNSt8numpunctIwE22_M_initialize_numpunctEP15__locale_struct  libstdc++.so.6       7fa3df4fa510            1          349
+_ZNSt8numpunctIcE22_M_initialize_numpunctEP15__locale_struct  libstdc++.so.6       7fa3df4fa240            1          413
+_ZNSt10moneypunctIwLb0EE24_M_initialize_moneypunctEP15__locale_structPKc  libstdc++.so.6       7fa3df4f97b0            1          108
+_ZNSt10moneypunctIwLb1EE24_M_initialize_moneypunctEP15__locale_structPKc  libstdc++.so.6       7fa3df4f9220            1          108
+_ZNSt10moneypunctIcLb0EE24_M_initialize_moneypunctEP15__locale_structPKc  libstdc++.so.6       7fa3df4f8b40            1          112
+_ZNSt10moneypunctIcLb1EE24_M_initialize_moneypunctEP15__locale_structPKc  libstdc++.so.6       7fa3df4f8640            1          112
+_ZSt7getlineIcSt11char_traitsIcESaIcEERSt13basic_istreamIT_T0_ES7_RNSt7__cxx1112basic_stringIS4_S5_T1_EES4_  libstdc++.so.6       7fa3df4f6820            1          107
+       _ZNSt6localeC1Ev  libstdc++.so.6       7fa3df4f0e20           26          520
+ _ZNSt6locale5_ImplC1Em  libstdc++.so.6       7fa3df4efcb0            1         1014
+_ZNSt6locale5_Impl16_M_install_facetEPKNS_2idEPKNS_5facetE  libstdc++.so.6       7fa3df4ef600           32        12096
+_ZNKSt6locale2id5_M_idEv  libstdc++.so.6       7fa3df4ef5c0          124         1052
+       _ZNSt6localeD2Ev  libstdc++.so.6       7fa3df4ef3b0           10           70
+    _ZNSt6localeaSERKS_  libstdc++.so.6       7fa3df4ef310           10          190
+_ZNSt6locale5facet13_S_get_c_nameEv  libstdc++.so.6       7fa3df4ef1b0            7           14
+_ZNSt6locale5facet15_S_get_c_localeEv  libstdc++.so.6       7fa3df4ef160           14          128
+_ZNSt8ios_base7_M_initEv  libstdc++.so.6       7fa3df4ee6c0           10          250
+_ZNSt8ios_base4InitD1Ev  libstdc++.so.6       7fa3df4ee3b0            1           23
+_ZNSt8ios_base4InitC1Ev  libstdc++.so.6       7fa3df4edbd0            1          268
+_ZNSt7codecvtIwc11__mbstate_tEC1Em  libstdc++.so.6       7fa3df4eac00            1           17
+_ZNSt7codecvtIcc11__mbstate_tEC1Em  libstdc++.so.6       7fa3df4eab80            1           17
+_ZNKSt7codecvtIcc11__mbstate_tE16do_always_noconvEv  libstdc++.so.6       7fa3df4eaa50            1            2
+_ZNK10__cxxabiv121__vmi_class_type_info12__do_dyncastElNS_17__class_type_info10__sub_kindEPKS1_PKvS4_S6_RNS1_16__dyncast_resultE  libstdc++.so.6       7fa3df4de520           12          780
+_ZNK10__cxxabiv120__si_class_type_info12__do_dyncastElNS_17__class_type_info10__sub_kindEPKS1_PKvS4_S6_RNS1_16__dyncast_resultE  libstdc++.so.6       7fa3df4ddcd0           50         1800
+                  _Znam  libstdc++.so.6       7fa3df4dd630            1            1
+                  _Znwm  libstdc++.so.6       7fa3df4dd5e0            6           60
+    __cxa_guard_release  libstdc++.so.6       7fa3df4dd3d0            1           14
+    __cxa_guard_acquire  libstdc++.so.6       7fa3df4dd270            1           32
+         __dynamic_cast  libstdc++.so.6       7fa3df4db990           62         3224
+                 _ZdlPv  libstdc++.so.6       7fa3df4db930            1            1
+_ZNSt14error_categoryD2Ev  libstdc++.so.6       7fa3df4daf10            2            2
+_ZNSt14error_categoryC1Ev  libstdc++.so.6       7fa3df4daf00            2            8
+               .plt.got  libstdc++.so.6       7fa3df4d0a70            0            2
+_ZNSt8messagesIcEC1Em@plt  libstdc++.so.6       7fa3df4d09d0            1            3
+             fflush@plt  libstdc++.so.6       7fa3df4d0990            7            9
+_ZSt9has_facetISt5ctypeIcEEbRKSt6locale@plt  libstdc++.so.6       7fa3df4d0840            6            8
+ _ZNSo6sentryC1ERSo@plt  libstdc++.so.6       7fa3df4d0820            3            5
+_ZNSt9basic_iosIwSt11char_traitsIwEE15_M_cache_localeERKSt6locale@plt  libstdc++.so.6       7fa3df4d0720            4            6
+             memcpy@plt  libstdc++.so.6       7fa3df4d0700            6            8
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_assignERKS4_@plt  libstdc++.so.6       7fa3df4d0600            1            3
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_mutateEmmPKcm@plt  libstdc++.so.6       7fa3df4d05f0            1            3
+_ZNSt10moneypunctIcLb1EE24_M_initialize_moneypunctEP15__locale_structPKc@plt  libstdc++.so.6       7fa3df4d0510            1            3
+_ZNSt12__basic_fileIcEC1EP15pthread_mutex_t@plt  libstdc++.so.6       7fa3df4d0450            1            3
+_ZNSt13basic_filebufIcSt11char_traitsIcEEC1Ev@plt  libstdc++.so.6       7fa3df4d03a0            1            3
+_ZNSt9basic_iosIcSt11char_traitsIcEE5clearESt12_Ios_Iostate@plt  libstdc++.so.6       7fa3df4d0330            1            3
+             fwrite@plt  libstdc++.so.6       7fa3df4d0230            2            4
+_ZSt9use_facetISt7num_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEEERKT_RKSt6locale@plt  libstdc++.so.6       7fa3df4d0210            4            6
+            fopen64@plt  libstdc++.so.6       7fa3df4d0190            1            3
+              btowc@plt  libstdc++.so.6       7fa3df4d0080          256          258
+_ZNSi6sentryC1ERSib@plt  libstdc++.so.6       7fa3df4cffd0            1            3
+_ZNSt13basic_ostreamIwSt11char_traitsIwEE5flushEv@plt  libstdc++.so.6       7fa3df4cfeb0            3            5
+_ZNSt9basic_iosIcSt11char_traitsIcEE15_M_cache_localeERKSt6locale@plt  libstdc++.so.6       7fa3df4cfe40            6            8
+_ZNSt8ios_base7_M_initEv@plt  libstdc++.so.6       7fa3df4cfc80           10           12
+_ZNSt7__cxx118numpunctIcE22_M_initialize_numpunctEP15__locale_struct@plt  libstdc++.so.6       7fa3df4cfc00            1            3
+_ZNSt9basic_iosIcSt11char_traitsIcEE4initEPSt15basic_streambufIcS1_E@plt  libstdc++.so.6       7fa3df4cfbe0            6            8
+             memcmp@plt  libstdc++.so.6       7fa3df4cfb60            1            3
+_ZNSt7__cxx1110moneypunctIcLb1EE24_M_initialize_moneypunctEP15__locale_structPKc@plt  libstdc++.so.6       7fa3df4cfa80            1            3
+_ZNKSt12__basic_fileIcE7is_openEv@plt  libstdc++.so.6       7fa3df4cfa30            4            6
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPKcEEvT_S8_St20forward_iterator_tag@plt  libstdc++.so.6       7fa3df4cf9c0            4            6
+_ZNSt6locale5facet15_S_get_c_localeEv@plt  libstdc++.so.6       7fa3df4cf940           14           16
+_ZNSt11__timepunctIwEC1EPSt17__timepunct_cacheIwEm@plt  libstdc++.so.6       7fa3df4cf930            1            3
+     __dynamic_cast@plt  libstdc++.so.6       7fa3df4cf870           62           64
+_ZSt9has_facetISt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEEEbRKSt6locale@plt  libstdc++.so.6       7fa3df4cf830            6            8
+_ZNSt10moneypunctIwLb1EE24_M_initialize_moneypunctEP15__locale_structPKc@plt  libstdc++.so.6       7fa3df4cf7e0            1            3
+             strcmp@plt  libstdc++.so.6       7fa3df4cf6b0           12           14
+_ZSt9use_facetISt7codecvtIcc11__mbstate_tEERKT_RKSt6locale@plt  libstdc++.so.6       7fa3df4cf670            1            3
+_ZSt9use_facetISt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEEERKT_RKSt6locale@plt  libstdc++.so.6       7fa3df4cf580            4            6
+        __uselocale@plt  libstdc++.so.6       7fa3df4cf560            2            4
+_ZNSt11__timepunctIcE23_M_initialize_timepunctEP15__locale_struct@plt  libstdc++.so.6       7fa3df4cf460            1            3
+   _ZNSt6localeD1Ev@plt  libstdc++.so.6       7fa3df4cf440           10           12
+_ZNSt7__cxx1110moneypunctIwLb0EE24_M_initialize_moneypunctEP15__locale_structPKc@plt  libstdc++.so.6       7fa3df4cf320            1            3
+_ZNSt8messagesIwEC1Em@plt  libstdc++.so.6       7fa3df4cf220            1            3
+_ZNSt13basic_filebufIcSt11char_traitsIcEE4openEPKcSt13_Ios_Openmode@plt  libstdc++.so.6       7fa3df4cf1b0            1            3
+__cxa_guard_acquire@plt  libstdc++.so.6       7fa3df4cf1a0            1            3
+               putc@plt  libstdc++.so.6       7fa3df4cf130            1            3
+_ZNSt9basic_iosIwSt11char_traitsIwEE4initEPSt15basic_streambufIwS1_E@plt  libstdc++.so.6       7fa3df4cf120            4            6
+_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l@plt  libstdc++.so.6       7fa3df4cf0f0            2            4
+_ZNSt11__timepunctIcEC1EPSt17__timepunct_cacheIcEm@plt  libstdc++.so.6       7fa3df4cefe0            1            3
+_ZNSt6localeaSERKS_@plt  libstdc++.so.6       7fa3df4cefa0           10           12
+_ZSt9has_facetISt7num_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEEEbRKSt6locale@plt  libstdc++.so.6       7fa3df4cef60            4            6
+      _ZNSo5flushEv@plt  libstdc++.so.6       7fa3df4ceef0            4            6
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_createERmm@plt  libstdc++.so.6       7fa3df4cee60            3            5
+_ZNSt10moneypunctIwLb0EE24_M_initialize_moneypunctEP15__locale_structPKc@plt  libstdc++.so.6       7fa3df4ced70            1            3
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_appendEPKcm@plt  libstdc++.so.6       7fa3df4ced20            1            3
+        __newlocale@plt  libstdc++.so.6       7fa3df4ceb20            1            3
+_ZNSt14error_categoryD2Ev@plt  libstdc++.so.6       7fa3df4ce9c0            2            4
+_ZNSt11__timepunctIwE23_M_initialize_timepunctEP15__locale_struct@plt  libstdc++.so.6       7fa3df4ce9a0            1            3
+_ZNSt6locale5_Impl16_M_install_facetEPKNS_2idEPKNS_5facetE@plt  libstdc++.so.6       7fa3df4ce780           32           34
+_ZNSt14error_categoryC2Ev@plt  libstdc++.so.6       7fa3df4ce770            2            4
+_ZNSt8numpunctIwE22_M_initialize_numpunctEP15__locale_struct@plt  libstdc++.so.6       7fa3df4ce750            1            3
+              wctob@plt  libstdc++.so.6       7fa3df4ce6f0          128          130
+_ZNSt12__basic_fileIcE6xsgetnEPcl@plt  libstdc++.so.6       7fa3df4ce6d0            1            3
+_ZNKSt5ctypeIcE13_M_widen_initEv@plt  libstdc++.so.6       7fa3df4ce6a0            1            3
+_ZNKSt5ctypeIwE19_M_convert_to_wmaskEt@plt  libstdc++.so.6       7fa3df4ce5e0           12           14
+_ZNSt7__cxx1110moneypunctIcLb0EE24_M_initialize_moneypunctEP15__locale_structPKc@plt  libstdc++.so.6       7fa3df4ce500            1            3
+_ZSt9has_facetISt7codecvtIcc11__mbstate_tEEbRKSt6locale@plt  libstdc++.so.6       7fa3df4ce410            1            3
+             strlen@plt  libstdc++.so.6       7fa3df4ce3c0            5            7
+               free@plt  libstdc++.so.6       7fa3df4ce360            1            3
+_ZNSt5ctypeIwE19_M_initialize_ctypeEv@plt  libstdc++.so.6       7fa3df4ce1c0            1            3
+_ZSt9use_facetISt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEEERKT_RKSt6locale@plt  libstdc++.so.6       7fa3df4ce100            6            8
+_ZNSt7codecvtIcc11__mbstate_tEC1Em@plt  libstdc++.so.6       7fa3df4ce0f0            1            3
+   _ZNSt6localeC1Ev@plt  libstdc++.so.6       7fa3df4cdfc0           26           28
+_ZNKSt6locale2id5_M_idEv@plt  libstdc++.so.6       7fa3df4cdef0          124          126
+_ZNSt8numpunctIcE22_M_initialize_numpunctEP15__locale_struct@plt  libstdc++.so.6       7fa3df4cde30            1            3
+       __cxa_atexit@plt  libstdc++.so.6       7fa3df4cdd00            8           10
+_ZNSt7codecvtIwc11__mbstate_tEC1Em@plt  libstdc++.so.6       7fa3df4cdc90            1            3
+         __wctype_l@plt  libstdc++.so.6       7fa3df4cdc70           10           12
+_ZSt15future_categoryv@plt  libstdc++.so.6       7fa3df4cdc50            1            3
+_ZNSt6locale5facet18_S_create_c_localeERP15__locale_structPKcS2_@plt  libstdc++.so.6       7fa3df4cdc00            1            3
+_ZNSt6locale5_ImplC1Em@plt  libstdc++.so.6       7fa3df4cdb20            1            3
+_ZNSt6locale5facet13_S_get_c_nameEv@plt  libstdc++.so.6       7fa3df4cdaf0            7            9
+_ZSt9has_facetISt5ctypeIwEEbRKSt6locale@plt  libstdc++.so.6       7fa3df4cda90            4            6
+__cxa_guard_release@plt  libstdc++.so.6       7fa3df4cda50            1            3
+ _ZNSt8ios_baseC2Ev@plt  libstdc++.so.6       7fa3df4cda10            9           11
+   _ZNSo6sentryD1Ev@plt  libstdc++.so.6       7fa3df4cd9a0            3            5
+_ZNSt12__basic_fileIcE4openEPKcSt13_Ios_Openmodei@plt  libstdc++.so.6       7fa3df4cd950            1            3
+             malloc@plt  libstdc++.so.6       7fa3df4cd920            7            9
+               read@plt  libstdc++.so.6       7fa3df4cd900            1            3
+_ZNSt3_V214error_categoryD2Ev@plt  libstdc++.so.6       7fa3df4cd860            3            5
+        _ZNSo3putEc@plt  libstdc++.so.6       7fa3df4cd800            1            3
+_ZNSt12__basic_fileIcE2fdEv@plt  libstdc++.so.6       7fa3df4cd7d0            1            3
+_ZNSt7__cxx1110moneypunctIwLb1EE24_M_initialize_moneypunctEP15__locale_structPKc@plt  libstdc++.so.6       7fa3df4cd750            1            3
+_ZSt9has_facetISt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEEEbRKSt6locale@plt  libstdc++.so.6       7fa3df4cd650            4            6
+_ZNSt13basic_filebufIcSt11char_traitsIcEE27_M_allocate_internal_bufferEv@plt  libstdc++.so.6       7fa3df4cd510            1            3
+              _Znwm@plt  libstdc++.so.6       7fa3df4cd410            4            6
+_ZNSt7__cxx118messagesIwEC1Em@plt  libstdc++.so.6       7fa3df4cd3f0            1            3
+_ZNSt7__cxx118numpunctIwE22_M_initialize_numpunctEP15__locale_struct@plt  libstdc++.so.6       7fa3df4cd3c0            1            3
+             memchr@plt  libstdc++.so.6       7fa3df4cd320            1            3
+ _ZNSt5ctypeIwEC1Em@plt  libstdc++.so.6       7fa3df4cd2e0            1            3
+_ZSt9use_facetISt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEEERKT_RKSt6locale@plt  libstdc++.so.6       7fa3df4cd220            6            8
+_ZNSt10moneypunctIcLb0EE24_M_initialize_moneypunctEP15__locale_structPKc@plt  libstdc++.so.6       7fa3df4cd1a0            1            3
+_ZSt7getlineIcSt11char_traitsIcESaIcEERSt13basic_istreamIT_T0_ES7_RNSt7__cxx1112basic_stringIS4_S5_T1_EES4_@plt  libstdc++.so.6       7fa3df4cd0f0            1            3
+_ZNSt5ctypeIcEC1EPKtbm@plt  libstdc++.so.6       7fa3df4ccf30            1            3
+_ZNSt7__cxx118messagesIcEC1Em@plt  libstdc++.so.6       7fa3df4cce10            1            3
+_ZSt9use_facetISt5ctypeIcEERKT_RKSt6locale@plt  libstdc++.so.6       7fa3df4cce00            6            8
+             fileno@plt  libstdc++.so.6       7fa3df4ccda0            1            3
+_ZSt9use_facetISt5ctypeIwEERKT_RKSt6locale@plt  libstdc++.so.6       7fa3df4ccd80            4            6
+_ZSt9has_facetISt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEEEbRKSt6locale@plt  libstdc++.so.6       7fa3df4ccd20            6            8
+                   .plt  libstdc++.so.6       7fa3df4ccbe0          105          210
+                  _init  libstdc++.so.6       7fa3df4ccbb8            1            6
+                realloc ld-linux-x86-64.so.2       7fa3f3e95100            0         4436
+                   free ld-linux-x86-64.so.2       7fa3f3e94f50           11           90
+                 calloc ld-linux-x86-64.so.2       7fa3f3e94f10           18          144
+                 malloc ld-linux-x86-64.so.2       7fa3f3e94f00           49          147
+        __libc_memalign ld-linux-x86-64.so.2       7fa3f3e94e00           50         1346
+_dl_find_dso_for_object ld-linux-x86-64.so.2       7fa3f3e8fbf0            1           40
+  _dl_allocate_tls_init ld-linux-x86-64.so.2       7fa3f3e8e610            1          139
+        _dl_debug_state ld-linux-x86-64.so.2       7fa3f3e8c060            2            2
+                  .text ld-linux-x86-64.so.2       7fa3f3e7bac0            1        17198
+               .plt.got ld-linux-x86-64.so.2       7fa3f3e7bab0            9            9
+             calloc@plt ld-linux-x86-64.so.2       7fa3f3e7ba90           18           18
+             malloc@plt ld-linux-x86-64.so.2       7fa3f3e7ba80           49           49
+    __libc_memalign@plt ld-linux-x86-64.so.2       7fa3f3e7ba70           50           50
+                  _fini    cmd_executor             403bb4            1            3
+        __libc_csu_init    cmd_executor             403b40            1           41
+_ZNKSt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE4baseEv    cmd_executor             403ac8            6           42
+_ZSteqIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEbRKSt13move_iteratorIT_ESB_    cmd_executor             403a30            3           57
+_ZSt10_ConstructINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEJS5_EEvPT_DpOT0_    cmd_executor             40396d            1           24
+_ZNKSt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEdeEv    cmd_executor             40395c            1            7
+_ZNSt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEppEv    cmd_executor             40393c            1           11
+_ZStneIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEbRKSt13move_iteratorIT_ESB_    cmd_executor             403913            3           39
+_ZNSt20__uninitialized_copyILb0EE13__uninit_copyISt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEES9_EET0_T_SC_SB_    cmd_executor             40381a            2           66
+_ZNK9__gnu_cxx13new_allocatorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE8max_sizeEv    cmd_executor             403806            6           36
+_ZSt18uninitialized_copyISt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEES7_ET0_T_SA_S9_    cmd_executor             403792            2           30
+_ZNSt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEC2ES6_    cmd_executor             403778            4           40
+_ZN9__gnu_cxx13new_allocatorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE8allocateEmPKv    cmd_executor             403736            2           38
+_ZNKSt12_Vector_baseINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE19_M_get_Tp_allocatorEv    cmd_executor             403728            4           24
+_ZNSt16allocator_traitsISaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEE8max_sizeERKS6_    cmd_executor             40370d            4           36
+_ZN9__gnu_cxx13new_allocatorIiEC1Ev    cmd_executor             403628            1            6
+_ZSteqIcEN9__gnu_cxx11__enable_ifIXsrSt9__is_charIT_E7__valueEbE6__typeERKNSt7__cxx1112basic_stringIS3_St11char_traitsIS3_ESaIS3_EEESE_    cmd_executor             4035a3            2           80
+_ZSt22__uninitialized_copy_aISt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEES7_S6_ET0_T_SA_S9_RSaIT1_E    cmd_executor             403552            2           30
+_ZSt32__make_move_if_noexcept_iteratorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt13move_iteratorIPS5_EET0_PT_    cmd_executor             40350a            4           72
+_ZNSt16allocator_traitsISaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEE8allocateERS6_m    cmd_executor             4034e0            2           26
+_ZNKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE8max_sizeEv    cmd_executor             4034be            4           44
+_ZSt8_DestroyINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEvPT_    cmd_executor             4034a3            1           10
+_ZSt11__addressofINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEPT_RS6_    cmd_executor             403495            2           12
+_ZN9__gnu_cxx13new_allocatorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE10deallocateEPS6_m    cmd_executor             403472            1           12
+_ZN9__gnu_cxx13new_allocatorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEC2Ev    cmd_executor             403466            1            6
+  _ZSt3maxImERKT_S2_S2_    cmd_executor             403388            2           27
+           _ZNSaIiEC2Ev    cmd_executor             403302            1           10
+_ZN9__gnu_cxx5__ops16_Iter_equals_valIKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEclINS_17__normal_iteratorIPS8_St6vectorIS7_SaIS7_EEEEEEbT_    cmd_executor             4032cc            2           36
+_ZN9__gnu_cxxmiIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS6_SaIS6_EEEENS_17__normal_iteratorIT_T0_E15difference_typeERKSF_SI_    cmd_executor             403288            4           88
+_ZSt34__uninitialized_move_if_noexcept_aIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES6_SaIS5_EET0_T_S9_S8_RT1_    cmd_executor             40320e            2           52
+_ZNKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE4sizeEv    cmd_executor             4031e8           10          130
+_ZNSt12_Vector_baseINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE11_M_allocateEm    cmd_executor             4031b4            2           30
+_ZNKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE12_M_check_lenEmPKc    cmd_executor             4030c8            2          116
+_ZN9__gnu_cxx13new_allocatorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE9constructIS6_JS6_EEEvPT_DpOT0_    cmd_executor             40307a            2           50
+_ZNSt12_Destroy_auxILb0EE9__destroyIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEEvT_S9_    cmd_executor             403041            2           32
+_ZNSt16allocator_traitsISaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEE10deallocateERS6_PS5_m    cmd_executor             403013            1           15
+_ZNSaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEC2Ev    cmd_executor             402fec            1           10
+_ZNSt12_Vector_baseIiSaIiEE12_Vector_implC2Ev    cmd_executor             402d32            1           16
+_ZSt9__find_ifIN9__gnu_cxx17__normal_iteratorIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS7_SaIS7_EEEENS0_5__ops16_Iter_equals_valIS8_EEET_SH_SH_T0_St26random_access_iterator_tag    cmd_executor             402b96            2           66
+_ZSt19__iterator_categoryIN9__gnu_cxx17__normal_iteratorIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS7_SaIS7_EEEEENSt15iterator_traitsIT_E17iterator_categoryERKSF_    cmd_executor             402b8c            2           10
+_ZN9__gnu_cxx5__ops16_Iter_equals_valIKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEC1ERS8_    cmd_executor             402b72            2           20
+_ZNSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE19_M_emplace_back_auxIJS5_EEEvDpOT_    cmd_executor             40298a            2          188
+_ZNSt16allocator_traitsISaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEE9constructIS5_JS5_EEEvRS6_PT_DpOT0_    cmd_executor             402951            2           36
+_ZSt8_DestroyIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEvT_S7_    cmd_executor             40292b            2           26
+_ZNSt12_Vector_baseINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE13_M_deallocateEPS5_m    cmd_executor             4028f6            2           28
+_ZNSt12_Vector_baseINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE12_Vector_implC2Ev    cmd_executor             40289c            1           16
+_ZNSt12_Vector_baseIiSaIiEEC1Ev    cmd_executor             40259a            1           10
+_ZNK9__gnu_cxx17__normal_iteratorIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS6_SaIS6_EEE4baseEv    cmd_executor             402570           14           84
+_ZSt9__find_ifIN9__gnu_cxx17__normal_iteratorIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS7_SaIS7_EEEENS0_5__ops16_Iter_equals_valIS8_EEET_SH_SH_T0_    cmd_executor             402505            2           56
+_ZN9__gnu_cxx5__ops17__iter_equals_valIKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEENS0_16_Iter_equals_valIT_EERSA_    cmd_executor             4024bd            2           36
+_ZN9__gnu_cxx17__normal_iteratorIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS6_SaIS6_EEEC2ERKS8_    cmd_executor             4024a0            7           77
+_ZNSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE12emplace_backIJS5_EEEvDpOT_    cmd_executor             40241e            2           44
+_ZSt7forwardINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEOT_RNSt16remove_referenceIS6_E4typeE    cmd_executor             402410            9           54
+_ZSt8_DestroyIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES5_EvT_S7_RSaIT0_E    cmd_executor             4023e6            2           28
+_ZNSt12_Vector_baseINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE19_M_get_Tp_allocatorEv    cmd_executor             4023d8            4           24
+_ZNSt12_Vector_baseINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EEC2Ev    cmd_executor             40236c            1           10
+_ZNSt6vectorIiSaIiEEC2Ev    cmd_executor             402182            1           10
+_ZNK9__gnu_cxx17__normal_iteratorIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS6_SaIS6_EEEdeEv    cmd_executor             402170            3           21
+_ZN9__gnu_cxx17__normal_iteratorIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS6_SaIS6_EEEppEv    cmd_executor             402150            1           11
+_ZN9__gnu_cxxneIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS6_SaIS6_EEEEbRKNS_17__normal_iteratorIT_T0_EESH_    cmd_executor             402114            3           60
+_ZSt4findIN9__gnu_cxx17__normal_iteratorIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS7_SaIS7_EEEES7_ET_SE_SE_RKT0_    cmd_executor             4020dc            2           34
+_ZNKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE3endEv    cmd_executor             402088            5          105
+_ZNKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE5beginEv    cmd_executor             402034            2           42
+_ZNSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE9push_backEOS5_    cmd_executor             402002            2           32
+_ZNSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EEC1Ev    cmd_executor             401fa2            1           10
+_ZSt4moveIRNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEONSt16remove_referenceIT_E4typeEOS8_    cmd_executor             401f93            2           12
+_ZNK11InputParser15cmdOptionExistsERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE    cmd_executor             401ee6            1           39
+_ZNK11InputParser12getCmdOptionERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE    cmd_executor             401d58            1           65
+_ZN11InputParserC2ERiPPc    cmd_executor             401c58            1           88
+                _ZnwmPv    cmd_executor             401c46            3           21
+_ZNSt11char_traitsIcE7compareEPKcS2_m    cmd_executor             401c0b            2           32
+    _GLOBAL__sub_I_main    cmd_executor             401bf6            1            7
+_Z41__static_initialization_and_destruction_0ii    cmd_executor             401bb8            1           18
+                   main    cmd_executor             401726            1          121
+            frame_dummy    cmd_executor             401700            1            4
+  __do_global_dtors_aux    cmd_executor             4016e0            1            8
+     register_tm_clones    cmd_executor             4016a0            1           12
+   deregister_tm_clones    cmd_executor             401660            1            8
+                 _start    cmd_executor             401630            1           11
+_ZNSt8ios_base4InitD1Ev@plt    cmd_executor             401610            1            3
+  __libc_start_main@plt    cmd_executor             401600            1            3
+       _ZNSaIcEC1Ev@plt    cmd_executor             4015e0            4            6
+_ZNSt14basic_ifstreamIcSt11char_traitsIcEE7is_openEv@plt    cmd_executor             401590            1            3
+_ZNSt8ios_base4InitC1Ev@plt    cmd_executor             401580            1            3
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1Ev@plt    cmd_executor             401560            2            4
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1EPKcRKS3_@plt    cmd_executor             401550            4            6
+_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE4dataEv@plt    cmd_executor             401540            4            6
+_ZNKSt9basic_iosIcSt11char_traitsIcEEcvbEv@plt    cmd_executor             401530            1            3
+               exit@plt    cmd_executor             401520            1            3
+_ZNSt14basic_ifstreamIcSt11char_traitsIcEEC1Ev@plt    cmd_executor             401510            1            3
+       _ZNSaIcED1Ev@plt    cmd_executor             4014f0            4            6
+   _ZNSolsEPFRSoS_E@plt    cmd_executor             4014e0            1            3
+              _Znwm@plt    cmd_executor             4014d0            2            4
+_ZStlsISt11char_traitsIcEERSt13basic_ostreamIcT_ES5_PKc@plt    cmd_executor             4014c0            1            3
+             _ZdlPv@plt    cmd_executor             4014b0            1            3
+_ZStlsIcSt11char_traitsIcESaIcEERSt13basic_ostreamIT_T0_ES7_RKNSt7__cxx1112basic_stringIS4_S5_T1_EE@plt    cmd_executor             4014a0            1            3
+       __cxa_atexit@plt    cmd_executor             401490            1            3
+_ZNSt14basic_ifstreamIcSt11char_traitsIcEE4openERKNSt7__cxx1112basic_stringIcS1_SaIcEEESt13_Ios_Openmode@plt    cmd_executor             401480            1            3
+             system@plt    cmd_executor             401470            1            3
+_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE4sizeEv@plt    cmd_executor             401450            6            8
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEED1Ev@plt    cmd_executor             401420            5            7
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1EOS4_@plt    cmd_executor             401410            3            5
+_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_@plt    cmd_executor             4013f0            1            3
+             memcmp@plt    cmd_executor             4013e0            2            4
+_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE5c_strEv@plt    cmd_executor             4013d0            1            3
+               fork@plt    cmd_executor             4013a0            1            3
+_ZSt7getlineIcSt11char_traitsIcESaIcEERSt13basic_istreamIT_T0_ES7_RNSt7__cxx1112basic_stringIS4_S5_T1_EE@plt    cmd_executor             401380            1            3
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEaSERKS4_@plt    cmd_executor             401370            1            3
+                   .plt    cmd_executor             401360           29           58
+                  _init    cmd_executor             401338            1            6
+              Procedure           Image            Address        Calls Instructions
+                  .fini       libm.so.6       7fa3deb8ad0c            1            3
+                  .text       libm.so.6       7fa3deb19600            1           38
+               .plt.got       libm.so.6       7fa3deb195f0            0            1
+                  _init       libm.so.6       7fa3deb19428            1            6
+_dl_mcount_wrapper_check       libc.so.6       7fa3def60530          128          512
+               _dl_addr       libc.so.6       7fa3def601d0            1        56470
+               wctype_l       libc.so.6       7fa3def28460           10         1026
+                 __sbrk       libc.so.6       7fa3def19e80            2           49
+                    brk       libc.so.6       7fa3def19e10            2           24
+                  write       libc.so.6       7fa3def142b0            2           14
+                   read       libc.so.6       7fa3def14250            2           14
+                   open       libc.so.6       7fa3def14030            1            7
+               __fxstat       libc.so.6       7fa3def13c20            1           10
+                  _Exit       libc.so.6       7fa3deee9710            1            8
+                   fork       libc.so.6       7fa3deee9340            1           50
+                waitpid       libc.so.6       7fa3deee9060            1           11
+                  wctob       libc.so.6       7fa3deec9c10          128          768
+                  btowc       libc.so.6       7fa3deec9a90          256         6400
+                 memchr       libc.so.6       7fa3deeab860            1           42
+                 rindex       libc.so.6       7fa3deeaa400            1           54
+                 strlen       libc.so.6       7fa3deea8720           74         1238
+     __default_morecore       libc.so.6       7fa3deea48c0            2           14
+                  cfree       libc.so.6       7fa3deea14f0            8          208
+          __libc_malloc       libc.so.6       7fa3deea1130           10          426
+     _IO_unsave_markers       libc.so.6       7fa3dee99920            1            7
+     _IO_default_finish       libc.so.6       7fa3dee98c10            1           19
+     _IO_default_xsputn       libc.so.6       7fa3dee98630            1          762
+         _IO_doallocbuf       libc.so.6       7fa3dee98560            1           18
+               _IO_setb       libc.so.6       7fa3dee98500            2           36
+             __overflow       libc.so.6       7fa3dee98220            2           12
+            _IO_link_in       libc.so.6       7fa3dee97cb0            2           85
+            _IO_un_link       libc.so.6       7fa3dee979d0            2           91
+      _IO_file_overflow       libc.so.6       7fa3dee97730           49         1648
+           _IO_do_write       libc.so.6       7fa3dee97390            3          104
+         _IO_file_fopen       libc.so.6       7fa3dee96b30            1           52
+          _IO_file_open       libc.so.6       7fa3dee96a40            1           34
+        _IO_file_finish       libc.so.6       7fa3dee969c0            1            8
+      _IO_file_close_it       libc.so.6       7fa3dee96840            1           48
+          _IO_file_init       libc.so.6       7fa3dee96810            1           13
+        _IO_file_xsputn       libc.so.6       7fa3dee961e0            2          252
+         _IO_file_write       libc.so.6       7fa3dee95b70            2           74
+          _IO_file_stat       libc.so.6       7fa3dee95b60            1            4
+        _IO_file_setbuf       libc.so.6       7fa3dee95430            1           15
+          _IO_file_sync       libc.so.6       7fa3dee95370            9          117
+         _IO_file_close       libc.so.6       7fa3dee95340            1            6
+                   putc       libc.so.6       7fa3dee93450            2           78
+        fileno_unlocked       libc.so.6       7fa3dee92ad0            2           12
+                 fwrite       libc.so.6       7fa3dee8b6e0            2          125
+                  fopen       libc.so.6       7fa3dee8ad70            1            2
+              _IO_fgets       libc.so.6       7fa3dee8aad0            0            4
+             _IO_fflush       libc.so.6       7fa3dee8a7a0            8          320
+             _IO_fclose       libc.so.6       7fa3dee8a260            1           67
+    _IO_file_doallocate       libc.so.6       7fa3dee8a180            1           48
+       __call_tls_dtors       libc.so.6       7fa3dee575c0            1           11
+         __cxa_finalize       libc.so.6       7fa3dee572d0            3          376
+           __cxa_atexit       libc.so.6       7fa3dee57280           10          220
+                   exit       libc.so.6       7fa3dee57030            1            4
+                _setjmp       libc.so.6       7fa3dee52250            1            2
+            __sigsetjmp       libc.so.6       7fa3dee521b0            1           28
+           __ctype_init       libc.so.6       7fa3dee4b150            1           16
+              uselocale       libc.so.6       7fa3dee4a8b0            2           42
+            __newlocale       libc.so.6       7fa3dee49b80            1           37
+      __libc_start_main       libc.so.6       7fa3dee3d740            1           58
+                  _init       libc.so.6       7fa3dee3d5a0            1          100
+                  .text       libc.so.6       7fa3dee3c8b0            0          163
+               .plt.got       libc.so.6       7fa3dee3c8a0            2            3
+_dl_find_dso_for_object@plt       libc.so.6       7fa3dee3c850            1            3
+                   .plt       libc.so.6       7fa3dee3c7c0            1            2
+                  .fini   libgcc_s.so.1       7fa3df1f9d20            1            3
+   __cpu_indicator_init   libgcc_s.so.1       7fa3df1e9eb0            1           61
+                  .text   libgcc_s.so.1       7fa3df1e9b60            0          104
+               .plt.got   libgcc_s.so.1       7fa3df1e9b50            0            1
+                  _init   libgcc_s.so.1       7fa3df1e9848            1            6
+                  .fini  libstdc++.so.6       7fa3df5bde3c            1            3
+_ZSt9has_facetISt7num_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEEEbRKSt6locale  libstdc++.so.6       7fa3df57eb60            4           84
+_ZSt9has_facetISt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEEEbRKSt6locale  libstdc++.so.6       7fa3df57eb10            4           84
+_ZSt9has_facetISt5ctypeIwEEbRKSt6locale  libstdc++.so.6       7fa3df57e9d0            4           84
+_ZSt9use_facetISt7num_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEEERKT_RKSt6locale  libstdc++.so.6       7fa3df57d410            4           76
+_ZSt9use_facetISt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEEERKT_RKSt6locale  libstdc++.so.6       7fa3df57d3c0            4           76
+_ZSt9use_facetISt5ctypeIwEERKT_RKSt6locale  libstdc++.so.6       7fa3df57bc00            4           76
+  _ZNSt8messagesIwEC2Em  libstdc++.so.6       7fa3df57b550            1           19
+_ZNSt11__timepunctIwEC2EPSt17__timepunct_cacheIwEm  libstdc++.so.6       7fa3df57ae60            1           22
+_ZSt7getlineIcSt11char_traitsIcESaIcEERSt13basic_istreamIT_T0_ES7_RNSt7__cxx1112basic_stringIS4_S5_T1_EE  libstdc++.so.6       7fa3df578ac0            2           44
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1EPKcRKS3_  libstdc++.so.6       7fa3df578a00            4           76
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPKcEEvT_S8_St20forward_iterator_tag  libstdc++.so.6       7fa3df578850            4          162
+_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE4dataEv  libstdc++.so.6       7fa3df577af0            4            8
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_appendEPKcm  libstdc++.so.6       7fa3df577740            1           29
+_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE4sizeEv  libstdc++.so.6       7fa3df5765a0            6           12
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEaSERKS4_  libstdc++.so.6       7fa3df576410            1            6
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEED2Ev  libstdc++.so.6       7fa3df5763f0            9           48
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC2EOS4_  libstdc++.so.6       7fa3df576340            3           45
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1Ev  libstdc++.so.6       7fa3df5762f0            2           10
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_mutateEmmPKcm  libstdc++.so.6       7fa3df576120            1           65
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_assignERKS4_  libstdc++.so.6       7fa3df576020            1           56
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_createERmm  libstdc++.so.6       7fa3df575d30            3           33
+_ZNSt13basic_ostreamIwSt11char_traitsIwEE5flushEv  libstdc++.so.6       7fa3df5652f0            3           42
+_ZStlsISt11char_traitsIcEERSt13basic_ostreamIcT_ES5_PKc  libstdc++.so.6       7fa3df564030            2           36
+_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l  libstdc++.so.6       7fa3df563b70            2          102
+_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_  libstdc++.so.6       7fa3df563980            2           38
+            _ZNSo3putEc  libstdc++.so.6       7fa3df563720            2           74
+       _ZNSo6sentryD1Ev  libstdc++.so.6       7fa3df563550            4           24
+     _ZNSo6sentryC2ERSo  libstdc++.so.6       7fa3df5634e0            4           84
+          _ZNSo5flushEv  libstdc++.so.6       7fa3df562d10            5           70
+       _ZNSolsEPFRSoS_E  libstdc++.so.6       7fa3df562c70            2            2
+_ZSt9has_facetISt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEEEbRKSt6locale  libstdc++.so.6       7fa3df554170            6          126
+_ZSt9has_facetISt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEEEbRKSt6locale  libstdc++.so.6       7fa3df554120            6          126
+_ZSt9has_facetISt7codecvtIcc11__mbstate_tEEbRKSt6locale  libstdc++.so.6       7fa3df554030            1           21
+_ZSt9has_facetISt5ctypeIcEEbRKSt6locale  libstdc++.so.6       7fa3df553fe0            6          126
+_ZSt9use_facetISt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEEERKT_RKSt6locale  libstdc++.so.6       7fa3df5529f0            6          114
+_ZSt9use_facetISt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEEERKT_RKSt6locale  libstdc++.so.6       7fa3df5529a0            6          114
+_ZSt9use_facetISt7codecvtIcc11__mbstate_tEERKT_RKSt6locale  libstdc++.so.6       7fa3df552370            1           19
+_ZSt9use_facetISt5ctypeIcEERKT_RKSt6locale  libstdc++.so.6       7fa3df550e90            6          114
+  _ZNSt8messagesIcEC1Em  libstdc++.so.6       7fa3df5507e0            1           19
+_ZNSt11__timepunctIcEC2EPSt17__timepunct_cacheIcEm  libstdc++.so.6       7fa3df5500e0            1           22
+    _ZNSi6sentryC1ERSib  libstdc++.so.6       7fa3df547c60            2           54
+_ZNSt9basic_iosIwSt11char_traitsIwEE4initEPSt15basic_streambufIwS1_E  libstdc++.so.6       7fa3df546060            4           88
+_ZNSt9basic_iosIwSt11char_traitsIwEE15_M_cache_localeERKSt6locale  libstdc++.so.6       7fa3df545c40            4          120
+_ZNSt9basic_iosIcSt11char_traitsIcEE4initEPSt15basic_streambufIcS1_E  libstdc++.so.6       7fa3df545740            6          132
+_ZNSt9basic_iosIcSt11char_traitsIcEE15_M_cache_localeERKSt6locale  libstdc++.so.6       7fa3df5452c0            6          180
+_ZNSt9basic_iosIcSt11char_traitsIcEE5clearESt12_Ios_Iostate  libstdc++.so.6       7fa3df544f70            2           12
+_ZNKSt9basic_iosIcSt11char_traitsIcEEcvbEv  libstdc++.so.6       7fa3df544f40            2            6
+_ZNSt14basic_ifstreamIcSt11char_traitsIcEED1Ev  libstdc++.so.6       7fa3df5421b0            1           28
+_ZNSt14basic_ifstreamIcSt11char_traitsIcEE4openERKNSt7__cxx1112basic_stringIcS1_SaIcEEESt13_Ios_Openmode  libstdc++.so.6       7fa3df5407a0            1           14
+_ZNSt13basic_filebufIcSt11char_traitsIcEE4openEPKcSt13_Ios_Openmode  libstdc++.so.6       7fa3df540680            1           53
+_ZNSt14basic_ifstreamIcSt11char_traitsIcEEC1Ev  libstdc++.so.6       7fa3df53fed0            1           41
+_ZNSt13basic_filebufIcSt11char_traitsIcEE5closeEv  libstdc++.so.6       7fa3df53fb00            1           49
+_ZNSt14basic_ifstreamIcSt11char_traitsIcEE7is_openEv  libstdc++.so.6       7fa3df53d570            1            2
+_ZNSt13basic_filebufIcSt11char_traitsIcEE19_M_terminate_outputEv  libstdc++.so.6       7fa3df53c800            1           29
+_ZNSt13basic_filebufIcSt11char_traitsIcEE26_M_destroy_internal_bufferEv  libstdc++.so.6       7fa3df53c5a0            1           19
+_ZNSt13basic_filebufIcSt11char_traitsIcEE27_M_allocate_internal_bufferEv  libstdc++.so.6       7fa3df53c550            1           12
+_ZNSt13basic_filebufIcSt11char_traitsIcEEC2Ev  libstdc++.so.6       7fa3df53bf30            1           57
+_ZNSt13basic_filebufIcSt11char_traitsIcEE9underflowEv  libstdc++.so.6       7fa3df53ac00            2          124
+_ZN9__gnu_cxx18stdio_sync_filebufIcSt11char_traitsIcEE6xsputnEPKcl  libstdc++.so.6       7fa3df539fd0            2           10
+_ZN9__gnu_cxx18stdio_sync_filebufIcSt11char_traitsIcEE8overflowEi  libstdc++.so.6       7fa3df539d30            2           12
+_ZN9__gnu_cxx18stdio_sync_filebufIwSt11char_traitsIwEE4syncEv  libstdc++.so.6       7fa3df539d20            3            6
+_ZN9__gnu_cxx18stdio_sync_filebufIcSt11char_traitsIcEE4syncEv  libstdc++.so.6       7fa3df539d10            5           10
+_ZNSt7__cxx118messagesIwEC2Em  libstdc++.so.6       7fa3df539110            1           19
+_ZNSt7__cxx118messagesIcEC2Em  libstdc++.so.6       7fa3df52ef80            1           19
+_ZNSt5ctypeIwE19_M_initialize_ctypeEv  libstdc++.so.6       7fa3df513080            1         2733
+_ZNKSt5ctypeIwE19_M_convert_to_wmaskEt  libstdc++.so.6       7fa3df512a40           12          179
+ _ZNSt5ctypeIcEC1EPKtbm  libstdc++.so.6       7fa3df512800            1          113
+_ZNSt3_V214error_categoryD2Ev  libstdc++.so.6       7fa3df508080            3            3
+     _ZNSt8ios_baseD1Ev  libstdc++.so.6       7fa3df507060            1           16
+_ZNSt8ios_base20_M_dispose_callbacksEv  libstdc++.so.6       7fa3df507000            1           12
+_ZNSt8ios_base17_M_call_callbacksENS_5eventE  libstdc++.so.6       7fa3df506fc0            1           10
+     _ZNSt8ios_baseC2Ev  libstdc++.so.6       7fa3df506d50            9          522
+ _ZSt15future_categoryv  libstdc++.so.6       7fa3df5064c0            1           17
+     _ZNSt5ctypeIwEC1Em  libstdc++.so.6       7fa3df504070            1           19
+_ZNKSt5ctypeIcE13_M_widen_initEv  libstdc++.so.6       7fa3df503ef0            1         1086
+           _ZNSaIcED2Ev  libstdc++.so.6       7fa3df4ff360            4            4
+           _ZNSaIcEC2Ev  libstdc++.so.6       7fa3df4ff340            4            4
+_ZNSt6locale5facet18_S_create_c_localeERP15__locale_structPKcS2_  libstdc++.so.6       7fa3df4fed20            1            9
+_ZNSt12__basic_fileIcE6xsgetnEPcl  libstdc++.so.6       7fa3df4fe7d0            2           50
+_ZNSt12__basic_fileIcED1Ev  libstdc++.so.6       7fa3df4fe7c0            1            1
+_ZNSt12__basic_fileIcE5closeEv  libstdc++.so.6       7fa3df4fe770            2           23
+_ZNSt12__basic_fileIcE2fdEv  libstdc++.so.6       7fa3df4fe750            2            4
+_ZNSt12__basic_fileIcE4openEPKcSt13_Ios_Openmodei  libstdc++.so.6       7fa3df4fe700            1           26
+_ZNKSt12__basic_fileIcE7is_openEv  libstdc++.so.6       7fa3df4fe5f0            7           21
+_ZNSt12__basic_fileIcEC1EP15pthread_mutex_t  libstdc++.so.6       7fa3df4fe5e0            1            3
+_ZNSt11__timepunctIwE23_M_initialize_timepunctEP15__locale_struct  libstdc++.so.6       7fa3df4fdb50            1          103
+_ZNSt11__timepunctIcE23_M_initialize_timepunctEP15__locale_struct  libstdc++.so.6       7fa3df4fd1c0            1          105
+_ZNSt7__cxx118numpunctIwE22_M_initialize_numpunctEP15__locale_struct  libstdc++.so.6       7fa3df4fcf00            1          349
+_ZNSt7__cxx118numpunctIcE22_M_initialize_numpunctEP15__locale_struct  libstdc++.so.6       7fa3df4fcc30            1          413
+_ZNSt7__cxx1110moneypunctIwLb0EE24_M_initialize_moneypunctEP15__locale_structPKc  libstdc++.so.6       7fa3df4fc4a0            1          108
+_ZNSt7__cxx1110moneypunctIwLb1EE24_M_initialize_moneypunctEP15__locale_structPKc  libstdc++.so.6       7fa3df4fbf10            1          108
+_ZNSt7__cxx1110moneypunctIcLb0EE24_M_initialize_moneypunctEP15__locale_structPKc  libstdc++.so.6       7fa3df4fb830            1          112
+_ZNSt7__cxx1110moneypunctIcLb1EE24_M_initialize_moneypunctEP15__locale_structPKc  libstdc++.so.6       7fa3df4fb330            1          112
+_ZNSt8numpunctIwE22_M_initialize_numpunctEP15__locale_struct  libstdc++.so.6       7fa3df4fa510            1          349
+_ZNSt8numpunctIcE22_M_initialize_numpunctEP15__locale_struct  libstdc++.so.6       7fa3df4fa240            1          413
+_ZNSt10moneypunctIwLb0EE24_M_initialize_moneypunctEP15__locale_structPKc  libstdc++.so.6       7fa3df4f97b0            1          108
+_ZNSt10moneypunctIwLb1EE24_M_initialize_moneypunctEP15__locale_structPKc  libstdc++.so.6       7fa3df4f9220            1          108
+_ZNSt10moneypunctIcLb0EE24_M_initialize_moneypunctEP15__locale_structPKc  libstdc++.so.6       7fa3df4f8b40            1          112
+_ZNSt10moneypunctIcLb1EE24_M_initialize_moneypunctEP15__locale_structPKc  libstdc++.so.6       7fa3df4f8640            1          112
+_ZSt7getlineIcSt11char_traitsIcESaIcEERSt13basic_istreamIT_T0_ES7_RNSt7__cxx1112basic_stringIS4_S5_T1_EES4_  libstdc++.so.6       7fa3df4f6820            2          169
+       _ZNSt6localeC1Ev  libstdc++.so.6       7fa3df4f0e20           26          520
+ _ZNSt6locale5_ImplC1Em  libstdc++.so.6       7fa3df4efcb0            1         1014
+_ZNSt6locale5_Impl16_M_install_facetEPKNS_2idEPKNS_5facetE  libstdc++.so.6       7fa3df4ef600           32        12096
+_ZNKSt6locale2id5_M_idEv  libstdc++.so.6       7fa3df4ef5c0          124         1052
+       _ZNSt6localeD2Ev  libstdc++.so.6       7fa3df4ef3b0           12           84
+    _ZNSt6localeaSERKS_  libstdc++.so.6       7fa3df4ef310           10          190
+_ZNSt6locale5facet13_S_get_c_nameEv  libstdc++.so.6       7fa3df4ef1b0            7           14
+_ZNSt6locale5facet15_S_get_c_localeEv  libstdc++.so.6       7fa3df4ef160           14          128
+_ZNSt8ios_base7_M_initEv  libstdc++.so.6       7fa3df4ee6c0           10          250
+_ZNSt8ios_base4InitD1Ev  libstdc++.so.6       7fa3df4ee3b0            1           23
+_ZNSt8ios_base4InitC1Ev  libstdc++.so.6       7fa3df4edbd0            1          268
+_ZNSt7codecvtIwc11__mbstate_tEC1Em  libstdc++.so.6       7fa3df4eac00            1           17
+_ZNSt7codecvtIcc11__mbstate_tEC1Em  libstdc++.so.6       7fa3df4eab80            1           17
+_ZNKSt7codecvtIcc11__mbstate_tE16do_always_noconvEv  libstdc++.so.6       7fa3df4eaa50            2            4
+_ZNK10__cxxabiv121__vmi_class_type_info12__do_dyncastElNS_17__class_type_info10__sub_kindEPKS1_PKvS4_S6_RNS1_16__dyncast_resultE  libstdc++.so.6       7fa3df4de520           12          780
+_ZNK10__cxxabiv120__si_class_type_info12__do_dyncastElNS_17__class_type_info10__sub_kindEPKS1_PKvS4_S6_RNS1_16__dyncast_resultE  libstdc++.so.6       7fa3df4ddcd0           50         1800
+                  _Znam  libstdc++.so.6       7fa3df4dd630            1            1
+                  _Znwm  libstdc++.so.6       7fa3df4dd5e0            7           70
+    __cxa_guard_release  libstdc++.so.6       7fa3df4dd3d0            1           14
+    __cxa_guard_acquire  libstdc++.so.6       7fa3df4dd270            1           32
+         __dynamic_cast  libstdc++.so.6       7fa3df4db990           62         3224
+                 _ZdaPv  libstdc++.so.6       7fa3df4db960            1            1
+                 _ZdlPv  libstdc++.so.6       7fa3df4db930            7            7
+_ZNSt14error_categoryD2Ev  libstdc++.so.6       7fa3df4daf10            2            2
+_ZNSt14error_categoryC1Ev  libstdc++.so.6       7fa3df4daf00            2            8
+               .plt.got  libstdc++.so.6       7fa3df4d0a70            0            3
+_ZNSt8messagesIcEC1Em@plt  libstdc++.so.6       7fa3df4d09d0            1            3
+             fflush@plt  libstdc++.so.6       7fa3df4d0990            8           10
+_ZSt9has_facetISt5ctypeIcEEbRKSt6locale@plt  libstdc++.so.6       7fa3df4d0840            6            8
+ _ZNSo6sentryC1ERSo@plt  libstdc++.so.6       7fa3df4d0820            4            6
+_ZNSt9basic_iosIwSt11char_traitsIwEE15_M_cache_localeERKSt6locale@plt  libstdc++.so.6       7fa3df4d0720            4            6
+             memcpy@plt  libstdc++.so.6       7fa3df4d0700            6            8
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_assignERKS4_@plt  libstdc++.so.6       7fa3df4d0600            1            3
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_mutateEmmPKcm@plt  libstdc++.so.6       7fa3df4d05f0            1            3
+_ZNSt10moneypunctIcLb1EE24_M_initialize_moneypunctEP15__locale_structPKc@plt  libstdc++.so.6       7fa3df4d0510            1            3
+_ZNSt12__basic_fileIcEC1EP15pthread_mutex_t@plt  libstdc++.so.6       7fa3df4d0450            1            3
+_ZNSt13basic_filebufIcSt11char_traitsIcEEC1Ev@plt  libstdc++.so.6       7fa3df4d03a0            1            3
+_ZNSt9basic_iosIcSt11char_traitsIcEE5clearESt12_Ios_Iostate@plt  libstdc++.so.6       7fa3df4d0330            2            4
+             fwrite@plt  libstdc++.so.6       7fa3df4d0230            2            4
+_ZSt9use_facetISt7num_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEEERKT_RKSt6locale@plt  libstdc++.so.6       7fa3df4d0210            4            6
+            fopen64@plt  libstdc++.so.6       7fa3df4d0190            1            3
+              btowc@plt  libstdc++.so.6       7fa3df4d0080          256          258
+_ZNSt13basic_filebufIcSt11char_traitsIcEE5closeEv@plt  libstdc++.so.6       7fa3df4d0010            1            3
+_ZNSi6sentryC1ERSib@plt  libstdc++.so.6       7fa3df4cffd0            2            4
+_ZNSt12__basic_fileIcE5closeEv@plt  libstdc++.so.6       7fa3df4cff50            2            4
+_ZNSt13basic_ostreamIwSt11char_traitsIwEE5flushEv@plt  libstdc++.so.6       7fa3df4cfeb0            3            5
+_ZNSt9basic_iosIcSt11char_traitsIcEE15_M_cache_localeERKSt6locale@plt  libstdc++.so.6       7fa3df4cfe40            6            8
+             fclose@plt  libstdc++.so.6       7fa3df4cfcb0            1            3
+_ZNSt8ios_base7_M_initEv@plt  libstdc++.so.6       7fa3df4cfc80           10           12
+_ZNSt7__cxx118numpunctIcE22_M_initialize_numpunctEP15__locale_struct@plt  libstdc++.so.6       7fa3df4cfc00            1            3
+_ZNSt9basic_iosIcSt11char_traitsIcEE4initEPSt15basic_streambufIcS1_E@plt  libstdc++.so.6       7fa3df4cfbe0            6            8
+             memcmp@plt  libstdc++.so.6       7fa3df4cfb60            1            3
+_ZNSt7__cxx1110moneypunctIcLb1EE24_M_initialize_moneypunctEP15__locale_structPKc@plt  libstdc++.so.6       7fa3df4cfa80            1            3
+_ZNKSt12__basic_fileIcE7is_openEv@plt  libstdc++.so.6       7fa3df4cfa30            7            9
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPKcEEvT_S8_St20forward_iterator_tag@plt  libstdc++.so.6       7fa3df4cf9c0            4            6
+_ZNSt6locale5facet15_S_get_c_localeEv@plt  libstdc++.so.6       7fa3df4cf940           14           16
+_ZNSt11__timepunctIwEC1EPSt17__timepunct_cacheIwEm@plt  libstdc++.so.6       7fa3df4cf930            1            3
+     __dynamic_cast@plt  libstdc++.so.6       7fa3df4cf870           62           64
+_ZSt9has_facetISt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEEEbRKSt6locale@plt  libstdc++.so.6       7fa3df4cf830            6            8
+_ZNSt10moneypunctIwLb1EE24_M_initialize_moneypunctEP15__locale_structPKc@plt  libstdc++.so.6       7fa3df4cf7e0            1            3
+ _ZNSt8ios_baseD2Ev@plt  libstdc++.so.6       7fa3df4cf6d0            1            3
+             strcmp@plt  libstdc++.so.6       7fa3df4cf6b0           12           14
+_ZSt9use_facetISt7codecvtIcc11__mbstate_tEERKT_RKSt6locale@plt  libstdc++.so.6       7fa3df4cf670            1            3
+_ZSt9use_facetISt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEEERKT_RKSt6locale@plt  libstdc++.so.6       7fa3df4cf580            4            6
+        __uselocale@plt  libstdc++.so.6       7fa3df4cf560            2            4
+_ZNSt11__timepunctIcE23_M_initialize_timepunctEP15__locale_struct@plt  libstdc++.so.6       7fa3df4cf460            1            3
+   _ZNSt6localeD1Ev@plt  libstdc++.so.6       7fa3df4cf440           12           14
+_ZNSt7__cxx1110moneypunctIwLb0EE24_M_initialize_moneypunctEP15__locale_structPKc@plt  libstdc++.so.6       7fa3df4cf320            1            3
+_ZNSt8messagesIwEC1Em@plt  libstdc++.so.6       7fa3df4cf220            1            3
+_ZNSt13basic_filebufIcSt11char_traitsIcEE4openEPKcSt13_Ios_Openmode@plt  libstdc++.so.6       7fa3df4cf1b0            1            3
+__cxa_guard_acquire@plt  libstdc++.so.6       7fa3df4cf1a0            1            3
+               putc@plt  libstdc++.so.6       7fa3df4cf130            2            4
+_ZNSt9basic_iosIwSt11char_traitsIwEE4initEPSt15basic_streambufIwS1_E@plt  libstdc++.so.6       7fa3df4cf120            4            6
+_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l@plt  libstdc++.so.6       7fa3df4cf0f0            2            4
+_ZNSt11__timepunctIcEC1EPSt17__timepunct_cacheIcEm@plt  libstdc++.so.6       7fa3df4cefe0            1            3
+_ZNSt6localeaSERKS_@plt  libstdc++.so.6       7fa3df4cefa0           10           12
+_ZSt9has_facetISt7num_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEEEbRKSt6locale@plt  libstdc++.so.6       7fa3df4cef60            4            6
+      _ZNSo5flushEv@plt  libstdc++.so.6       7fa3df4ceef0            5            7
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_createERmm@plt  libstdc++.so.6       7fa3df4cee60            3            5
+_ZNSt10moneypunctIwLb0EE24_M_initialize_moneypunctEP15__locale_structPKc@plt  libstdc++.so.6       7fa3df4ced70            1            3
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_appendEPKcm@plt  libstdc++.so.6       7fa3df4ced20            1            3
+_ZNSt8ios_base17_M_call_callbacksENS_5eventE@plt  libstdc++.so.6       7fa3df4ceb60            1            3
+        __newlocale@plt  libstdc++.so.6       7fa3df4ceb20            1            3
+_ZNSt14error_categoryD2Ev@plt  libstdc++.so.6       7fa3df4ce9c0            2            4
+_ZNSt11__timepunctIwE23_M_initialize_timepunctEP15__locale_struct@plt  libstdc++.so.6       7fa3df4ce9a0            1            3
+_ZNSt6locale5_Impl16_M_install_facetEPKNS_2idEPKNS_5facetE@plt  libstdc++.so.6       7fa3df4ce780           32           34
+_ZNSt14error_categoryC2Ev@plt  libstdc++.so.6       7fa3df4ce770            2            4
+_ZNSt8numpunctIwE22_M_initialize_numpunctEP15__locale_struct@plt  libstdc++.so.6       7fa3df4ce750            1            3
+              wctob@plt  libstdc++.so.6       7fa3df4ce6f0          128          130
+_ZNSt12__basic_fileIcE6xsgetnEPcl@plt  libstdc++.so.6       7fa3df4ce6d0            2            4
+_ZNKSt5ctypeIcE13_M_widen_initEv@plt  libstdc++.so.6       7fa3df4ce6a0            1            3
+_ZNKSt5ctypeIwE19_M_convert_to_wmaskEt@plt  libstdc++.so.6       7fa3df4ce5e0           12           14
+_ZNSt13basic_filebufIcSt11char_traitsIcEE26_M_destroy_internal_bufferEv@plt  libstdc++.so.6       7fa3df4ce560            1            3
+_ZNSt7__cxx1110moneypunctIcLb0EE24_M_initialize_moneypunctEP15__locale_structPKc@plt  libstdc++.so.6       7fa3df4ce500            1            3
+_ZSt9has_facetISt7codecvtIcc11__mbstate_tEEbRKSt6locale@plt  libstdc++.so.6       7fa3df4ce410            1            3
+             strlen@plt  libstdc++.so.6       7fa3df4ce3c0            6            8
+               free@plt  libstdc++.so.6       7fa3df4ce360            7            9
+_ZNSt13basic_filebufIcSt11char_traitsIcEE19_M_terminate_outputEv@plt  libstdc++.so.6       7fa3df4ce320            1            3
+_ZNSt5ctypeIwE19_M_initialize_ctypeEv@plt  libstdc++.so.6       7fa3df4ce1c0            1            3
+_ZSt9use_facetISt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEEERKT_RKSt6locale@plt  libstdc++.so.6       7fa3df4ce100            6            8
+_ZNSt7codecvtIcc11__mbstate_tEC1Em@plt  libstdc++.so.6       7fa3df4ce0f0            1            3
+   _ZNSt6localeC1Ev@plt  libstdc++.so.6       7fa3df4cdfc0           26           28
+_ZNSt12__basic_fileIcED1Ev@plt  libstdc++.so.6       7fa3df4cdf00            1            3
+_ZNKSt6locale2id5_M_idEv@plt  libstdc++.so.6       7fa3df4cdef0          124          126
+_ZNSt8numpunctIcE22_M_initialize_numpunctEP15__locale_struct@plt  libstdc++.so.6       7fa3df4cde30            1            3
+       __cxa_atexit@plt  libstdc++.so.6       7fa3df4cdd00            8           10
+_ZNSt7codecvtIwc11__mbstate_tEC1Em@plt  libstdc++.so.6       7fa3df4cdc90            1            3
+         __wctype_l@plt  libstdc++.so.6       7fa3df4cdc70           10           12
+_ZSt15future_categoryv@plt  libstdc++.so.6       7fa3df4cdc50            1            3
+_ZNSt6locale5facet18_S_create_c_localeERP15__locale_structPKcS2_@plt  libstdc++.so.6       7fa3df4cdc00            1            3
+             _ZdlPv@plt  libstdc++.so.6       7fa3df4cdb40            4            6
+_ZNSt6locale5_ImplC1Em@plt  libstdc++.so.6       7fa3df4cdb20            1            3
+_ZNSt6locale5facet13_S_get_c_nameEv@plt  libstdc++.so.6       7fa3df4cdaf0            7            9
+_ZSt9has_facetISt5ctypeIwEEbRKSt6locale@plt  libstdc++.so.6       7fa3df4cda90            4            6
+__cxa_guard_release@plt  libstdc++.so.6       7fa3df4cda50            1            3
+ _ZNSt8ios_baseC2Ev@plt  libstdc++.so.6       7fa3df4cda10            9           11
+   _ZNSo6sentryD1Ev@plt  libstdc++.so.6       7fa3df4cd9a0            4            6
+_ZNSt12__basic_fileIcE4openEPKcSt13_Ios_Openmodei@plt  libstdc++.so.6       7fa3df4cd950            1            3
+             malloc@plt  libstdc++.so.6       7fa3df4cd920            8           10
+               read@plt  libstdc++.so.6       7fa3df4cd900            2            4
+_ZNSt3_V214error_categoryD2Ev@plt  libstdc++.so.6       7fa3df4cd860            3            5
+        _ZNSo3putEc@plt  libstdc++.so.6       7fa3df4cd800            2            4
+_ZNSt12__basic_fileIcE2fdEv@plt  libstdc++.so.6       7fa3df4cd7d0            2            4
+_ZNSt7__cxx1110moneypunctIwLb1EE24_M_initialize_moneypunctEP15__locale_structPKc@plt  libstdc++.so.6       7fa3df4cd750            1            3
+_ZSt9has_facetISt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEEEbRKSt6locale@plt  libstdc++.so.6       7fa3df4cd650            4            6
+_ZNSt13basic_filebufIcSt11char_traitsIcEE27_M_allocate_internal_bufferEv@plt  libstdc++.so.6       7fa3df4cd510            1            3
+              _Znwm@plt  libstdc++.so.6       7fa3df4cd410            4            6
+_ZNSt7__cxx118messagesIwEC1Em@plt  libstdc++.so.6       7fa3df4cd3f0            1            3
+_ZNSt7__cxx118numpunctIwE22_M_initialize_numpunctEP15__locale_struct@plt  libstdc++.so.6       7fa3df4cd3c0            1            3
+             memchr@plt  libstdc++.so.6       7fa3df4cd320            1            3
+ _ZNSt5ctypeIwEC1Em@plt  libstdc++.so.6       7fa3df4cd2e0            1            3
+_ZSt9use_facetISt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEEERKT_RKSt6locale@plt  libstdc++.so.6       7fa3df4cd220            6            8
+_ZNSt10moneypunctIcLb0EE24_M_initialize_moneypunctEP15__locale_structPKc@plt  libstdc++.so.6       7fa3df4cd1a0            1            3
+_ZSt7getlineIcSt11char_traitsIcESaIcEERSt13basic_istreamIT_T0_ES7_RNSt7__cxx1112basic_stringIS4_S5_T1_EES4_@plt  libstdc++.so.6       7fa3df4cd0f0            2            4
+_ZNSt8ios_base20_M_dispose_callbacksEv@plt  libstdc++.so.6       7fa3df4ccff0            1            3
+_ZNSt5ctypeIcEC1EPKtbm@plt  libstdc++.so.6       7fa3df4ccf30            1            3
+_ZNSt7__cxx118messagesIcEC1Em@plt  libstdc++.so.6       7fa3df4cce10            1            3
+_ZSt9use_facetISt5ctypeIcEERKT_RKSt6locale@plt  libstdc++.so.6       7fa3df4cce00            6            8
+             fileno@plt  libstdc++.so.6       7fa3df4ccda0            2            4
+_ZSt9use_facetISt5ctypeIwEERKT_RKSt6locale@plt  libstdc++.so.6       7fa3df4ccd80            4            6
+_ZSt9has_facetISt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEEEbRKSt6locale@plt  libstdc++.so.6       7fa3df4ccd20            6            8
+                   .plt  libstdc++.so.6       7fa3df4ccbe0          115          230
+                  _init  libstdc++.so.6       7fa3df4ccbb8            1            6
+                realloc ld-linux-x86-64.so.2       7fa3f3e95100            0         4436
+                   free ld-linux-x86-64.so.2       7fa3f3e94f50           11           90
+                 calloc ld-linux-x86-64.so.2       7fa3f3e94f10           18          144
+                 malloc ld-linux-x86-64.so.2       7fa3f3e94f00           49          147
+        __libc_memalign ld-linux-x86-64.so.2       7fa3f3e94e00           50         1346
+_dl_find_dso_for_object ld-linux-x86-64.so.2       7fa3f3e8fbf0            1           40
+  _dl_allocate_tls_init ld-linux-x86-64.so.2       7fa3f3e8e610            1          139
+        _dl_debug_state ld-linux-x86-64.so.2       7fa3f3e8c060            2            2
+                  .text ld-linux-x86-64.so.2       7fa3f3e7bac0            1        17198
+               .plt.got ld-linux-x86-64.so.2       7fa3f3e7bab0            9            9
+             calloc@plt ld-linux-x86-64.so.2       7fa3f3e7ba90           18           18
+             malloc@plt ld-linux-x86-64.so.2       7fa3f3e7ba80           49           49
+    __libc_memalign@plt ld-linux-x86-64.so.2       7fa3f3e7ba70           50           50
+                  _fini    cmd_executor             403bb4            1            3
+        __libc_csu_init    cmd_executor             403b40            1           41
+_ZNSt11__copy_moveILb1ELb1ESt26random_access_iterator_tagE8__copy_mIiEEPT_PKS3_S6_S4_    cmd_executor             403ad9            1           20
+_ZNKSt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE4baseEv    cmd_executor             403ac8            6           42
+_ZSt13__copy_move_aILb1EPiS0_ET1_T0_S2_S1_    cmd_executor             403a97            1           15
+_ZSt12__niter_baseIPiET_S1_    cmd_executor             403a89            3           18
+_ZSt12__miter_baseIPiET_S1_    cmd_executor             403a7b            2           12
+_ZNKSt13move_iteratorIPiE4baseEv    cmd_executor             403a6a            2           14
+_ZSteqIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEbRKSt13move_iteratorIT_ESB_    cmd_executor             403a30            3           57
+_ZSt14__copy_move_a2ILb1EPiS0_ET1_T0_S2_S1_    cmd_executor             4039d8            1           28
+_ZSt12__miter_baseIPiEDTcl12__miter_basecldtfp_4baseEEESt13move_iteratorIT_E    cmd_executor             4039b6            2           22
+_ZSt10_ConstructINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEJS5_EEvPT_DpOT0_    cmd_executor             40396d            1           24
+_ZNKSt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEdeEv    cmd_executor             40395c            1            7
+_ZNSt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEppEv    cmd_executor             40393c            1           11
+_ZStneIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEbRKSt13move_iteratorIT_ESB_    cmd_executor             403913            3           39
+_ZSt4copyISt13move_iteratorIPiES1_ET0_T_S4_S3_    cmd_executor             4038c7            1           24
+_ZNSt20__uninitialized_copyILb0EE13__uninit_copyISt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEES9_EET0_T_SC_SB_    cmd_executor             40381a            2           66
+_ZNK9__gnu_cxx13new_allocatorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE8max_sizeEv    cmd_executor             403806            6           36
+_ZNSt20__uninitialized_copyILb1EE13__uninit_copyISt13move_iteratorIPiES3_EET0_T_S6_S5_    cmd_executor             4037d8            1           14
+_ZNK9__gnu_cxx13new_allocatorIiE8max_sizeEv    cmd_executor             4037c4            3           18
+_ZSt18uninitialized_copyISt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEES7_ET0_T_SA_S9_    cmd_executor             403792            2           30
+_ZNSt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEC2ES6_    cmd_executor             403778            4           40
+_ZN9__gnu_cxx13new_allocatorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE8allocateEmPKv    cmd_executor             403736            2           38
+_ZNKSt12_Vector_baseINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE19_M_get_Tp_allocatorEv    cmd_executor             403728            4           24
+_ZNSt16allocator_traitsISaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEE8max_sizeERKS6_    cmd_executor             40370d            4           36
+_ZSt18uninitialized_copyISt13move_iteratorIPiES1_ET0_T_S4_S3_    cmd_executor             4036dc            1           15
+_ZNSt13move_iteratorIPiEC2ES0_    cmd_executor             4036c2            2           20
+_ZN9__gnu_cxx13new_allocatorIiE8allocateEmPKv    cmd_executor             403680            1           19
+_ZNKSt12_Vector_baseIiSaIiEE19_M_get_Tp_allocatorEv    cmd_executor             403672            2           12
+_ZNSt16allocator_traitsISaIiEE8max_sizeERKS0_    cmd_executor             403657            2           18
+_ZN9__gnu_cxx13new_allocatorIiE10deallocateEPim    cmd_executor             403634            1           12
+_ZN9__gnu_cxx13new_allocatorIiEC1Ev    cmd_executor             403628            1            6
+_ZSteqIcEN9__gnu_cxx11__enable_ifIXsrSt9__is_charIT_E7__valueEbE6__typeERKNSt7__cxx1112basic_stringIS3_St11char_traitsIS3_ESaIS3_EEESE_    cmd_executor             4035a3            2           80
+_ZSt22__uninitialized_copy_aISt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEES7_S6_ET0_T_SA_S9_RSaIT1_E    cmd_executor             403552            2           30
+_ZSt32__make_move_if_noexcept_iteratorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt13move_iteratorIPS5_EET0_PT_    cmd_executor             40350a            4           72
+_ZNSt16allocator_traitsISaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEE8allocateERS6_m    cmd_executor             4034e0            2           26
+_ZNKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE8max_sizeEv    cmd_executor             4034be            4           44
+_ZSt8_DestroyINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEvPT_    cmd_executor             4034a3            3           30
+_ZSt11__addressofINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEPT_RS6_    cmd_executor             403495            4           24
+_ZN9__gnu_cxx13new_allocatorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE10deallocateEPS6_m    cmd_executor             403472            2           24
+_ZN9__gnu_cxx13new_allocatorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEC2Ev    cmd_executor             403466            1            6
+_ZSt22__uninitialized_copy_aISt13move_iteratorIPiES1_iET0_T_S4_S3_RSaIT1_E    cmd_executor             403425            1           15
+_ZSt32__make_move_if_noexcept_iteratorIiSt13move_iteratorIPiEET0_PT_    cmd_executor             4033dd            2           36
+_ZNSt16allocator_traitsISaIiEE8allocateERS0_m    cmd_executor             4033b3            1           13
+  _ZSt3maxImERKT_S2_S2_    cmd_executor             403388            3           41
+_ZNKSt6vectorIiSaIiEE8max_sizeEv    cmd_executor             403366            2           22
+_ZNSt12_Destroy_auxILb1EE9__destroyIPiEEvT_S3_    cmd_executor             403357            2           14
+_ZNSt16allocator_traitsISaIiEE10deallocateERS0_Pim    cmd_executor             403329            1           15
+_ZN9__gnu_cxx13new_allocatorIiED2Ev    cmd_executor             40331e            1            6
+           _ZNSaIiEC2Ev    cmd_executor             403302            1           10
+_ZN9__gnu_cxx5__ops16_Iter_equals_valIKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEclINS_17__normal_iteratorIPS8_St6vectorIS7_SaIS7_EEEEEEbT_    cmd_executor             4032cc            2           36
+_ZN9__gnu_cxxmiIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS6_SaIS6_EEEENS_17__normal_iteratorIT_T0_E15difference_typeERKSF_SI_    cmd_executor             403288            4           88
+_ZSt34__uninitialized_move_if_noexcept_aIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES6_SaIS5_EET0_T_S9_S8_RT1_    cmd_executor             40320e            2           52
+_ZNKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE4sizeEv    cmd_executor             4031e8           10          130
+_ZNSt12_Vector_baseINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE11_M_allocateEm    cmd_executor             4031b4            2           30
+_ZNKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE12_M_check_lenEmPKc    cmd_executor             4030c8            2          116
+_ZN9__gnu_cxx13new_allocatorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE9constructIS6_JS6_EEEvPT_DpOT0_    cmd_executor             40307a            2           50
+_ZNSt12_Destroy_auxILb0EE9__destroyIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEEvT_S9_    cmd_executor             403041            3           63
+_ZNSt16allocator_traitsISaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEE10deallocateERS6_PS5_m    cmd_executor             403013            2           30
+_ZN9__gnu_cxx13new_allocatorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEED1Ev    cmd_executor             403008            1            6
+_ZNSaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEC2Ev    cmd_executor             402fec            1           10
+_ZSt34__uninitialized_move_if_noexcept_aIPiS0_SaIiEET0_T_S3_S2_RT1_    cmd_executor             402f72            1           26
+_ZNKSt6vectorIiSaIiEE4sizeEv    cmd_executor             402f4c            5           65
+_ZNSt12_Vector_baseIiSaIiEE11_M_allocateEm    cmd_executor             402f18            1           15
+_ZNKSt6vectorIiSaIiEE12_M_check_lenEmPKc    cmd_executor             402e2c            1           58
+_ZN9__gnu_cxx13new_allocatorIiE9constructIiJRKiEEEvPT_DpOT0_    cmd_executor             402de8            1           23
+_ZSt8_DestroyIPiEvT_S1_    cmd_executor             402dc1            2           26
+_ZNSt12_Vector_baseIiSaIiEE13_M_deallocateEPim    cmd_executor             402d8c            2           28
+           _ZNSaIiED2Ev    cmd_executor             402d70            1           10
+_ZNSt12_Vector_baseIiSaIiEE12_Vector_implC2Ev    cmd_executor             402d32            1           16
+_ZSt9__find_ifIN9__gnu_cxx17__normal_iteratorIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS7_SaIS7_EEEENS0_5__ops16_Iter_equals_valIS8_EEET_SH_SH_T0_St26random_access_iterator_tag    cmd_executor             402b96            2           66
+_ZSt19__iterator_categoryIN9__gnu_cxx17__normal_iteratorIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS7_SaIS7_EEEEENSt15iterator_traitsIT_E17iterator_categoryERKSF_    cmd_executor             402b8c            2           10
+_ZN9__gnu_cxx5__ops16_Iter_equals_valIKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEC1ERS8_    cmd_executor             402b72            2           20
+_ZNSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE19_M_emplace_back_auxIJS5_EEEvDpOT_    cmd_executor             40298a            2          188
+_ZNSt16allocator_traitsISaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEE9constructIS5_JS5_EEEvRS6_PT_DpOT0_    cmd_executor             402951            2           36
+_ZSt8_DestroyIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEvT_S7_    cmd_executor             40292b            3           39
+_ZNSt12_Vector_baseINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE13_M_deallocateEPS5_m    cmd_executor             4028f6            3           45
+_ZNSaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEED2Ev    cmd_executor             4028da            1           10
+_ZNSt12_Vector_baseINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE12_Vector_implC2Ev    cmd_executor             40289c            1           16
+_ZNK9__gnu_cxx17__normal_iteratorIPiSt6vectorIiSaIiEEE4baseEv    cmd_executor             40288e            4           24
+_ZN9__gnu_cxx17__normal_iteratorIPiSt6vectorIiSaIiEEEC1ERKS1_    cmd_executor             402870            2           22
+_ZNSt6vectorIiSaIiEE19_M_emplace_back_auxIJRKiEEEvDpOT_    cmd_executor             402686            1           92
+_ZNSt16allocator_traitsISaIiEE9constructIiJRKiEEEvRS0_PT_DpOT0_    cmd_executor             40264c            1           18
+_ZSt7forwardIRKiEOT_RNSt16remove_referenceIS2_E4typeE    cmd_executor             40263e            3           18
+_ZSt8_DestroyIPiiEvT_S1_RSaIT0_E    cmd_executor             402614            2           28
+_ZNSt12_Vector_baseIiSaIiEE19_M_get_Tp_allocatorEv    cmd_executor             402606            3           18
+_ZNSt12_Vector_baseIiSaIiEED1Ev    cmd_executor             4025b6            1           25
+_ZNSt12_Vector_baseIiSaIiEEC1Ev    cmd_executor             40259a            1           10
+_ZNSt12_Vector_baseIiSaIiEE12_Vector_implD2Ev    cmd_executor             40257e            1           10
+_ZNK9__gnu_cxx17__normal_iteratorIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS6_SaIS6_EEE4baseEv    cmd_executor             402570           14           84
+_ZSt9__find_ifIN9__gnu_cxx17__normal_iteratorIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS7_SaIS7_EEEENS0_5__ops16_Iter_equals_valIS8_EEET_SH_SH_T0_    cmd_executor             402505            2           56
+_ZN9__gnu_cxx5__ops17__iter_equals_valIKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEENS0_16_Iter_equals_valIT_EERSA_    cmd_executor             4024bd            2           36
+_ZN9__gnu_cxx17__normal_iteratorIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS6_SaIS6_EEEC2ERKS8_    cmd_executor             4024a0            7           77
+_ZNSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE12emplace_backIJS5_EEEvDpOT_    cmd_executor             40241e            2           44
+_ZSt7forwardINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEOT_RNSt16remove_referenceIS6_E4typeE    cmd_executor             402410            9           54
+_ZSt8_DestroyIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES5_EvT_S7_RSaIT0_E    cmd_executor             4023e6            3           42
+_ZNSt12_Vector_baseINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE19_M_get_Tp_allocatorEv    cmd_executor             4023d8            5           30
+_ZNSt12_Vector_baseINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EED1Ev    cmd_executor             402388            1           25
+_ZNSt12_Vector_baseINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EEC2Ev    cmd_executor             40236c            1           10
+_ZNSt12_Vector_baseINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE12_Vector_implD1Ev    cmd_executor             402350            1           10
+_ZNK9__gnu_cxx17__normal_iteratorIPiSt6vectorIiSaIiEEEdeEv    cmd_executor             40233e            1            7
+_ZN9__gnu_cxx17__normal_iteratorIPiSt6vectorIiSaIiEEEppEv    cmd_executor             40231e            1           11
+_ZN9__gnu_cxxneIPiSt6vectorIiSaIiEEEEbRKNS_17__normal_iteratorIT_T0_EESA_    cmd_executor             4022e2            2           40
+_ZNSt6vectorIiSaIiEE3endEv    cmd_executor             402296            1           19
+_ZNSt6vectorIiSaIiEE5beginEv    cmd_executor             40224e            1           18
+_ZNSt6vectorIiSaIiEE9push_backERKi    cmd_executor             4021e2            1           19
+_ZNSt6vectorIiSaIiEED1Ev    cmd_executor             40219e            1           21
+_ZNSt6vectorIiSaIiEEC2Ev    cmd_executor             402182            1           10
+_ZNK9__gnu_cxx17__normal_iteratorIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS6_SaIS6_EEEdeEv    cmd_executor             402170            3           21
+_ZN9__gnu_cxx17__normal_iteratorIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS6_SaIS6_EEEppEv    cmd_executor             402150            1           11
+_ZN9__gnu_cxxneIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS6_SaIS6_EEEEbRKNS_17__normal_iteratorIT_T0_EESH_    cmd_executor             402114            3           60
+_ZSt4findIN9__gnu_cxx17__normal_iteratorIPKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS7_SaIS7_EEEES7_ET_SE_SE_RKT0_    cmd_executor             4020dc            2           34
+_ZNKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE3endEv    cmd_executor             402088            5          105
+_ZNKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE5beginEv    cmd_executor             402034            2           42
+_ZNSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE9push_backEOS5_    cmd_executor             402002            2           32
+_ZNSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EED1Ev    cmd_executor             401fbe            1           21
+_ZNSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EEC1Ev    cmd_executor             401fa2            1           10
+_ZSt4moveIRNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEONSt16remove_referenceIT_E4typeEOS8_    cmd_executor             401f93            2           12
+   _ZN11InputParserD2Ev    cmd_executor             401f78            1           10
+_ZNK11InputParser15cmdOptionExistsERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE    cmd_executor             401ee6            1           39
+_ZNK11InputParser12getCmdOptionERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE    cmd_executor             401d58            1           65
+_ZN11InputParserC2ERiPPc    cmd_executor             401c58            1           88
+                _ZnwmPv    cmd_executor             401c46            4           28
+_ZNSt11char_traitsIcE7compareEPKcS2_m    cmd_executor             401c0b            2           32
+    _GLOBAL__sub_I_main    cmd_executor             401bf6            1            7
+_Z41__static_initialization_and_destruction_0ii    cmd_executor             401bb8            1           18
+                   main    cmd_executor             401726            1          197
+            frame_dummy    cmd_executor             401700            1            4
+  __do_global_dtors_aux    cmd_executor             4016e0            1            8
+     register_tm_clones    cmd_executor             4016a0            1           12
+   deregister_tm_clones    cmd_executor             401660            1            8
+                 _start    cmd_executor             401630            1           11
+_ZNSt8ios_base4InitD1Ev@plt    cmd_executor             401610            1            3
+  __libc_start_main@plt    cmd_executor             401600            1            3
+       _ZNSaIcEC1Ev@plt    cmd_executor             4015e0            4            6
+_ZNSt14basic_ifstreamIcSt11char_traitsIcEE7is_openEv@plt    cmd_executor             401590            1            3
+_ZNSt8ios_base4InitC1Ev@plt    cmd_executor             401580            1            3
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1Ev@plt    cmd_executor             401560            2            4
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1EPKcRKS3_@plt    cmd_executor             401550            4            6
+_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE4dataEv@plt    cmd_executor             401540            4            6
+_ZNKSt9basic_iosIcSt11char_traitsIcEEcvbEv@plt    cmd_executor             401530            2            4
+_ZNSt14basic_ifstreamIcSt11char_traitsIcEEC1Ev@plt    cmd_executor             401510            1            3
+       _ZNSaIcED1Ev@plt    cmd_executor             4014f0            4            6
+   _ZNSolsEPFRSoS_E@plt    cmd_executor             4014e0            2            4
+              _Znwm@plt    cmd_executor             4014d0            3            5
+_ZStlsISt11char_traitsIcEERSt13basic_ostreamIcT_ES5_PKc@plt    cmd_executor             4014c0            2            4
+             _ZdlPv@plt    cmd_executor             4014b0            3            5
+       __cxa_atexit@plt    cmd_executor             401490            1            3
+_ZNSt14basic_ifstreamIcSt11char_traitsIcEE4openERKNSt7__cxx1112basic_stringIcS1_SaIcEEESt13_Ios_Openmode@plt    cmd_executor             401480            1            3
+            waitpid@plt    cmd_executor             401460            1            3
+_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE4sizeEv@plt    cmd_executor             401450            6            8
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEED1Ev@plt    cmd_executor             401420            9           11
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1EOS4_@plt    cmd_executor             401410            3            5
+_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_@plt    cmd_executor             4013f0            2            4
+             memcmp@plt    cmd_executor             4013e0            2            4
+               fork@plt    cmd_executor             4013a0            1            3
+_ZNSt14basic_ifstreamIcSt11char_traitsIcEED1Ev@plt    cmd_executor             401390            1            3
+_ZSt7getlineIcSt11char_traitsIcESaIcEERSt13basic_istreamIT_T0_ES7_RNSt7__cxx1112basic_stringIS4_S5_T1_EE@plt    cmd_executor             401380            2            4
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEaSERKS4_@plt    cmd_executor             401370            1            3
+                   .plt    cmd_executor             401360           27           54
+                  _init    cmd_executor             401338            1            6

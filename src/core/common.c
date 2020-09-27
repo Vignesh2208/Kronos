@@ -213,13 +213,14 @@ void AddToTracerScheduleQueue(tracer * tracer_entry,
              tracee->pid, tracer_entry->tracer_id);
 
     new_elem = (lxc_schedule_elem *)kmalloc(sizeof(lxc_schedule_elem), GFP_KERNEL);
-    memset(new_elem, 0, sizeof(lxc_schedule_elem));
+    
     if (!new_elem) {
         PDEBUG_E("AddToTracerScheduleQueue: "
                  "Tracer %d, tracee %d. Failed to alot Memory\n",
                  tracer_entry->tracer_id, tracee->pid);
         return;
     }
+    memset(new_elem, 0, sizeof(lxc_schedule_elem));
 
     new_elem->pid = tracee->pid;
     new_elem->curr_task = tracee;
@@ -252,6 +253,7 @@ void AddToTracerScheduleQueue(tracer * tracer_entry,
         tracee->wakeup_time = 0;
         tracee->burst_target = 0;
     }
+    
 
     tracee->assigned_timeline = tracer_entry->timeline_assignment;
 
