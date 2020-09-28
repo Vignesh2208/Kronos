@@ -80,7 +80,18 @@ To get started on Kronos, please perform the following setup steps:
 Ready to use VM
 ^^^^^^^^^^^^^^^
 
-Link to a ready to use Kronos VM will be provided upon request. Please contact projectmoses@illinois.edu.
+Link to a ready to use Kronos VM (version 1.3) can be downloaded from `here <https://drive.google.com/drive/folders/1wwJ6tO7XaGj3C_8ZophNsmbc2vO-oxH4?usp=sharing>`_.
+The VM also contains installations of two companion projects `OpenSCADA <http://github.com/Vignesh2208/OpenSCADA>`_ and `Melody <http://github.com/Vignesh2208/Melody>`_.
+which use Kronos for cyber-physical system modelling.
+
+Username: kronos
+Password: kronos
+
+Make sure Kronos is loaded after each reboot before running experiments::
+
+  cd ~/Kronos
+  sudo make load
+
 
 Verifying Installation
 ----------------------

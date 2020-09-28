@@ -36,7 +36,6 @@ s64 SendToVtModule(unsigned int cmd, ioctl_args *arg) {
     }
     ret = ioctl(fp, cmd, arg);
     if (ret < 0) {
-      printf("Error executing cmd: %d\n", cmd);
       close(fp);
       return ret;
     }
