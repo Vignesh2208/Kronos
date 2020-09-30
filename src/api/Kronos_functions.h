@@ -25,8 +25,8 @@ typedef unsigned long u32;
 //! Returns the current virtual time of a tracer with id = 1
 s64 getCurrentVirtualTime(void);
 
-//! Returns the current virtual time of a process with specified pid
-s64 getCurrentTimePid(int pid);
+//! Returns the current virtual time of a tracer with specified id
+s64 getCurrentTimeTracer(int tracer);
 
 
 //! Initializes a EXP_CBE experiment with specified number of expected tracers

@@ -50,7 +50,7 @@ s64 SendToVtModule(unsigned int cmd, ioctl_args *arg) {
     return (vt.tv_sec * 1000000 + vt.tv_usec) * 1000;
   }
   close(fp);
-  if (cmd == VT_WRITE_RESULTS || cmd == VT_REGISTER_TRACER)
+  if (cmd == VT_WRITE_RESULTS || cmd == VT_REGISTER_TRACER || cmd == VT_GETTIME_TRACER)
     return arg->cmd_value;
   return ret;
 }

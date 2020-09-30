@@ -30,7 +30,6 @@ int *per_timeline_chain_length;
 llist *per_timeline_tracer_list;
 s64 *tracer_clock_array = NULL;
 s64 *aligned_tracer_clock_array = NULL;
-static struct proc_dir_entry *dilation_dir = NULL;
 static struct proc_dir_entry *dilation_file = NULL;
 struct task_struct *loop_task;
 struct task_struct ** chaintask;
@@ -584,7 +583,7 @@ long vtIoctl(struct file *filp, unsigned int cmd, unsigned long arg) {
       }
       return HandleInitializeExpCmd(api_info_tmp.api_argument);
 
-    case VT_GETTIME_PID:
+    case VT_GETTIME_TRACER:
       // Any process can invoke this call.
 
       if (initialization_status != INITIALIZED) {
@@ -606,10 +605,17 @@ long vtIoctl(struct file *filp, unsigned int cmd, unsigned long arg) {
       if (copy_from_user(&api_info_tmp, api_info, sizeof(invoked_api))) {
         return -EINVAL;
       }
-      api_info_tmp.return_value = HandleGettimePID(api_info_tmp.api_argument);
-      if (copy_to_user(api_info, &api_info_tmp, sizeof(invoked_api))) {
-        PDEBUG_I("VT_GETTIME_PID: Error copying to user buf\n");
+
+      tracer_id = api_info_tmp.api_argument;
+      curr_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
+      if (!curr_tracer) {
+        PDEBUG_I("VT_GETTIME_TRACER: Tracer : %d, not registered\n", tracer_id);
         return -EINVAL;
+      }
+      api_info_tmp.return_value = curr_tracer->curr_virtual_time;
+      if (copy_to_user(api_info, &api_info_tmp, sizeof(invoked_api))) {
+        PDEBUG_I("VT_GETTIME_TRACER: Error copying to user buf\n");
+        return -VT_GETTIME_TRACER;
       }
       return 0;
 
@@ -791,15 +797,6 @@ int __init myModuleInit(void) {
   PDEBUG_A("Loading MODULE\n");
 
   /* Set up Kronos status file in /proc */
-  dilation_dir = proc_mkdir_mode(DILATION_DIR, 0555, NULL);
-  if (dilation_dir == NULL) {
-    remove_proc_entry(DILATION_DIR, NULL);
-    PDEBUG_E(" Error: Could not initialize /proc/%s\n", DILATION_DIR);
-    return -ENOMEM;
-  }
-  PDEBUG_A(" /proc/%s created\n", DILATION_DIR);
-
-
   dilation_file = proc_create(DILATION_FILE, 0666, NULL, &proc_file_fops);
   tracer_clock_array = NULL;
   aligned_tracer_clock_array = NULL;
@@ -807,12 +804,10 @@ int __init myModuleInit(void) {
   mutex_init(&file_lock);
 
   if (dilation_file == NULL) {
-    remove_proc_entry(DILATION_FILE, dilation_dir);
-    PDEBUG_E("Error: Could not initialize /proc/%s/%s\n", DILATION_DIR,
-             DILATION_FILE);
+    PDEBUG_E("Error: Could not initialize /proc/%s\n", DILATION_FILE);
     return -ENOMEM;
   }
-  PDEBUG_A(" /proc/%s/%s created\n", DILATION_DIR, DILATION_FILE);
+  PDEBUG_A(" /proc/%s created\n", DILATION_FILE);
 
   /* If it is 64-bit, initialize the looping script */
 #ifdef __x86_64
@@ -849,11 +844,8 @@ void __exit myModuleExit(void) {
   s64 i;
   int num_prev_alotted_pages;
 
-  // remove_proc_entry(DILATION_FILE, dilation_dir);
   remove_proc_entry(DILATION_FILE, NULL);
   PDEBUG_A(" /proc/%s deleted\n", DILATION_FILE);
-  remove_proc_entry(DILATION_DIR, NULL);
-  PDEBUG_A(" /proc/%s deleted\n", DILATION_DIR);
 
   if (tracer_num > 0) {
     // Free all tracer structs from previous experiment if any

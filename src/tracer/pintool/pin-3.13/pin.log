@@ -1,0 +1,3 @@
+Pin: pin-3.11-97998-7ecce2dac
+Copyright 2002-2019 Intel Corporation.
+E:  The code cache limit must divisible by the code cache block size. Either adjust the code cache size limit (currently set to 2147483648 bytes) or adjust the code cache block size (currently set to 2621440 bytes).  Use the -cc_memory_size and -cache_block_size flags.
