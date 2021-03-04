@@ -899,3 +899,25 @@ s64 HandleGettimePID(char * write_buffer) {
 }
 
 
+s64 HandleGettimeTracer(char * write_buffer) {
+
+    struct pid *pid_struct;
+    struct task_struct * task;
+    int tracer_id;
+    tracer * curr_tracer;
+
+    tracer_id = atoi(write_buffer);
+
+    PDEBUG_V("Handle gettimetracer: Received tracer-id = %d\n", tracer_id);
+
+    curr_tracer = hmap_get_abs(&get_tracer_by_id, tracer_id);
+	
+
+    if (!curr_tracer) {
+        return 0;
+    }
+
+    return curr_tracer->curr_virtual_time;
+}
+
+

@@ -114,6 +114,8 @@ s64 GetDilatedTime(struct task_struct * task);
 */
 s64 HandleGettimePID(char * write_buffer);
 
+s64 HandleGettimeTracer(char * write_buffer);
+
 //! Blocks the caller process until a tracee executes its current run
 /*!
     \param curr_tracer Represents the INS-VT tracer which is supposed to run next

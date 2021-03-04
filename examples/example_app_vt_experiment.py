@@ -10,12 +10,12 @@ import sys
 import argparse
 
 
-def start_new_dilated_process(total_num_tracers, cmd_to_run, log_file_fd):
+def start_new_dilated_process(total_num_tracers, cmd_to_run, log_file_fd, rel_cpu_speed):
     newpid = os.fork()
     if newpid == 0:
         os.dup2(log_file_fd, sys.stdout.fileno())
         os.dup2(log_file_fd, sys.stderr.fileno())
-        args = ["/usr/bin/app_vt_tracer", "-n", str(total_num_tracers), "-c", cmd_to_run]
+        args = ["/usr/bin/app_vt_tracer", "-n", str(total_num_tracers), "-c", cmd_to_run, "-r", str(rel_cpu_speed)]
         os.execvp(args[0], args)
     else:
         return newpid
@@ -39,6 +39,10 @@ def main():
     parser.add_argument('--num_progress_rounds', dest='num_progress_rounds',
                         help='Number of rounds to run', type=int,
                         default=2000)
+
+    parser.add_argument('--rel_cpu_speed', dest='rel_cpu_speed',
+                        help='relative cpu speed', type=float, \
+                        default=1.0)
 
     args = parser.parse_args()
     log_fds = []
@@ -78,7 +82,7 @@ def main():
     
     for i in range(0, num_tracers):
         print ("Starting tracer: %d" %(i + 1))
-        start_new_dilated_process(num_tracers, cmds_to_run[i], log_fds[i])
+        start_new_dilated_process(num_tracers, cmds_to_run[i], log_fds[i], args.rel_cpu_speed)
     
     print ("Synchronizing anf freezing tracers ...")
     while kf.synchronizeAndFreeze() <= 0:

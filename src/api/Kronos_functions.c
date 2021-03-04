@@ -88,15 +88,24 @@ s64 getCurrentVirtualTime() {
 }
 
 
-s64 getCurrentTimeTracer(int tracer) {
+s64 getCurrentTimePid(int pid) {
   ioctl_args arg;
   InitIoctlArg(&arg);
-  if (tracer < 0) {
-    printf("getCurrentTimeTracer: incorrect id: %d\n", tracer);
-    return -1;
+  if (pid < 0) {
+    printf("getCurrentTimePid: incorrect pid: %d\n", pid);
   }
-  sprintf(arg.cmd_buf, "%d", tracer);
-  return SendToVtModule(VT_GETTIME_TRACER, &arg);
+  sprintf(arg.cmd_buf, "%d", pid);
+  return SendToVtModule(VT_GETTIME_PID, &arg);
+}
+
+s64 getCurrentTimeTracer(int tracer_id) {
+  ioctl_args arg;
+  InitIoctlArg(&arg);
+  if (tracer_id < 0) {
+    printf("getCurrentTimeTracer: incorrect tracer_id: %d\n", tracer_id);
+  }
+  sprintf(arg.cmd_buf, "%d", tracer_id);
+  return SendToVtModule(VT_GET_TIME_TRACER, &arg);
 }
 
 

@@ -1,4 +1,4 @@
-#include "kronos_utility_functions.h"
+
 #include <fcntl.h>  // for open
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,8 +7,11 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <unistd.h>  // for close
+#include "kronos_utility_functions.h"
 
 const char *FILENAME = "/proc/kronos";
+
+#define NSEC_PER_SEC 1000000000
 /*
 Sends a specific command to the Kronos Module.
 To communicate with the TLKM, you send messages to the location
@@ -50,7 +53,8 @@ s64 SendToVtModule(unsigned int cmd, ioctl_args *arg) {
     return (vt.tv_sec * 1000000 + vt.tv_usec) * 1000;
   }
   close(fp);
-  if (cmd == VT_WRITE_RESULTS || cmd == VT_REGISTER_TRACER || cmd == VT_GETTIME_TRACER)
+  if (cmd == VT_WRITE_RESULTS || cmd == VT_REGISTER_TRACER || 
+    cmd == VT_GET_TIME_TRACER || cmd == VT_GETTIME_PID)
     return arg->cmd_value;
   return ret;
 }
@@ -110,4 +114,28 @@ int IsModuleLoaded() {
 
 void FlushBuffer(char *buf, int size) {
   if (size) memset(buf, 0, size * sizeof(char));
+}
+
+
+void ns_2_timespec(s64 nsec, struct timespec * ts) {
+
+  int32_t rem;
+
+  if (!nsec) {
+    ts->tv_sec = 0, ts->tv_nsec = 0;
+    return;
+  }
+
+  ts->tv_sec = nsec / NSEC_PER_SEC;
+  rem = nsec - ts->tv_sec * NSEC_PER_SEC;
+  ts->tv_nsec = rem;
+}
+
+
+void ns_2_timeval(s64 nsec, struct timeval * tv) {
+  struct timespec ts;
+  
+  ns_2_timespec(nsec, &ts);
+  tv->tv_sec = ts.tv_sec;
+  tv->tv_usec = ts.tv_nsec / 1000;
 }

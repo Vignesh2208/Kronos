@@ -23,9 +23,9 @@
 const char *homedir;
 
 
-#define MAX_COMMAND_LENGTH 1000
+#define MAX_COMMAND_LENGTH 10000
 #define MAX_CONTROLLABLE_PROCESSES 100
-#define MAX_BUF_SIZ 1000
+#define MAX_BUF_SIZ 10000
 #define FAIL -1
 
 #include "Kronos_functions.h"
@@ -79,7 +79,7 @@ int createSpinnerTask(pid_t *child_pid) {
 
 //! Envelop orig command to be started under the control of intel-pin
 void envelopeCommandUnderPin(char * enveloped_cmd_str, char * orig_command_str,
-                             int total_num_tracers, int tracer_id) {
+                             int total_num_tracers, int tracer_id, float rel_cpu_speed) {
   if ((homedir = getenv("HOME")) == NULL) {
     homedir = getpwuid(getuid())->pw_dir;
   }
@@ -88,8 +88,8 @@ void envelopeCommandUnderPin(char * enveloped_cmd_str, char * orig_command_str,
   sprintf(pin_binary_path, "%s/Kronos/src/tracer/pintool/pin-3.13/pin", homedir);
   char * pintool_path = "/usr/lib/inscount_tls.so";
   memset(enveloped_cmd_str, 0, MAX_COMMAND_LENGTH);
-  sprintf(enveloped_cmd_str, "%s -t %s -n %d -i %d -- %s", pin_binary_path,
-          pintool_path, total_num_tracers, tracer_id, orig_command_str);
+  sprintf(enveloped_cmd_str, "%s -t %s -n %d -i %d -r %f -- %s", pin_binary_path,
+          pintool_path, total_num_tracers, tracer_id, rel_cpu_speed, orig_command_str);
   printf("Full Enveloped Command: %s", enveloped_cmd_str);
   
 } 
@@ -98,7 +98,7 @@ void envelopeCommandUnderPin(char * enveloped_cmd_str, char * orig_command_str,
 //! Fork exec the tracee command under the control of pin. It returns the pid
 //  of the started child process.
 int runCommandUnderPin(char *orig_command_str, pid_t *child_pid,
-                       int total_num_tracers, int tracer_id) {
+                       int total_num_tracers, int tracer_id, float rel_cpu_speed) {
   char **args;
   char full_command_str[MAX_COMMAND_LENGTH];
   char *iter = full_command_str;
@@ -111,7 +111,7 @@ int runCommandUnderPin(char *orig_command_str, pid_t *child_pid,
   pid_t child;
 
   envelopeCommandUnderPin(full_command_str, orig_command_str,
-                          total_num_tracers, tracer_id);
+                          total_num_tracers, tracer_id, rel_cpu_speed);
 
   
   while (full_command_str[i] != '\0') {
@@ -205,7 +205,7 @@ void printUsage(int argc, char* argv[]) {
   fprintf(stderr, "\n");
   fprintf(stderr, "Usage: %s [ -h | --help ]\n", argv[0]);
   fprintf(stderr,	"		%s -i TRACER_ID -n TOTAL_NUM_TRACERS"
-          "[-f CMDS_FILE_PATH or -c \"CMD with args\"] [-t TimelineID]"
+          "[-f CMDS_FILE_PATH or -c \"CMD with args\"] [-t TimelineID] [-r REL_CPU_SPEED]"
           "-s CREATE_SPINNER\n", argv[0]);
   fprintf(stderr, "\n");
   fprintf(stderr, "This program executes all COMMANDs specified in the "
@@ -227,6 +227,7 @@ int main(int argc, char * argv[]) {
   int cpu_assigned;
   int create_spinner = 0;
   pid_t spinned_pid;
+  float rel_cpu_speed = 1.0;
   FILE* fp;
   int option = 0;
   int read_from_file = 1;
@@ -242,13 +243,15 @@ int main(int argc, char * argv[]) {
   }
 
 
-  while ((option = getopt(argc, argv, "i:f:n:st:c:h")) != -1) {
+  while ((option = getopt(argc, argv, "i:f:r:n:st:c:h")) != -1) {
     switch (option) {
     case 'i' : tracer_id = atoi(optarg);
       if (tracer_id <= 0) {
         fprintf(stderr, "Explicitly assigned tracer-id must be positive > 0\n");
         exit(FAIL);
       }
+      break;
+    case 'r' : rel_cpu_speed = atof(optarg);
       break;
     case 'n' : total_num_tracers = atoi(optarg);
       break;
@@ -307,7 +310,7 @@ int main(int argc, char * argv[]) {
     }
     while ((line_read = getline(&line, &len, fp)) != -1) {
       num_controlled_processes ++;
-      runCommandUnderPin(line, &new_cmd_pid, total_num_tracers, tracer_id);
+      runCommandUnderPin(line, &new_cmd_pid, total_num_tracers, tracer_id, rel_cpu_speed);
       controlled_pids[num_controlled_processes - 1] = new_cmd_pid;
       printf("TracerID: %d, Started Command: %s", tracer_id, line);
     }
@@ -315,7 +318,7 @@ int main(int argc, char * argv[]) {
   } else {
     
     num_controlled_processes ++;
-    runCommandUnderPin(command, &new_cmd_pid, total_num_tracers, tracer_id);
+    runCommandUnderPin(command, &new_cmd_pid, total_num_tracers, tracer_id, rel_cpu_speed);
     controlled_pids[num_controlled_processes - 1] = new_cmd_pid;
     printf("TracerID: %d, Started Command: %s", tracer_id, command);
   }

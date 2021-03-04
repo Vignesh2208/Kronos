@@ -42,13 +42,14 @@ typedef struct ioctl_args_struct {
 #define VT_ADD_PROCESSES_TO_SQ _IOW(VT_IOC_MAGIC, 5, int)
 #define VT_SYNC_AND_FREEZE _IOW(VT_IOC_MAGIC, 6, int)
 #define VT_INITIALIZE_EXP _IOW(VT_IOC_MAGIC, 7, int)
-#define VT_GETTIME_TRACER _IOW(VT_IOC_MAGIC, 8, int)
+#define VT_GETTIME_PID _IOW(VT_IOC_MAGIC, 8, int)
 #define VT_STOP_EXP _IOW(VT_IOC_MAGIC, 9, int)
 #define VT_PROGRESS_BY _IOW(VT_IOC_MAGIC, 10, int)
 #define VT_PROGRESS_TIMELINE_BY _IOW(VT_IOC_MAGIC, 11, int)
-#define VT_WAIT_FOR_EXIT _IOW(VT_IOC_MAGIC, 12, int)
-#define VT_GET_ASSIGNED_TRACER_ID _IOW(VT_IOC_MAGIC, 13, int)
-#define VT_SET_NETDEVICE_OWNER _IOW(VT_IOC_MAGIC, 14, int)
+#define VT_SET_NETDEVICE_OWNER _IOW(VT_IOC_MAGIC, 12, int)
+#define VT_WAIT_FOR_EXIT _IOW(VT_IOC_MAGIC, 13, int)
+#define VT_GET_ASSIGNED_TRACER_ID _IOW(VT_IOC_MAGIC, 14, int)
+#define VT_GET_TIME_TRACER _IOW(VT_IOC_MAGIC, 15, int)
 
 
 //! Sends the command to the virtual time module as an ioctl call
@@ -75,5 +76,7 @@ int NumCharacters(int n);
 //! Converts an integer list of values into a comma separated string and adds
 //  them to an ioctl_args structure
 int AppendToIoctlArg(ioctl_args* arg, int* append_values, int num_values);
+
+void ns_2_timeval(s64 nsec, struct timeval * tv);
 
 #endif

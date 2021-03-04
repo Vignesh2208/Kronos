@@ -16,6 +16,7 @@ build_api:
 	 ${API_DIR}/kronos_utility_functions.o
 	 @$(MV) libkronosapi.so /usr/lib
 	 @$(CHMOD) 0777 /usr/lib/libkronosapi.so
+	 @$(CP) /usr/lib/libkronosapi.so /usr/lib/libvtapi.so
 
 	 @$(CP) ${API_DIR}/Kronos_functions.h /usr/local/include
 	 @$(CP) ${API_DIR}/kronos_utility_functions.h /usr/local/include
@@ -28,5 +29,6 @@ clean:
 	@$(RM) -rf build/
 	@$(RM) -f *.o
 	@$(RM) -f /usr/lib/libkronosapi.so > /dev/null
+	@$(RM) -f /usr/lib/libvtapi.so > /dev/null
 	@$(RM) -f /usr/local/include/Kronos_functions.h > /dev/null
 	@$(RM) -f /usr/local/include/kronos_utiliy_functions.h > /dev/null
