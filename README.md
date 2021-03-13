@@ -12,3 +12,9 @@ If you find Kronos useful in your work, please cite the following paper:
 Babu, Vignesh, and David Nicol. "Precise Virtual Time Advancement for Network Emulation." Proceedings of the 2020 ACM SIGSIM Conference on Principles of Advanced Discrete Simulation. 2020.
 
 Bibtex link [here](https://scholar.googleusercontent.com/scholar.bib?q=info:SLAZFhUreA8J:scholar.google.com/&output=citation&scisdr=CgXjqvZEEN-dn5CnHEQ:AAGBfm0AAAAAYEaiBERUP_wcBGnd5KcfOSS-oSuG031w&scisig=AAGBfm0AAAAAYEaiBPMjKaFAMP3P53yZOfWN2E9NtXGS&scisf=4&ct=citation&cd=-1&hl=en).
+
+Note
+====
+
+This is a prototype implementation with the primary goal of encouraging more research in the field of virtual time driven network emulation and simulation.
+It does not support all general requirements yet and may contain bugs. Contributions to fix any identified issues are welcome ! Please contact me at vig2208@gmail.com
